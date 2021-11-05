@@ -34,9 +34,33 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  static final presetForHTTPSchema = 'http://flutter.dev/';
+  static final presetForHTTPSSchema = 'https://flutter.dev/';
+  static final presetForMailtoSchema = 'mailto:example@example.com';
+  static final presetForFileSchema = 'file:/home/';
+
+  String toLaunch = presetForHTTPSSchema;
+
+  final textEditingController = TextEditingController();
   Future<void>? _launched;
 
-  Future<void> _launchInBrowser(String url) async {
+  @override
+  void initState() {
+    super.initState();
+
+    textEditingController.text = toLaunch;
+    textEditingController.addListener(() => setState(() {
+          toLaunch = textEditingController.text; //Uri.encodeFull();
+        }));
+  }
+
+  @override
+  void dispose() {
+    textEditingController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _launchURL(String url) async {
     if (await UrlLauncherPlatform.instance.canLaunch(url)) {
       await UrlLauncherPlatform.instance.launch(
         url,
@@ -48,7 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
         headers: <String, String>{},
       );
     } else {
-      throw 'Could not launch $url';
+      throw 'Could not launch URL: $url';
     }
   }
 
@@ -62,7 +86,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    const String toLaunch = 'https://www.cylog.org/headers/';
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -72,15 +95,50 @@ class _MyHomePageState extends State<MyHomePage> {
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(toLaunch),
-              ),
+              Wrap(children: [
+                Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          textEditingController.text = presetForHTTPSchema,
+                      child: Text("http"),
+                    )),
+                Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          textEditingController.text = presetForHTTPSSchema,
+                      child: Text("https"),
+                    )),
+                Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          textEditingController.text = presetForFileSchema,
+                      child: Text("file"),
+                    )),
+                Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          textEditingController.text = presetForMailtoSchema,
+                      child: Text("mailto"),
+                    )),
+              ]),
+              Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: TextField(
+                    controller: textEditingController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Enter URL here',
+                    ),
+                  )),
               ElevatedButton(
                 onPressed: () => setState(() {
-                  _launched = _launchInBrowser(toLaunch);
+                  _launched = _launchURL(toLaunch);
                 }),
-                child: const Text('Launch in browser'),
+                child: const Text('Launch URL'),
               ),
               const Padding(padding: EdgeInsets.all(16.0)),
               FutureBuilder<void>(future: _launched, builder: _launchStatus),
