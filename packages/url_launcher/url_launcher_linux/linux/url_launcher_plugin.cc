@@ -46,6 +46,23 @@ static gchar* get_url(FlValue* args, GError** error) {
   return g_strdup(fl_value_get_string(url_value));
 }
 
+// Called to check if URL with file scheme can be launched.
+static gboolean can_launch_url_with_file_scheme(FlUrlLauncherPlugin* self,
+                                    const gchar* url) {
+  gboolean is_launchable = FALSE;
+  g_autofree gchar* filename = g_filename_from_uri(url, NULL, NULL);
+  if (filename != nullptr) {
+    g_autofree gchar* content_type =
+        g_content_type_guess(filename, NULL, 0, NULL);
+    if (content_type != nullptr) {
+      g_autoptr(GAppInfo) app_info =
+          g_app_info_get_default_for_type(content_type, FALSE);
+      is_launchable = app_info != nullptr;
+    }
+  }
+  return is_launchable;
+}
+
 // Called to check if a URL can be launched.
 FlMethodResponse* can_launch(FlUrlLauncherPlugin* self, FlValue* args) {
   g_autoptr(GError) error = nullptr;
@@ -58,22 +75,12 @@ FlMethodResponse* can_launch(FlUrlLauncherPlugin* self, FlValue* args) {
   gboolean is_launchable = FALSE;
   g_autofree gchar* scheme = g_uri_parse_scheme(url);
   if (scheme != nullptr) {
-    if (strcmp(scheme, kFileSchema) == 0) {
-      g_autofree gchar* filename = 
-          g_filename_from_uri(url, NULL, NULL);
-      if (filename != nullptr && g_file_test(filename, G_FILE_TEST_EXISTS)) {
-        g_autofree gchar* content_type = 
-            g_content_type_guess(filename, NULL, 0, NULL);
-        if (content_type != nullptr) {
-          g_autoptr(GAppInfo) app_info =
-              g_app_info_get_default_for_type(content_type, FALSE);
-          is_launchable = app_info != nullptr;
-        }
-      }
-    } else {
-      g_autoptr(GAppInfo) app_info =
-          g_app_info_get_default_for_uri_scheme(scheme);
-      is_launchable = app_info != nullptr;
+    g_autoptr(GAppInfo) app_info =
+        g_app_info_get_default_for_uri_scheme(scheme);
+    is_launchable = app_info != nullptr;
+
+    if (is_launchable == FALSE && strcmp(scheme, kFileSchema) == 0) {
+      is_launchable = can_launch_url_with_file_scheme(self, url);
     }
   }
 
@@ -111,8 +118,8 @@ static FlMethodResponse* launch(FlUrlLauncherPlugin* self, FlValue* args) {
 
 // Called when a method call is received from Flutter.
 static void method_call_cb(FlMethodChannel* channel, FlMethodCall* method_call,
-                           gpointer user_data) {
-  FlUrlLauncherPlugin* self = FL_URL_LAUNCHER_PLUGIN(user_data);
+                           gpointer plugin) {
+  FlUrlLauncherPlugin* self = FL_URL_LAUNCHER_PLUGIN(plugin);
 
   const gchar* method = fl_method_call_get_name(method_call);
   FlValue* args = fl_method_call_get_args(method_call);
