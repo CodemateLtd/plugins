@@ -48,7 +48,7 @@ static gchar* get_url(FlValue* args, GError** error) {
 
 // Called to check if URL with file scheme can be launched.
 static gboolean can_launch_url_with_file_scheme(FlUrlLauncherPlugin* self,
-                                    const gchar* url) {
+                                                const gchar* url) {
   gboolean is_launchable = FALSE;
   g_autofree gchar* filename = g_filename_from_uri(url, NULL, NULL);
   if (filename != nullptr) {
@@ -118,8 +118,8 @@ static FlMethodResponse* launch(FlUrlLauncherPlugin* self, FlValue* args) {
 
 // Called when a method call is received from Flutter.
 static void method_call_cb(FlMethodChannel* channel, FlMethodCall* method_call,
-                           gpointer plugin) {
-  FlUrlLauncherPlugin* self = FL_URL_LAUNCHER_PLUGIN(plugin);
+                           gpointer user_data) {
+  FlUrlLauncherPlugin* self = FL_URL_LAUNCHER_PLUGIN(user_data);
 
   const gchar* method = fl_method_call_get_name(method_call);
   FlValue* args = fl_method_call_get_args(method_call);
