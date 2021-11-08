@@ -18,7 +18,7 @@ const char kLaunchError[] = "Launch Error";
 const char kCanLaunchMethod[] = "canLaunch";
 const char kLaunchMethod[] = "launch";
 const char kUrlKey[] = "url";
-const char kFileSchema[] = "file";
+const char kFileScheme[] = "file";
 
 struct _FlUrlLauncherPlugin {
   GObject parent_instance;
@@ -79,7 +79,7 @@ FlMethodResponse* can_launch(FlUrlLauncherPlugin* self, FlValue* args) {
         g_app_info_get_default_for_uri_scheme(scheme);
     is_launchable = app_info != nullptr;
 
-    if (is_launchable == FALSE && strcmp(scheme, kFileSchema) == 0) {
+    if (is_launchable == FALSE && strcmp(scheme, kFileScheme) == 0) {
       is_launchable = can_launch_url_with_file_scheme(self, url);
     }
   }
