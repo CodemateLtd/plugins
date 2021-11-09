@@ -50,10 +50,10 @@ static gchar* get_url(FlValue* args, GError** error) {
 static gboolean can_launch_url_with_file_scheme(FlUrlLauncherPlugin* self,
                                                 const gchar* url) {
   gboolean is_launchable = FALSE;
-  g_autofree gchar* filename = g_filename_from_uri(url, NULL, NULL);
+  g_autofree gchar* filename = g_filename_from_uri(url, nullptr, nullptr);
   if (filename != nullptr) {
     g_autofree gchar* content_type =
-        g_content_type_guess(filename, NULL, 0, NULL);
+        g_content_type_guess(filename, nullptr, 0, nullptr);
     if (content_type != nullptr) {
       g_autoptr(GAppInfo) app_info =
           g_app_info_get_default_for_type(content_type, FALSE);
