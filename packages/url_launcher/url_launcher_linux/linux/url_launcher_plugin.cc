@@ -75,12 +75,12 @@ FlMethodResponse* can_launch(FlUrlLauncherPlugin* self, FlValue* args) {
   gboolean is_launchable = FALSE;
   g_autofree gchar* scheme = g_uri_parse_scheme(url);
   if (scheme != nullptr) {
-    g_autoptr(GAppInfo) app_info =
-        g_app_info_get_default_for_uri_scheme(scheme);
-    is_launchable = app_info != nullptr;
-
-    if (is_launchable == FALSE && strcmp(scheme, kFileScheme) == 0) {
+    if (strcmp(scheme, kFileScheme) == 0) {
       is_launchable = can_launch_url_with_file_scheme(self, url);
+    } else {
+      g_autoptr(GAppInfo) app_info =
+          g_app_info_get_default_for_uri_scheme(scheme);
+      is_launchable = app_info != nullptr;
     }
   }
 
