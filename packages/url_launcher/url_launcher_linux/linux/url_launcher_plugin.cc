@@ -18,7 +18,6 @@ const char kLaunchError[] = "Launch Error";
 const char kCanLaunchMethod[] = "canLaunch";
 const char kLaunchMethod[] = "launch";
 const char kUrlKey[] = "url";
-const char kFileScheme[] = "file";
 
 struct _FlUrlLauncherPlugin {
   GObject parent_instance;
@@ -49,16 +48,14 @@ static gchar* get_url(FlValue* args, GError** error) {
 // Called to check if URL with file scheme can be launched.
 static gboolean can_launch_url_with_file_scheme(FlUrlLauncherPlugin* self,
                                                 const gchar* url) {
+  g_autoptr(GError) error = nullptr;
+  GFile* file = g_file_new_for_uri(url);
+  GAppInfo* app_info = g_file_query_default_handler(file, NULL, &error);
+  g_object_unref(file);
   gboolean is_launchable = FALSE;
-  g_autofree gchar* filename = g_filename_from_uri(url, nullptr, nullptr);
-  if (filename != nullptr) {
-    g_autofree gchar* content_type =
-        g_content_type_guess(filename, nullptr, 0, nullptr);
-    if (content_type != nullptr) {
-      g_autoptr(GAppInfo) app_info =
-          g_app_info_get_default_for_type(content_type, FALSE);
-      is_launchable = app_info != nullptr;
-    }
+  if (app_info != nullptr) {
+    is_launchable = TRUE;
+    g_object_unref(app_info);
   }
   return is_launchable;
 }
@@ -75,12 +72,12 @@ FlMethodResponse* can_launch(FlUrlLauncherPlugin* self, FlValue* args) {
   gboolean is_launchable = FALSE;
   g_autofree gchar* scheme = g_uri_parse_scheme(url);
   if (scheme != nullptr) {
-    if (strcmp(scheme, kFileScheme) == 0) {
+    g_autoptr(GAppInfo) app_info =
+        g_app_info_get_default_for_uri_scheme(scheme);
+    is_launchable = app_info != nullptr;
+
+    if (!is_launchable) {
       is_launchable = can_launch_url_with_file_scheme(self, url);
-    } else {
-      g_autoptr(GAppInfo) app_info =
-          g_app_info_get_default_for_uri_scheme(scheme);
-      is_launchable = app_info != nullptr;
     }
   }
 
