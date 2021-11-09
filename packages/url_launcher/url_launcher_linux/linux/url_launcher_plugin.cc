@@ -9,6 +9,7 @@
 
 #include <cstring>
 
+#include "include/url_launcher_linux/system_apis.h"
 #include "url_launcher_plugin_private.h"
 
 // See url_launcher_channel.dart for documentation.
@@ -26,6 +27,8 @@ struct _FlUrlLauncherPlugin {
 
   // Connection to Flutter engine.
   FlMethodChannel* channel;
+
+  FlUrlLauncherSystemApis* system_apis;
 };
 
 G_DEFINE_TYPE(FlUrlLauncherPlugin, fl_url_launcher_plugin, g_object_get_type())
@@ -51,6 +54,7 @@ static gboolean can_launch_url_with_file_scheme(FlUrlLauncherPlugin* self,
   g_autoptr(GError) error = nullptr;
   GFile* file = g_file_new_for_uri(url);
   GAppInfo* app_info = g_file_query_default_handler(file, NULL, &error);
+  printf("\n\n%s - %s\n\n", url, g_file_get_path(file));
   g_object_unref(file);
   gboolean is_launchable = FALSE;
   if (app_info != nullptr) {
@@ -73,7 +77,7 @@ FlMethodResponse* can_launch(FlUrlLauncherPlugin* self, FlValue* args) {
   g_autofree gchar* scheme = g_uri_parse_scheme(url);
   if (scheme != nullptr) {
     g_autoptr(GAppInfo) app_info =
-        g_app_info_get_default_for_uri_scheme(scheme);
+        self->system_apis->get_app_info_for_scheme(scheme);
     is_launchable = app_info != nullptr;
 
     if (!is_launchable) {
@@ -100,7 +104,7 @@ static FlMethodResponse* launch(FlUrlLauncherPlugin* self, FlValue* args) {
     GtkWindow* window = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(view)));
     launched = gtk_show_uri_on_window(window, url, GDK_CURRENT_TIME, &error);
   } else {
-    launched = g_app_info_launch_default_for_uri(url, nullptr, &error);
+    launched = self->system_apis->launch_uri(url, nullptr, &error);
   }
   if (!launched) {
     g_autofree gchar* message =
@@ -139,17 +143,31 @@ static void fl_url_launcher_plugin_dispose(GObject* object) {
 
   g_clear_object(&self->registrar);
   g_clear_object(&self->channel);
+  g_clear_object(&self->system_apis);
 
   G_OBJECT_CLASS(fl_url_launcher_plugin_parent_class)->dispose(object);
+}
+
+void fl_url_launcher_plugin_set_system_apis(
+    FlUrlLauncherPlugin* self, FlUrlLauncherSystemApis* system_apis) {
+  if (system_apis == nullptr) {
+    self->system_apis = FL_URL_LAUNCHER_SYSTEM_APIS(
+        g_object_new(fl_url_launcher_system_apis_get_type(), nullptr));
+  } else {
+    self->system_apis = FL_URL_LAUNCHER_SYSTEM_APIS(g_object_ref(system_apis));
+  }
 }
 
 static void fl_url_launcher_plugin_class_init(FlUrlLauncherPluginClass* klass) {
   G_OBJECT_CLASS(klass)->dispose = fl_url_launcher_plugin_dispose;
 }
 
-FlUrlLauncherPlugin* fl_url_launcher_plugin_new(FlPluginRegistrar* registrar) {
+FlUrlLauncherPlugin* fl_url_launcher_plugin_new(
+    FlPluginRegistrar* registrar, FlUrlLauncherSystemApis* system_apis) {
   FlUrlLauncherPlugin* self = FL_URL_LAUNCHER_PLUGIN(
       g_object_new(fl_url_launcher_plugin_get_type(), nullptr));
+
+  fl_url_launcher_plugin_set_system_apis(self, system_apis);
 
   self->registrar = FL_PLUGIN_REGISTRAR(g_object_ref(registrar));
 
@@ -166,6 +184,6 @@ FlUrlLauncherPlugin* fl_url_launcher_plugin_new(FlPluginRegistrar* registrar) {
 static void fl_url_launcher_plugin_init(FlUrlLauncherPlugin* self) {}
 
 void url_launcher_plugin_register_with_registrar(FlPluginRegistrar* registrar) {
-  FlUrlLauncherPlugin* plugin = fl_url_launcher_plugin_new(registrar);
+  FlUrlLauncherPlugin* plugin = fl_url_launcher_plugin_new(registrar, nullptr);
   g_object_unref(plugin);
 }

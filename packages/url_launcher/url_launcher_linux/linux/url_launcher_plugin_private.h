@@ -12,3 +12,6 @@
 
 // Handles the canLaunch method call.
 FlMethodResponse* can_launch(FlUrlLauncherPlugin* self, FlValue* args);
+
+void fl_url_launcher_plugin_set_system_apis(
+    FlUrlLauncherPlugin* self, FlUrlLauncherSystemApis* system_apis);

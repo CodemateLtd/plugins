@@ -6,6 +6,7 @@ set(PLUGIN_NAME "${PROJECT_NAME}_plugin")
 
 list(APPEND PLUGIN_SOURCES
   "url_launcher_plugin.cc"
+  "system_apis.cc"
 )
 
 add_library(${PLUGIN_NAME} SHARED
