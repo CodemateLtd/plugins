@@ -58,6 +58,8 @@ class CaptureController {
    public:
     CaptureEngineCallback(CaptureController* capture_controller)
         : ref_(1), capture_controller_(capture_controller) {}
+
+    ~CaptureEngineCallback(){};
     CaptureController* capture_controller_;
 
     // IUnknown
@@ -81,7 +83,6 @@ class CaptureController {
 
   bool IsInitialized() { return initialized_; }
   bool IsPreviewing() { return previewing_; }
-  // bool IsTakingPicture() { return pending_picture_; }
   void ResetCaptureController();
 
   uint8_t* GetSourceBuffer(uint32_t current_length);
@@ -95,7 +96,6 @@ class CaptureController {
 
   bool EnumerateVideoCaptureDeviceSources(IMFActivate*** devices,
                                           UINT32* count);
-  HRESULT PrepareVideoCaptureAttributes(IMFAttributes** attributes, int count);
   int64_t GetTextureId() { return texture_id_; }
   uint32_t GetPreviewWidth() { return preview_frame_width_; }
   uint32_t GetPreviewHeight() { return preview_frame_height_; }
@@ -120,7 +120,7 @@ class CaptureController {
 
   // CaptureEngine objects
   IMFCaptureEngine* capture_engine_ = nullptr;
-  std::unique_ptr<CaptureEngineCallback> capture_engine_callback_ = nullptr;
+  CaptureEngineCallback* capture_engine_callback_ = nullptr;
   IMFDXGIDeviceManager* dxgi_device_manager_ = nullptr;
   ID3D11Device* dx11_device_ = nullptr;
   // ID3D12Device* dx12_device_ = nullptr;
@@ -167,7 +167,6 @@ class CaptureController {
   HANDLE video_capture_event_ = nullptr;
 
   HRESULT CreateDefaultAudioCaptureSource();
-  HRESULT PrepareAudioCaptureAttributes(IMFAttributes** attributes, int count);
   HRESULT CreateVideoCaptureSourceForDevice(const std::string& video_device_id);
   HRESULT CreateD3DManagerWithDX11Device();
 
@@ -178,9 +177,6 @@ class CaptureController {
   HRESULT InitPreviewSink();
   HRESULT InitPhotoSink(const std::string& filepath);
   HRESULT InitRecordSink(const std::string& filepath);
-
-  // bool CreateDeviceSourceReader(const std::string& device_id);
-  // bool PrepareSourceReaderAttributes(IMFAttributes** attributes);
 
   const FlutterDesktopPixelBuffer* ConvertPixelBufferForFlutter(size_t width,
                                                                 size_t height);

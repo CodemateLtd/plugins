@@ -98,7 +98,7 @@ HRESULT BuildMediaTypeForPhotoCapture(IMFMediaType *src_media_type,
   return hr;
 }
 
-// Creates media type for photo capture for jpeg images
+// Creates media type for video capture
 HRESULT BuildMediaTypeForVideoCapture(IMFMediaType *src_media_type,
                                       IMFMediaType **photo_media_type,
                                       GUID capture_format) {
@@ -128,41 +128,41 @@ HRESULT BuildMediaTypeForVideoCapture(IMFMediaType *src_media_type,
 bool CaptureController::EnumerateVideoCaptureDeviceSources(
     IMFActivate ***devices, UINT32 *count) {
   IMFAttributes *attributes = nullptr;
-  HRESULT hr = PrepareVideoCaptureAttributes(&attributes, 1);
+
+  HRESULT hr = MFCreateAttributes(&attributes, 1);
+
+  if (SUCCEEDED(hr)) {
+    hr = attributes->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+                             MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
+  }
 
   if (SUCCEEDED(hr)) {
     hr = MFEnumDeviceSources(attributes, devices, count);
   }
+
   Release(&attributes);
   return SUCCEEDED(hr);
 }
 
-HRESULT CaptureController::PrepareVideoCaptureAttributes(
-    IMFAttributes **attributes, int count) {
-  assert(attributes);
-  assert(!*attributes);
-
-  HRESULT hr = MFCreateAttributes(attributes, count);
-
-  if (SUCCEEDED(hr)) {
-    hr = (*attributes)
-             ->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
-                       MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
-  }
-  return hr;
-}
-
+// Uses first audio source to capture audio. Enumerating audio sources via
+// platform interface is not supported.
 HRESULT CaptureController::CreateDefaultAudioCaptureSource() {
   this->audio_source_ = nullptr;
   IMFActivate **devices = nullptr;
   UINT32 count = 0;
 
   IMFAttributes *attributes = nullptr;
-  HRESULT hr = PrepareAudioCaptureAttributes(&attributes, 1);
+  HRESULT hr = MFCreateAttributes(&attributes, 1);
+
+  if (SUCCEEDED(hr)) {
+    hr = attributes->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+                             MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_AUDCAP_GUID);
+  }
 
   if (SUCCEEDED(hr)) {
     hr = MFEnumDeviceSources(attributes, &devices, &count);
   }
+
   Release(&attributes);
 
   if (SUCCEEDED(hr) && count > 0) {
@@ -202,21 +202,6 @@ HRESULT CaptureController::CreateDefaultAudioCaptureSource() {
 
   CoTaskMemFree(devices);
 
-  return hr;
-}
-
-HRESULT CaptureController::PrepareAudioCaptureAttributes(
-    IMFAttributes **attributes, int count) {
-  assert(attributes);
-  assert(!*attributes);
-
-  HRESULT hr = MFCreateAttributes(attributes, count);
-
-  if (SUCCEEDED(hr)) {
-    hr = (*attributes)
-             ->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
-                       MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_AUDCAP_GUID);
-  }
   return hr;
 }
 
@@ -265,8 +250,6 @@ HRESULT CaptureController::CreateD3DManagerWithDX11Device() {
                          D3D11_CREATE_DEVICE_VIDEO_SUPPORT,
   allowed_feature_levels, ARRAYSIZE(allowed_feature_levels), D3D11_SDK_VERSION,
                          &dx11_device_, &feature_level,nullptr );
-
-
   */
 
   hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr,
@@ -296,11 +279,9 @@ HRESULT CaptureController::CreateD3DManagerWithDX11Device() {
   return hr;
 }
 
-/*
-
-//TODO
-
-HRESULT CaptureController::CreateD3DManagerWithDX12() {
+// TODO: Check if DX12 device can be used with flutter and if yes, finalize
+// commented out function below
+/* HRESULT CaptureController::CreateD3DManagerWithDX12() {
   HRESULT hr = S_OK;
   D3D_FEATURE_LEVEL min_feature_level = D3D_FEATURE_LEVEL_9_1;
 
@@ -318,8 +299,7 @@ HRESULT CaptureController::CreateD3DManagerWithDX12() {
 
   Release(&device_context);
   return hr;
-}
-*/
+} */
 
 bool CaptureController::CreateCaptureEngine(
     const std::string &video_device_id) {
@@ -327,10 +307,12 @@ bool CaptureController::CreateCaptureEngine(
   IMFAttributes *attributes = nullptr;
   IMFCaptureEngineClassFactory *capture_engine_factory = nullptr;
 
+  // Reset existing state
   ResetCaptureController();
 
   if (!capture_engine_callback_) {
-    capture_engine_callback_ = std::make_unique<CaptureEngineCallback>(this);
+    capture_engine_callback_ = new CaptureEngineCallback(this);
+    capture_engine_callback_->AddRef();
   }
 
   if (SUCCEEDED(hr)) {
@@ -353,7 +335,7 @@ bool CaptureController::CreateCaptureEngine(
   }
 
   if (SUCCEEDED(hr)) {
-    // Create and initialize the capture engine.
+    // Create CaptureEngine.
     hr = capture_engine_factory->CreateInstance(CLSID_MFCaptureEngine,
                                                 IID_PPV_ARGS(&capture_engine_));
   }
@@ -369,11 +351,12 @@ bool CaptureController::CreateCaptureEngine(
   }
 
   if (SUCCEEDED(hr)) {
-    hr = capture_engine_->Initialize(capture_engine_callback_.get(), attributes,
+    hr = capture_engine_->Initialize(capture_engine_callback_, attributes,
                                      audio_source_, video_source_);
   }
 
   if (!SUCCEEDED(hr)) {
+    // Reset everything if creation of capture engine failed
     ResetCaptureController();
   }
 
@@ -412,7 +395,7 @@ void CaptureController::ResetCaptureController() {
   Release(&record_sink_);
 
   // CaptureEngine
-  capture_engine_callback_.reset(nullptr);
+  Release(&capture_engine_callback_);
   Release(&capture_engine_);
 
   Release(&audio_source_);
@@ -751,7 +734,7 @@ HRESULT CaptureController::InitPreviewSink() {
 
     if (SUCCEEDED(hr)) {
       hr = preview_sink_->SetSampleCallback(dwSinkStreamIndex,
-                                            capture_engine_callback_.get());
+                                            capture_engine_callback_);
     }
   }
 
@@ -854,6 +837,9 @@ HRESULT CaptureController::InitRecordSink(const std::string &filepath) {
   }
 
   Release(&video_record_media_type);
+
+  // TODO: build media type for audio capture here and add audio stream to the
+  // record_sink
 
   if (SUCCEEDED(hr)) {
     hr = record_sink_->SetOutputFileName(Utf16FromUtf8(filepath).c_str());
@@ -977,8 +963,6 @@ STDMETHODIMP CaptureController::CaptureEngineCallback::OnEvent(
 
 // Method from IMFCaptureEngineOnSampleCallback
 HRESULT CaptureController::CaptureEngineCallback::OnSample(IMFSample *sample) {
-  // printf("OnSample\n");
-  // fflush(stdout);
   HRESULT hr = S_OK;
 
   if (this->capture_controller_ == nullptr ||

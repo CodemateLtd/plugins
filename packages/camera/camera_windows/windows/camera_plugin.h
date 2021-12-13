@@ -14,11 +14,6 @@
 
 namespace camera_windows {
 
-// Abstraction for accessing the Flutter view's root window, to allow for faking
-// in unit tests without creating fake window hierarchies, as well as to work
-// around https://github.com/flutter/flutter/issues/90694.
-using FlutterRootWindowProvider = std::function<HWND()>;
-
 class CameraPlugin : public flutter::Plugin {
  public:
   static void RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar);
