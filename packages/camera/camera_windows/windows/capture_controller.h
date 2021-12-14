@@ -134,10 +134,13 @@ class CaptureController {
   int64_t texture_id_ = -1;
   flutter::TextureRegistrar* texture_registrar_ = nullptr;
   std::unique_ptr<flutter::TextureVariant> texture_;
-  FlutterDesktopPixelBuffer flutter_desktop_pixel_buffer_;
+
+  // TODO: add release_callback and clear buffer if needed
+  FlutterDesktopPixelBuffer flutter_desktop_pixel_buffer_ = {nullptr, 0, 0,
+                                                             nullptr, nullptr};
   uint32_t source_buffer_size_ = 0;
   std::unique_ptr<uint8_t[]> source_buffer_data_ = nullptr;
-  std::unique_ptr<uint8_t[]> dest_buffer = nullptr;
+  std::unique_ptr<uint8_t[]> dest_buffer_ = nullptr;
   uint32_t bytes_per_pixel_ = 4;  // MFVideoFormat_RGB32
 
   // Preview

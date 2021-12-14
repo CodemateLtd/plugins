@@ -27,11 +27,12 @@ class _MyAppState extends State<MyApp> {
   bool _initialized = false;
   bool _recording = false;
 
-  Size? _preview_size;
+  Size? _previewSize;
 
   @override
   void initState() {
     super.initState();
+    WidgetsFlutterBinding.ensureInitialized();
     initCameraList().then((value) {
       debugPrint("Got list of available cameras: ${_cameras.isNotEmpty}");
       if (_cameras.isNotEmpty) {
@@ -93,13 +94,13 @@ class _MyAppState extends State<MyApp> {
 
       debugPrint("Camera (${_cameraId}) initialized");
 
-      _preview_size = await _initializeCompleter.future
+      _previewSize = await _initializeCompleter.future
           .then((CameraInitializedEvent event) => Size(
                 event.previewWidth,
                 event.previewHeight,
               ));
 
-      debugPrint("PreviewSize ${_preview_size}");
+      debugPrint("PreviewSize $_previewSize");
 
       setState(() {
         _initialized = true;

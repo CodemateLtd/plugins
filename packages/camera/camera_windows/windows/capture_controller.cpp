@@ -428,7 +428,7 @@ uint8_t *CaptureController::GetSourceBuffer(uint32_t current_length) {
 }
 
 void CaptureController::OnBufferUpdate() {
-  if (this->texture_registrar_) {
+  if (this->texture_registrar_ && this->texture_id_ >= 0) {
     this->texture_registrar_->MarkTextureFrameAvailable(this->texture_id_);
   }
 }
@@ -476,11 +476,11 @@ CaptureController::ConvertPixelBufferForFlutter(size_t width, size_t height) {
 
     uint32_t pixels_total =
         this->preview_frame_width_ * this->preview_frame_height_;
-    dest_buffer = std::make_unique<uint8_t[]>(pixels_total * 4);
+    dest_buffer_ = std::make_unique<uint8_t[]>(pixels_total * 4);
 
     MFVideoFormat_RGB32_Pixel *src =
         (MFVideoFormat_RGB32_Pixel *)this->source_buffer_data_.get();
-    FlutterDesktop_Pixel *dst = (FlutterDesktop_Pixel *)dest_buffer.get();
+    FlutterDesktop_Pixel *dst = (FlutterDesktop_Pixel *)dest_buffer_.get();
 
     for (uint32_t i = 0; i < pixels_total; i++) {
       dst[i].r = src[i].r;
@@ -489,9 +489,14 @@ CaptureController::ConvertPixelBufferForFlutter(size_t width, size_t height) {
       dst[i].a = 255;
     }
 
-    this->flutter_desktop_pixel_buffer_.buffer = dest_buffer.get();
+    this->flutter_desktop_pixel_buffer_.buffer = dest_buffer_.get();
     this->flutter_desktop_pixel_buffer_.width = this->preview_frame_width_;
     this->flutter_desktop_pixel_buffer_.height = this->preview_frame_height_;
+    // this->flutter_desktop_pixel_buffer_.release_context = this;
+    // this->flutter_desktop_pixel_buffer_.release_callback =
+    //     [](void *release_context) {
+    //       std::cout << "Should release pixel buffer\n";
+    //     };
     return &this->flutter_desktop_pixel_buffer_;
   }
   return nullptr;
@@ -926,7 +931,9 @@ STDMETHODIMP CaptureController::CaptureEngineCallback::OnEvent(
     GUID extended_type_guid;
     hr = event->GetExtendedType(&extended_type_guid);
     if (SUCCEEDED(hr)) {
-      if (extended_type_guid == MF_CAPTURE_ENGINE_PREVIEW_STARTED) {
+      if (extended_type_guid == MF_CAPTURE_ENGINE_INITIALIZED) {
+        // capture_controller_->OnCaptureEngineInitialized(SUCCEEDED(event_hr));
+      } else if (extended_type_guid == MF_CAPTURE_ENGINE_PREVIEW_STARTED) {
         // capture_controller_->OnPreviewStarted(SUCCEEDED(event_hr));
       } else if (extended_type_guid == MF_CAPTURE_ENGINE_PREVIEW_STOPPED) {
         // capture_controller_->OnPreviewStopped(SUCCEEDED(event_hr));
@@ -963,6 +970,7 @@ STDMETHODIMP CaptureController::CaptureEngineCallback::OnEvent(
 
 // Method from IMFCaptureEngineOnSampleCallback
 HRESULT CaptureController::CaptureEngineCallback::OnSample(IMFSample *sample) {
+  // std::cout << "Got sample\n";
   HRESULT hr = S_OK;
 
   if (this->capture_controller_ == nullptr ||
