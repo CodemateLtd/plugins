@@ -157,7 +157,7 @@ class _MyAppState extends State<MyApp> {
                 child: Text(_recording ? "Stop recording" : "Record Video"))
           ]),
           SizedBox(height: 5),
-          if (_texture != null && _preview_size != null)
+          if (_texture != null && _previewSize != null)
             Padding(
                 padding: EdgeInsets.symmetric(vertical: 10),
                 child: Align(
@@ -165,12 +165,12 @@ class _MyAppState extends State<MyApp> {
                     child: Container(
                         height: 500,
                         width: 500 *
-                            (_preview_size!.width / _preview_size!.height),
+                            (_previewSize!.width / _previewSize!.height),
                         child: _texture!))),
-          if (_preview_size != null)
+          if (_previewSize != null)
             Center(
                 child: Text(
-                    "Preview size: ${_preview_size!.width.toStringAsFixed(0)}x${_preview_size!.height.toStringAsFixed(0)}"))
+                    "Preview size: ${_previewSize!.width.toStringAsFixed(0)}x${_previewSize!.height.toStringAsFixed(0)}"))
         ]),
       ),
     );
