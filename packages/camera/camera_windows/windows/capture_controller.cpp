@@ -931,7 +931,9 @@ STDMETHODIMP CaptureController::CaptureEngineCallback::OnEvent(
     GUID extended_type_guid;
     hr = event->GetExtendedType(&extended_type_guid);
     if (SUCCEEDED(hr)) {
-      if (extended_type_guid == MF_CAPTURE_ENGINE_INITIALIZED) {
+      if (extended_type_guid == MF_CAPTURE_ENGINE_ERROR) {
+        // capture_controller_->OnCaptureEngineInitialized(SUCCEEDED(event_hr));
+      } else if (extended_type_guid == MF_CAPTURE_ENGINE_INITIALIZED) {
         // capture_controller_->OnCaptureEngineInitialized(SUCCEEDED(event_hr));
       } else if (extended_type_guid == MF_CAPTURE_ENGINE_PREVIEW_STARTED) {
         // capture_controller_->OnPreviewStarted(SUCCEEDED(event_hr));
