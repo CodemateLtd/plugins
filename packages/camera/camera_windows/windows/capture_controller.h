@@ -136,8 +136,7 @@ class CaptureController {
   std::unique_ptr<flutter::TextureVariant> texture_;
 
   // TODO: add release_callback and clear buffer if needed
-  FlutterDesktopPixelBuffer flutter_desktop_pixel_buffer_ = {nullptr, 0, 0,
-                                                             nullptr, nullptr};
+  FlutterDesktopPixelBuffer flutter_desktop_pixel_buffer_ = {};
   uint32_t source_buffer_size_ = 0;
   std::unique_ptr<uint8_t[]> source_buffer_data_ = nullptr;
   std::unique_ptr<uint8_t[]> dest_buffer_ = nullptr;
