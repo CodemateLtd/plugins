@@ -100,9 +100,9 @@ HRESULT BuildMediaTypeForPhotoCapture(IMFMediaType *src_media_type,
 
 // Creates media type for video capture
 HRESULT BuildMediaTypeForVideoCapture(IMFMediaType *src_media_type,
-                                      IMFMediaType **photo_media_type,
+                                      IMFMediaType **video_record_media_type,
                                       GUID capture_format) {
-  Release(photo_media_type);
+  Release(video_record_media_type);
   IMFMediaType *new_media_type = nullptr;
 
   HRESULT hr = MFCreateMediaType(&new_media_type);
@@ -117,11 +117,85 @@ HRESULT BuildMediaTypeForVideoCapture(IMFMediaType *src_media_type,
   }
 
   if (SUCCEEDED(hr)) {
-    *photo_media_type = new_media_type;
-    (*photo_media_type)->AddRef();
+    *video_record_media_type = new_media_type;
+    (*video_record_media_type)->AddRef();
   }
 
   Release(&new_media_type);
+  return hr;
+}
+
+// Queries interface object from collection
+template <class Q>
+HRESULT GetCollectionObject(IMFCollection *pCollection, DWORD index,
+                            Q **ppObj) {
+  IUnknown *pUnk;
+  HRESULT hr = pCollection->GetElement(index, &pUnk);
+  if (SUCCEEDED(hr)) {
+    hr = pUnk->QueryInterface(IID_PPV_ARGS(ppObj));
+    pUnk->Release();
+  }
+  return hr;
+}
+
+HRESULT BuildMediaTypeForAudioCapture(IMFMediaType **audio_record_media_type) {
+  Release(audio_record_media_type);
+
+  IMFAttributes *audio_output_attributes = nullptr;
+  IMFCollection *available_output_types = nullptr;
+  IMFMediaType *src_media_type = nullptr;
+  IMFMediaType *new_media_type = nullptr;
+  DWORD mt_count = 0;
+
+  HRESULT hr = MFCreateAttributes(&audio_output_attributes, 1);
+
+  if (SUCCEEDED(hr)) {
+    // Enumerate only low latency audio outputs
+    hr = audio_output_attributes->SetUINT32(MF_LOW_LATENCY, TRUE);
+  }
+
+  if (SUCCEEDED(hr)) {
+    DWORD mft_flags = (MFT_ENUM_FLAG_ALL & (~MFT_ENUM_FLAG_FIELDOFUSE)) |
+                      MFT_ENUM_FLAG_SORTANDFILTER;
+
+    hr = MFTranscodeGetAudioOutputAvailableTypes(MFAudioFormat_AAC, mft_flags,
+                                                 audio_output_attributes,
+                                                 &available_output_types);
+  }
+
+  if (SUCCEEDED(hr)) {
+    hr = GetCollectionObject(available_output_types, 0, &src_media_type);
+  }
+
+  if (SUCCEEDED(hr)) {
+    hr = available_output_types->GetElementCount(&mt_count);
+  }
+
+  if (mt_count == 0) {
+    // No sources found
+    hr = E_FAIL;
+  }
+
+  // Create new media type to copy original media type to
+  if (SUCCEEDED(hr)) {
+    hr = MFCreateMediaType(&new_media_type);
+  }
+
+  if (SUCCEEDED(hr)) {
+    hr = src_media_type->CopyAllItems(new_media_type);
+  }
+
+  if (SUCCEEDED(hr)) {
+    // Point target media type to new media type
+    *audio_record_media_type = new_media_type;
+    (*audio_record_media_type)->AddRef();
+  }
+
+  Release(&audio_output_attributes);
+  Release(&available_output_types);
+  Release(&src_media_type);
+  Release(&new_media_type);
+
   return hr;
 }
 
@@ -511,7 +585,7 @@ bool CaptureController::TakePicture(const std::string filepath) {
 
   if (SUCCEEDED(hr) && !photo_capture_event_) {
     // Init photo event handle
-    photo_capture_event_ = CreateEvent(NULL, FALSE, FALSE, NULL);
+    photo_capture_event_ = CreateEvent(nullptr, false, false, nullptr);
   } else {
     ResetEvent(photo_capture_event_);
   }
@@ -582,7 +656,7 @@ std::string CaptureController::StopRecord() {
 
   if (SUCCEEDED(hr) && !video_capture_event_) {
     // Init video capture event handle
-    video_capture_event_ = CreateEvent(NULL, FALSE, FALSE, NULL);
+    video_capture_event_ = CreateEvent(nullptr, false, false, nullptr);
   } else {
     ResetEvent(video_capture_event_);
   }
@@ -732,13 +806,13 @@ HRESULT CaptureController::InitPreviewSink() {
   }
 
   if (SUCCEEDED(hr)) {
-    DWORD dwSinkStreamIndex;
+    DWORD preview_sink_stream_index;
     hr = preview_sink_->AddStream(
         (DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_PREVIEW,
-        preview_media_type, nullptr, &dwSinkStreamIndex);
+        preview_media_type, nullptr, &preview_sink_stream_index);
 
     if (SUCCEEDED(hr)) {
-      hr = preview_sink_->SetSampleCallback(dwSinkStreamIndex,
+      hr = preview_sink_->SetSampleCallback(preview_sink_stream_index,
                                             capture_engine_callback_);
     }
   }
@@ -818,15 +892,8 @@ HRESULT CaptureController::InitRecordSink(const std::string &filepath) {
     hr = capture_sink->QueryInterface(IID_PPV_ARGS(&record_sink_));
   }
 
-  Release(&capture_sink);
-
   if (SUCCEEDED(hr) && !base_capture_media_type) {
     hr = FindBaseMediaTypes();
-  }
-
-  if (SUCCEEDED(hr)) {
-    hr = BuildMediaTypeForVideoCapture(
-        base_capture_media_type, &video_record_media_type, MFVideoFormat_H264);
   }
 
   if (SUCCEEDED(hr)) {
@@ -835,21 +902,37 @@ HRESULT CaptureController::InitRecordSink(const std::string &filepath) {
   }
 
   if (SUCCEEDED(hr)) {
-    DWORD dwSinkStreamIndex;
-    hr = record_sink_->AddStream(
-        (DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_RECORD,
-        video_record_media_type, nullptr, &dwSinkStreamIndex);
+    hr = BuildMediaTypeForVideoCapture(
+        base_capture_media_type, &video_record_media_type, MFVideoFormat_H264);
   }
 
-  Release(&video_record_media_type);
+  if (SUCCEEDED(hr)) {
+    DWORD video_record_sink_stream_index;
+    hr = record_sink_->AddStream(
+        (DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_RECORD,
+        video_record_media_type, nullptr, &video_record_sink_stream_index);
+  }
 
-  // TODO: build media type for audio capture here and add audio stream to the
-  // record_sink
+  IMFMediaType *audio_record_media_type = nullptr;
+  if (SUCCEEDED(hr)) {
+    HRESULT audio_capture_hr = S_OK;
+    audio_capture_hr = BuildMediaTypeForAudioCapture(&audio_record_media_type);
+
+    if (SUCCEEDED(audio_capture_hr)) {
+      DWORD audio_record_sink_stream_index;
+      hr = record_sink_->AddStream(
+          (DWORD)MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_AUDIO,
+          audio_record_media_type, nullptr, &audio_record_sink_stream_index);
+    }
+  }
 
   if (SUCCEEDED(hr)) {
     hr = record_sink_->SetOutputFileName(Utf16FromUtf8(filepath).c_str());
   }
 
+  Release(&capture_sink);
+  Release(&video_record_media_type);
+  Release(&audio_record_media_type);
   return hr;
 }
 
@@ -932,6 +1015,8 @@ STDMETHODIMP CaptureController::CaptureEngineCallback::OnEvent(
     hr = event->GetExtendedType(&extended_type_guid);
     if (SUCCEEDED(hr)) {
       if (extended_type_guid == MF_CAPTURE_ENGINE_ERROR) {
+        printf("Got engine error event\n");
+        fflush(stdout);
         // capture_controller_->OnCaptureEngineInitialized(SUCCEEDED(event_hr));
       } else if (extended_type_guid == MF_CAPTURE_ENGINE_INITIALIZED) {
         // capture_controller_->OnCaptureEngineInitialized(SUCCEEDED(event_hr));
