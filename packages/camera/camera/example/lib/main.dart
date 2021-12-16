@@ -576,6 +576,8 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       }
 
       onNewCameraSelected(description);
+      
+      showInSnackBar('Camera ${description.name} selected');
     };
 
     if (cameras.isEmpty) {
