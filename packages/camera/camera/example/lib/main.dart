@@ -115,7 +115,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     }
 
     if (state == AppLifecycleState.inactive) {
-      cameraController.dispose();
+      _disposeCameraController();
     } else if (state == AppLifecycleState.resumed) {
       onNewCameraSelected(cameraController.description);
     }
@@ -204,6 +204,14 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
   void _handleScaleStart(ScaleStartDetails details) {
     _baseScale = _currentScale;
+  }
+
+  Future<void> _disposeCameraController() async {
+    if (controller != null) {
+      await controller!.dispose();
+      showInSnackBar('Camera ${controller!.description.name} disposed');
+      controller = null;
+    }
   }
 
   Future<void> _handleScaleUpdate(ScaleUpdateDetails details) async {
@@ -570,8 +578,12 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   Widget _cameraTogglesRowWidget() {
     final List<Widget> toggles = <Widget>[];
 
-    final onChanged = (CameraDescription? description) {
+    final onChanged = (CameraDescription? description) async {
       if (description == null) {
+        await _disposeCameraController();
+        if (mounted) {
+          setState(() {});
+        }
         return;
       }
 
@@ -589,6 +601,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
             width: 90.0,
             child: RadioListTile<CameraDescription>(
               title: Icon(getCameraLensIcon(cameraDescription.lensDirection)),
+              toggleable: true,
               groupValue: controller?.description,
               value: cameraDescription,
               onChanged:
@@ -608,7 +621,10 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
   void showInSnackBar(String message) {
     // ignore: deprecated_member_use
-    _scaffoldKey.currentState?.showSnackBar(SnackBar(content: Text(message)));
+    _scaffoldKey.currentState?.showSnackBar(SnackBar(
+      content: Text(message),
+      duration: const Duration(milliseconds: 1000),
+    ));
   }
 
   void onViewFinderTap(TapDownDetails details, BoxConstraints constraints) {
@@ -627,9 +643,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   }
 
   void onNewCameraSelected(CameraDescription cameraDescription) async {
-    if (controller != null) {
-      await controller!.dispose();
-    }
+    await _disposeCameraController();
 
     final CameraController cameraController = CameraController(
       cameraDescription,
