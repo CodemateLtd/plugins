@@ -198,7 +198,7 @@ void GetAvailableCameras(CaptureController &capture_controller,
   // Enumerate devices.
   IMFActivate **devices;
   UINT32 count;
-  if (!capture_controller.EnumerateVideoCaptureDeviceSources(&devices,
+  if (!CaptureController::EnumerateVideoCaptureDeviceSources(&devices,
                                                              &count)) {
     result->Error("System error", "Failed to get available cameras");
     CoTaskMemFree(devices);

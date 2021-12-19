@@ -79,6 +79,9 @@ class CaptureController {
   };
 
  public:
+  static bool EnumerateVideoCaptureDeviceSources(IMFActivate*** devices,
+                                                 UINT32* count);
+
   CaptureController();
   virtual ~CaptureController();
 
@@ -101,8 +104,6 @@ class CaptureController {
                            const std::string& device_id, bool enable_audio,
                            ResolutionPreset resolution_preset);
 
-  bool EnumerateVideoCaptureDeviceSources(IMFActivate*** devices,
-                                          UINT32* count);
   int64_t GetTextureId() { return texture_id_; }
   uint32_t GetPreviewWidth() { return preview_frame_width_; }
   uint32_t GetPreviewHeight() { return preview_frame_height_; }
