@@ -11,6 +11,7 @@ list(APPEND PLUGIN_SOURCES
   "camera_plugin.h"
   "capture_controller.cpp"
   "capture_controller.h"
+  "capture_controller_listener.h"
   "string_utils.cpp"
   "string_utils.h"
   "device_info.cpp"

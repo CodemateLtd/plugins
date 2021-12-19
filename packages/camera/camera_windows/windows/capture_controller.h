@@ -17,6 +17,7 @@
 #include <memory>
 #include <string>
 
+#include "capture_controller_listener.h"
 namespace camera_windows {
 
 enum ResolutionPreset {
@@ -53,14 +54,13 @@ void Release(T** ppT) {
 }
 
 class CaptureController {
-  class CaptureEngineCallback : public IMFCaptureEngineOnSampleCallback,
+  class CaptureEngineListener : public IMFCaptureEngineOnSampleCallback,
                                 public IMFCaptureEngineOnEventCallback {
    public:
-    CaptureEngineCallback(CaptureController* capture_controller)
+    CaptureEngineListener(CaptureController* capture_controller)
         : ref_(1), capture_controller_(capture_controller) {}
 
-    ~CaptureEngineCallback(){};
-    CaptureController* capture_controller_;
+    ~CaptureEngineListener(){};
 
     // IUnknown
     STDMETHODIMP_(ULONG) AddRef();
@@ -74,6 +74,7 @@ class CaptureController {
     STDMETHODIMP_(HRESULT) OnSample(IMFSample* pSample);
 
    private:
+    CaptureController* capture_controller_;
     volatile ULONG ref_;
   };
 
@@ -81,18 +82,24 @@ class CaptureController {
   CaptureController();
   virtual ~CaptureController();
 
+  void SetCaptureControllerListener(CaptureControllerListener* listener) {
+    capture_controller_listener_ = listener;
+  };
+
   bool IsInitialized() { return initialized_; }
+  bool CaptureEngineInitializing() {
+    return capture_engine_initialization_pending_;
+  }
+  bool InitializingPreview() { return initializing_preview_; }
   bool IsPreviewing() { return previewing_; }
-  void ResetCaptureController();
+  void ResetCaptureEngineState();
 
   uint8_t* GetSourceBuffer(uint32_t current_length);
-
   void OnBufferUpdate();
 
-  int64_t InitializeCaptureController(
-      flutter::TextureRegistrar* texture_registrar,
-      const std::string& device_id, bool enable_audio,
-      ResolutionPreset resolution_preset);
+  void CreateCaptureDevice(flutter::TextureRegistrar* texture_registrar,
+                           const std::string& device_id, bool enable_audio,
+                           ResolutionPreset resolution_preset);
 
   bool EnumerateVideoCaptureDeviceSources(IMFActivate*** devices,
                                           UINT32* count);
@@ -101,17 +108,24 @@ class CaptureController {
   uint32_t GetPreviewHeight() { return preview_frame_height_; }
   uint32_t GetMaxPreviewHeight();
 
-  bool StartPreview();
-  bool StopPreview();
-  bool StartRecord(const std::string& filepath);
-  std::string StopRecord();
+  // Actions
+  void StartPreview(bool initializing_preview);
+  void StopPreview();
+  void StartRecord(const std::string& filepath, int64_t max_capture_duration);
+  void StopRecord();
+  void TakePicture(const std::string filepath);
 
-  bool TakePicture(const std::string filepath);
+  // Handlers for CaptureEngineListener events
+  void OnCaptureEngineInitialized(bool success);
+  void OnCaptureEngineError();
   void OnPicture(bool success);
+  void OnPreviewStarted(bool success, bool initializing_preview);
+  void OnPreviewStopped(bool success);
   void OnRecordStarted(bool success);
   void OnRecordStopped(bool success);
 
  private:
+  CaptureControllerListener* capture_controller_listener_ = nullptr;
   bool initialized_ = false;
   bool enable_audio_record_ = false;
 
@@ -119,8 +133,10 @@ class CaptureController {
       ResolutionPreset::RESOLUTION_PRESET_MEDIUM;
 
   // CaptureEngine objects
+  bool capture_engine_initialization_pending_ = false;
   IMFCaptureEngine* capture_engine_ = nullptr;
-  CaptureEngineCallback* capture_engine_callback_ = nullptr;
+  CaptureEngineListener* capture_engine_callback_handler_ = nullptr;
+
   IMFDXGIDeviceManager* dxgi_device_manager_ = nullptr;
   ID3D11Device* dx11_device_ = nullptr;
   // ID3D12Device* dx12_device_ = nullptr;
@@ -143,6 +159,9 @@ class CaptureController {
   uint32_t bytes_per_pixel_ = 4;  // MFVideoFormat_RGB32
 
   // Preview
+  bool initializing_preview_ = false;
+
+  bool preview_pending_ = false;
   bool previewing_ = false;
   uint32_t preview_frame_width_ = 0;
   uint32_t preview_frame_height_ = 0;
@@ -150,32 +169,26 @@ class CaptureController {
   IMFCapturePreviewSink* preview_sink_ = nullptr;
 
   // Photo / Record
+  bool pending_image_capture_ = false;
+  bool record_pending_ = false;
   bool recording_ = false;
-  bool pending_picture_ = false;
-  bool photo_capture_success_ = false;
-  bool video_capture_success_ = false;
+  int64_t max_capture_duration_ = -1;
+
   uint32_t capture_frame_width_ = 0;
   uint32_t capture_frame_height_ = 0;
   IMFMediaType* base_capture_media_type = nullptr;
   IMFCapturePhotoSink* photo_sink_ = nullptr;
   IMFCaptureRecordSink* record_sink_ = nullptr;
+  std::string pending_picture_path_ = "";
   std::string pending_record_path_ = "";
-
-  // TODO: capturing photos/video with CaptureEngine is asynchronous, this is
-  // used to force this to synchronous request. To fix this
-  // camera_platform_interface implementation must be written separately for
-  // windows to handle asynchronous photo requests
-  HANDLE photo_capture_event_ = nullptr;
-  HANDLE video_capture_event_ = nullptr;
 
   HRESULT CreateDefaultAudioCaptureSource();
   HRESULT CreateVideoCaptureSourceForDevice(const std::string& video_device_id);
   HRESULT CreateD3DManagerWithDX11Device();
 
-  bool CreateCaptureEngine(const std::string& video_device_id);
+  HRESULT CreateCaptureEngine(const std::string& video_device_id);
 
   HRESULT FindBaseMediaTypes();
-
   HRESULT InitPreviewSink();
   HRESULT InitPhotoSink(const std::string& filepath);
   HRESULT InitRecordSink(const std::string& filepath);

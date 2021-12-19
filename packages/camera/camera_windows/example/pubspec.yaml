@@ -18,9 +18,9 @@ dependencies:
     # the parent directory to use the current plugin's version.
     path: ../
 
-  #camera_platform_interface: ^2.1.1
-  camera_platform_interface: 
-    path: ../../camera_platform_interface/
+  camera_platform_interface: ^2.1.1
+  #camera_platform_interface: 
+  #  path: ../../camera_platform_interface/
   
   url_launcher: ^6.0.0
 
