@@ -580,15 +580,17 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
     final onChanged = (CameraDescription? description) async {
       if (description == null) {
-        await _disposeCameraController();
-        if (mounted) {
-          setState(() {});
+        if (controller != null && controller!.value.isInitialized) {
+          await _disposeCameraController();
+          if (mounted) {
+            setState(() {});
+          }
         }
         return;
       }
 
       onNewCameraSelected(description);
-      
+
       showInSnackBar('Camera ${description.name} selected');
     };
 
