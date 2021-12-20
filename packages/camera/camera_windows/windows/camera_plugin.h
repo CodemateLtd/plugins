@@ -34,8 +34,7 @@ class CameraPlugin : public flutter::Plugin, public CaptureControllerListener {
  public:
   static void RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar);
 
-  CameraPlugin(flutter::PluginRegistrarWindows *registrar,
-               std::unique_ptr<CaptureController> capture_controller);
+  CameraPlugin(flutter::PluginRegistrarWindows *registrar);
 
   virtual ~CameraPlugin();
 

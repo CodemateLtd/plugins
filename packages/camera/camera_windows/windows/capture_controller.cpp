@@ -31,14 +31,33 @@ struct MFVideoFormat_RGB32_Pixel {
   BYTE x = 0;
 };
 
-const uint32_t event_timeout_ms = INFINITE;
-// const uint32_t event_timeout_ms = 2000;  // Two seconds
+CaptureController::CaptureController(CaptureControllerListener *listener)
+    : capture_controller_listener_(listener){};
 
-CaptureController::CaptureController(){};
 CaptureController::~CaptureController() {
   ResetCaptureEngineState();
   capture_controller_listener_ = nullptr;
 };
+
+// static
+bool CaptureController::EnumerateVideoCaptureDeviceSources(
+    IMFActivate ***devices, UINT32 *count) {
+  IMFAttributes *attributes = nullptr;
+
+  HRESULT hr = MFCreateAttributes(&attributes, 1);
+
+  if (SUCCEEDED(hr)) {
+    hr = attributes->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+                             MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
+  }
+
+  if (SUCCEEDED(hr)) {
+    hr = MFEnumDeviceSources(attributes, devices, count);
+  }
+
+  Release(&attributes);
+  return SUCCEEDED(hr);
+}
 
 HRESULT BuildMediaTypeForVideoPreview(IMFMediaType *src_media_type,
                                       IMFMediaType **preview_media_type) {
@@ -200,25 +219,6 @@ HRESULT BuildMediaTypeForAudioCapture(IMFMediaType **audio_record_media_type) {
   Release(&new_media_type);
 
   return hr;
-}
-
-bool CaptureController::EnumerateVideoCaptureDeviceSources(
-    IMFActivate ***devices, UINT32 *count) {
-  IMFAttributes *attributes = nullptr;
-
-  HRESULT hr = MFCreateAttributes(&attributes, 1);
-
-  if (SUCCEEDED(hr)) {
-    hr = attributes->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
-                             MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
-  }
-
-  if (SUCCEEDED(hr)) {
-    hr = MFEnumDeviceSources(attributes, devices, count);
-  }
-
-  Release(&attributes);
-  return SUCCEEDED(hr);
 }
 
 // Uses first audio source to capture audio. Enumerating audio sources via
@@ -623,12 +623,13 @@ void CaptureController::OnCaptureEngineInitialized(bool success) {
 }
 
 void CaptureController::OnCaptureEngineError() {
+  // TODO: detect error type and update state depending of error type, also send
+  // other than capture engine creation errors to separate error handler
   if (capture_controller_listener_) {
     capture_controller_listener_->OnCreateCaptureEngineFailed(
         "Error while capturing device");
   }
 
-  // TODO: detect error type and update state depending of error type
   initialized_ = false;
   capture_engine_initialization_pending_ = false;
 }
@@ -1119,10 +1120,10 @@ STDMETHODIMP CaptureController::CaptureEngineListener::OnEvent(
 
   if (!capture_controller_->IsInitialized() &&
       !capture_controller_->CaptureEngineInitializing()) {
-    printf(
-        "Got capture engine event while capture engine is not initialized or "
-        "initializing.\n");
-    fflush(stdout);
+    // printf(
+    //     "Got capture engine event while capture engine is not initialized or
+    //     " "initializing.\n");
+    // fflush(stdout);
     return event_hr;
   }
 
@@ -1131,49 +1132,50 @@ STDMETHODIMP CaptureController::CaptureEngineListener::OnEvent(
     hr = event->GetExtendedType(&extended_type_guid);
     if (SUCCEEDED(hr)) {
       if (extended_type_guid == MF_CAPTURE_ENGINE_ERROR) {
-        printf("MF_CAPTURE_ENGINE_ERROR\n");
-        fflush(stdout);
+        // printf("MF_CAPTURE_ENGINE_ERROR\n");
+        // fflush(stdout);
         capture_controller_->OnCaptureEngineError();
       } else if (extended_type_guid == MF_CAPTURE_ENGINE_INITIALIZED) {
-        printf("MF_CAPTURE_ENGINE_INITIALIZED\n");
-        fflush(stdout);
+        // printf("MF_CAPTURE_ENGINE_INITIALIZED\n");
+        // fflush(stdout);
         capture_controller_->OnCaptureEngineInitialized(SUCCEEDED(event_hr));
       } else if (extended_type_guid == MF_CAPTURE_ENGINE_PREVIEW_STARTED) {
-        printf("MF_CAPTURE_ENGINE_PREVIEW_STARTED\n");
-        fflush(stdout);
+        // printf("MF_CAPTURE_ENGINE_PREVIEW_STARTED\n");
+        // fflush(stdout);
         capture_controller_->OnPreviewStarted(
             SUCCEEDED(event_hr), capture_controller_->InitializingPreview());
       } else if (extended_type_guid == MF_CAPTURE_ENGINE_PREVIEW_STOPPED) {
-        printf("MF_CAPTURE_ENGINE_PREVIEW_STOPPED\n");
-        fflush(stdout);
+        // printf("MF_CAPTURE_ENGINE_PREVIEW_STOPPED\n");
+        // fflush(stdout);
         capture_controller_->OnPreviewStopped(SUCCEEDED(event_hr));
       } else if (extended_type_guid == MF_CAPTURE_ENGINE_RECORD_STARTED) {
-        printf("MF_CAPTURE_ENGINE_RECORD_STARTED\n");
-        fflush(stdout);
+        // printf("MF_CAPTURE_ENGINE_RECORD_STARTED\n");
+        // fflush(stdout);
         capture_controller_->OnRecordStarted(SUCCEEDED(event_hr));
       } else if (extended_type_guid == MF_CAPTURE_ENGINE_RECORD_STOPPED) {
-        printf("MF_CAPTURE_ENGINE_RECORD_STOPPED\n");
-        fflush(stdout);
+        // printf("MF_CAPTURE_ENGINE_RECORD_STOPPED\n");
+        // fflush(stdout);
         capture_controller_->OnRecordStopped(SUCCEEDED(event_hr));
       } else if (extended_type_guid == MF_CAPTURE_ENGINE_PHOTO_TAKEN) {
-        printf("MF_CAPTURE_ENGINE_PHOTO_TAKEN\n");
-        fflush(stdout);
+        // printf("MF_CAPTURE_ENGINE_PHOTO_TAKEN\n");
+        // fflush(stdout);
         capture_controller_->OnPicture(SUCCEEDED(event_hr));
-      } else {
+      } /* else {
         LPOLESTR str;
         if (SUCCEEDED(StringFromCLSID(extended_type_guid, &str))) {
           std::wstring event_type((wchar_t *)str);
 
-          // print unhandled event type here
+          // Print unhandled events for development purposes
           printf("Got unhandled capture event: %s\n",
                  Utf8FromUtf16(event_type).c_str());
           fflush(stdout);
         }
         CoTaskMemFree(str);
-      }
+      }*/
     }
   }
 
+  // TODO: pass this error directly to the handlers
   if (FAILED(event_hr)) {
     std::string message = std::system_category().message(event_hr);
 

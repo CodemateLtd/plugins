@@ -82,12 +82,8 @@ class CaptureController {
   static bool EnumerateVideoCaptureDeviceSources(IMFActivate*** devices,
                                                  UINT32* count);
 
-  CaptureController();
+  CaptureController(CaptureControllerListener* listener);
   virtual ~CaptureController();
-
-  void SetCaptureControllerListener(CaptureControllerListener* listener) {
-    capture_controller_listener_ = listener;
-  };
 
   bool IsInitialized() { return initialized_; }
   bool CaptureEngineInitializing() {

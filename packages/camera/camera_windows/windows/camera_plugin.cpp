@@ -193,8 +193,7 @@ bool GetFilePathForVideo(std::string &filename) {
   return SUCCEEDED(hr);
 }
 
-void GetAvailableCameras(CaptureController &capture_controller,
-                         std::unique_ptr<flutter::MethodResult<>> result) {
+void GetAvailableCameras(std::unique_ptr<flutter::MethodResult<>> result) {
   // Enumerate devices.
   IMFActivate **devices;
   UINT32 count;
@@ -238,8 +237,8 @@ void CameraPlugin::RegisterWithRegistrar(
       registrar->messenger(), kChannelName,
       &flutter::StandardMethodCodec::GetInstance());
 
-  std::unique_ptr<CameraPlugin> plugin = std::make_unique<CameraPlugin>(
-      registrar, std::make_unique<CaptureController>());
+  std::unique_ptr<CameraPlugin> plugin =
+      std::make_unique<CameraPlugin>(registrar);
 
   channel->SetMethodCallHandler(
       [plugin_pointer = plugin.get()](const auto &call, auto result) {
@@ -249,16 +248,8 @@ void CameraPlugin::RegisterWithRegistrar(
   registrar->AddPlugin(std::move(plugin));
 }
 
-CameraPlugin::CameraPlugin(
-    flutter::PluginRegistrarWindows *registrar,
-    std::unique_ptr<CaptureController> capture_controller)
-    : registrar_(registrar),
-      capture_controller_(std::move(capture_controller)) {
-  // Register plugin as capture controller listener;
-  if (capture_controller_) {
-    capture_controller_->SetCaptureControllerListener(this);
-  }
-}
+CameraPlugin::CameraPlugin(flutter::PluginRegistrarWindows *registrar)
+    : registrar_(registrar) {}
 
 // TODO: make sure everything is cleared
 CameraPlugin::~CameraPlugin() { ClearPendingResults(); }
@@ -269,7 +260,7 @@ void CameraPlugin::HandleMethodCall(
   const std::string &method_name = method_call.method_name();
 
   if (method_name.compare(kAvailableCamerasMethod) == 0) {
-    return GetAvailableCameras(*capture_controller_, std::move(result));
+    return GetAvailableCameras(std::move(result));
   } else if (method_name.compare(kCreateMethod) == 0) {
     const auto *arguments =
         std::get_if<flutter::EncodableMap>(method_call.arguments());
@@ -362,6 +353,8 @@ void CameraPlugin::CreateCameraMethodHandler(
   }
 
   if (AddPendingResult(PendingResultType::CREATE_CAMERA, std::move(result))) {
+    capture_controller_ = nullptr;
+    capture_controller_ = std::make_unique<CaptureController>(this);
     capture_controller_->CreateCaptureDevice(registrar_->texture_registrar(),
                                              deviceInfo->device_id,
                                              *enable_audio, resolutionPreset);
@@ -370,6 +363,10 @@ void CameraPlugin::CreateCameraMethodHandler(
 
 void CameraPlugin::InitializeMethodHandler(
     const EncodableMap &args, std::unique_ptr<flutter::MethodResult<>> result) {
+  if (!capture_controller_) {
+    return result->Error("Camera not created", "Please create camera first");
+  }
+
   auto current_texture_id = capture_controller_->GetTextureId();
   if (!HasCurrentTextureId(current_texture_id, args)) {
     return result->Error("Failed to initialize", "Camera id mismatch");
@@ -387,6 +384,9 @@ void CameraPlugin::InitializeMethodHandler(
 
 void CameraPlugin::PausePreviewMethodHandler(
     const EncodableMap &args, std::unique_ptr<flutter::MethodResult<>> result) {
+  if (!capture_controller_) {
+    return result->Error("Camera not created", "Please create camera first");
+  }
   auto current_texture_id = capture_controller_->GetTextureId();
   if (!HasCurrentTextureId(current_texture_id, args)) {
     return result->Error("Failed to initialize", "Camera id mismatch");
@@ -406,6 +406,9 @@ void CameraPlugin::PausePreviewMethodHandler(
 
 void CameraPlugin::ResumePreviewMethodHandler(
     const EncodableMap &args, std::unique_ptr<flutter::MethodResult<>> result) {
+  if (!capture_controller_) {
+    return result->Error("Camera not created", "Please create camera first");
+  }
   auto current_texture_id = capture_controller_->GetTextureId();
   if (!HasCurrentTextureId(current_texture_id, args)) {
     return result->Error("Failed to initialize", "Camera id mismatch");
@@ -425,6 +428,9 @@ void CameraPlugin::ResumePreviewMethodHandler(
 
 void CameraPlugin::StartVideoRecordingMethodHandler(
     const EncodableMap &args, std::unique_ptr<flutter::MethodResult<>> result) {
+  if (!capture_controller_) {
+    return result->Error("Camera not created", "Please create camera first");
+  }
   if (!HasCurrentTextureId(capture_controller_->GetTextureId(), args)) {
     return result->Error("System error", "CameraId mismatch");
   }
@@ -455,6 +461,9 @@ void CameraPlugin::StartVideoRecordingMethodHandler(
 }
 void CameraPlugin::StopVideoRecordingMethodHandler(
     const EncodableMap &args, std::unique_ptr<flutter::MethodResult<>> result) {
+  if (!capture_controller_) {
+    return result->Error("Camera not created", "Please create camera first");
+  }
   auto current_texture_id = capture_controller_->GetTextureId();
   if (!HasCurrentTextureId(current_texture_id, args)) {
     return result->Error("System error", "CameraId mismatch");
@@ -470,6 +479,9 @@ void CameraPlugin::StopVideoRecordingMethodHandler(
 
 void CameraPlugin::TakePictureMethodHandler(
     const EncodableMap &args, std::unique_ptr<flutter::MethodResult<>> result) {
+  if (!capture_controller_) {
+    return result->Error("Camera not created", "Please create camera first");
+  }
   if (!HasCurrentTextureId(capture_controller_->GetTextureId(), args)) {
     return result->Error("System error", "CameraId mismatch");
   }
@@ -486,14 +498,16 @@ void CameraPlugin::TakePictureMethodHandler(
 
 void CameraPlugin::DisposeMethodHandler(
     const EncodableMap &args, std::unique_ptr<flutter::MethodResult<>> result) {
-  if (!HasCurrentTextureId(capture_controller_->GetTextureId(), args)) {
-    return result->Error("System error", "CameraId mismatch");
+  if (capture_controller_) {
+    // TODO: Next check commented out for now. Multicamera support will fix this
+    // situation.
+    // if (!HasCurrentTextureId(capture_controller_->GetTextureId(), args)) {
+    //   return result->Error("System error", "CameraId mismatch");
+    // }
+    capture_controller_ = nullptr;
   }
 
   ClearPendingResults();
-
-  // TODO: Capture errors
-  capture_controller_->ResetCaptureEngineState();
   result->Success();
 }
 
