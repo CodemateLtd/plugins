@@ -25,7 +25,7 @@ class CameraWindows extends CameraPlatform {
     CameraPlatform.instance = CameraWindows();
   }
 
-  final Map<int, MethodChannel> _channels = {};
+  final Map<int, MethodChannel> _channels = <int, MethodChannel>{};
 
   /// The controller we need to broadcast the different events coming
   /// from handleMethodCall, specific to camera events.
@@ -103,7 +103,8 @@ class CameraWindows extends CameraPlatform {
       final MethodChannel channel =
           MethodChannel('flutter.io/cameraPlugin/camera$requestedCameraId');
       channel.setMethodCallHandler(
-          (MethodCall call) => handleCameraMethodCall(call, requestedCameraId));
+        (MethodCall call) => handleCameraMethodCall(call, requestedCameraId),
+      );
       return channel;
     });
 
@@ -119,15 +120,17 @@ class CameraWindows extends CameraPlatform {
     if (reply != null &&
         reply.containsKey('previewWidth') &&
         reply.containsKey('previewHeight')) {
-      cameraEventStreamController.add(CameraInitializedEvent(
-        requestedCameraId,
-        reply['previewWidth']! as double,
-        reply['previewHeight']! as double,
-        ExposureMode.auto,
-        false,
-        FocusMode.auto,
-        false,
-      ));
+      cameraEventStreamController.add(
+        CameraInitializedEvent(
+          requestedCameraId,
+          reply['previewWidth']!,
+          reply['previewHeight']!,
+          ExposureMode.auto,
+          false,
+          FocusMode.auto,
+          false,
+        ),
+      );
     } else {
       throw CameraException(
         'INITIALIZATION_FAILED',
@@ -181,7 +184,8 @@ class CameraWindows extends CameraPlatform {
     //Windows camera plugin does not support capture orientations
     //Force device orientation to landscape (by default camera plugin uses portraitUp orientation)
     return Stream<DeviceOrientationChangedEvent>.value(
-        DeviceOrientationChangedEvent(DeviceOrientation.landscapeRight));
+      DeviceOrientationChangedEvent(DeviceOrientation.landscapeRight),
+    );
   }
 
   @override
@@ -219,8 +223,10 @@ class CameraWindows extends CameraPlatform {
       _channel.invokeMethod<void>('prepareForVideoRecording');
 
   @override
-  Future<void> startVideoRecording(int cameraId,
-      {Duration? maxVideoDuration}) async {
+  Future<void> startVideoRecording(
+    int cameraId, {
+    Duration? maxVideoDuration,
+  }) async {
     await _channel.invokeMethod<void>(
       'startVideoRecording',
       <String, dynamic>{
@@ -378,26 +384,33 @@ class CameraWindows extends CameraPlatform {
   Future<dynamic> handleCameraMethodCall(MethodCall call, int cameraId) async {
     switch (call.method) {
       case 'camera_closing':
-        cameraEventStreamController.add(CameraClosingEvent(
-          cameraId,
-        ));
+        cameraEventStreamController.add(
+          CameraClosingEvent(
+            cameraId,
+          ),
+        );
         break;
       case 'video_recorded':
         //This is called if maxVideoDuration was given on record start
-        cameraEventStreamController.add(VideoRecordedEvent(
-          cameraId,
-          XFile(call.arguments['path'] as String),
-          call.arguments['maxVideoDuration'] != null
-              ? Duration(
-                  milliseconds: call.arguments['maxVideoDuration'] as int)
-              : null,
-        ));
+        cameraEventStreamController.add(
+          VideoRecordedEvent(
+            cameraId,
+            XFile(call.arguments['path'] as String),
+            call.arguments['maxVideoDuration'] != null
+                ? Duration(
+                    milliseconds: call.arguments['maxVideoDuration'] as int,
+                  )
+                : null,
+          ),
+        );
         break;
       case 'error':
-        cameraEventStreamController.add(CameraErrorEvent(
-          cameraId,
-          call.arguments['description'] as String,
-        ));
+        cameraEventStreamController.add(
+          CameraErrorEvent(
+            cameraId,
+            call.arguments['description'] as String,
+          ),
+        );
         break;
       default:
         throw MissingPluginException();
