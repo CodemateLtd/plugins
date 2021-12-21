@@ -14,13 +14,9 @@
 #include <shobjidl.h>
 #include <windows.h>
 
-//#include <wrl.h>
-
 #include <cassert>
 #include <chrono>
 #include <memory>
-// #include <string>
-// #include <vector>
 
 #include "device_info.h"
 #include "string_utils.h"

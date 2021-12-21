@@ -38,6 +38,10 @@ class CameraPlugin : public flutter::Plugin, public CaptureControllerListener {
 
   virtual ~CameraPlugin();
 
+  // Disallow copy and move.
+  CameraPlugin(const CameraPlugin &) = delete;
+  CameraPlugin &operator=(const CameraPlugin &) = delete;
+
   // Called when a method is called on plugin channel;
   void HandleMethodCall(const flutter::MethodCall<> &method_call,
                         std::unique_ptr<MethodResult<>> result);

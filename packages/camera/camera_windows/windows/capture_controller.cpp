@@ -519,17 +519,10 @@ void CaptureController::CreateCaptureDevice(
 }
 
 const FlutterDesktopPixelBuffer *
-CaptureController::ConvertPixelBufferForFlutter(size_t width, size_t height) {
+CaptureController::ConvertPixelBufferForFlutter(size_t target_width,
+                                                size_t target_height) {
   if (this->source_buffer_data_ && this->source_buffer_size_ > 0 &&
       this->preview_frame_width_ > 0 && this->preview_frame_height_ > 0) {
-    // printf("Flutter destination size: %zd,%zd\n", width, height);
-    // fflush(stdout);
-
-    // This is how texture buffer is copied as glTextImage
-    // gl_.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pixel_buffer->width,
-    //                pixel_buffer->height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-    //                pixel_buffer->buffer);
-
     uint32_t pixels_total =
         this->preview_frame_width_ * this->preview_frame_height_;
     dest_buffer_ = std::make_unique<uint8_t[]>(pixels_total * 4);
@@ -548,11 +541,6 @@ CaptureController::ConvertPixelBufferForFlutter(size_t width, size_t height) {
     this->flutter_desktop_pixel_buffer_.buffer = dest_buffer_.get();
     this->flutter_desktop_pixel_buffer_.width = this->preview_frame_width_;
     this->flutter_desktop_pixel_buffer_.height = this->preview_frame_height_;
-    // this->flutter_desktop_pixel_buffer_.release_context = this;
-    // this->flutter_desktop_pixel_buffer_.release_callback =
-    //     [](void *release_context) {
-    //       std::cout << "Should release pixel buffer\n";
-    //     };
     return &this->flutter_desktop_pixel_buffer_;
   }
   return nullptr;
@@ -725,6 +713,9 @@ void CaptureController::StartRecord(const std::string &filepath,
     max_capture_duration_ = max_capture_duration;
     pending_record_path_ = filepath;
     record_pending_ = true;
+
+    // Request to start recording.
+    // Check MF_CAPTURE_ENGINE_RECORD_STARTED event with CaptureEngineListener
     hr = capture_engine_->StartRecord();
   }
 
@@ -746,6 +737,8 @@ void CaptureController::StopRecord() {
     return capture_controller_listener_->OnStopRecordFailed("Not recording");
   }
 
+  // Request to stop recording.
+  // Check MF_CAPTURE_ENGINE_RECORD_STOPPED event with CaptureEngineListener
   HRESULT hr = capture_engine_->StopRecord(true, false);
 
   if (FAILED(hr)) {
@@ -1046,10 +1039,11 @@ void CaptureController::StartPreview(bool initialize) {
   HRESULT hr = InitPreviewSink();
 
   if (SUCCEEDED(hr)) {
-    // Request to start preview.
-    // Wait MF_CAPTURE_ENGINE_PREVIEW_STARTED event to check success
     initializing_preview_ = initialize;
     preview_pending_ = true;
+
+    // Request to start preview.
+    // Check MF_CAPTURE_ENGINE_PREVIEW_STARTED event with CaptureEngineListener
     hr = capture_engine_->StartPreview();
   }
 
@@ -1068,8 +1062,8 @@ void CaptureController::StopPreview() {
     return capture_controller_listener_->OnStopPreviewFailed("Not previewing");
   }
 
-  // Request to stop preview;
-  // Wait MF_CAPTURE_ENGINE_PREVIEW_STOPPED event to check success
+  // Request to stop preview.
+  // Check MF_CAPTURE_ENGINE_PREVIEW_STOPPED event with CaptureEngineListener
   HRESULT hr = capture_engine_->StopPreview();
 
   if (FAILED(hr)) {
@@ -1120,10 +1114,8 @@ STDMETHODIMP CaptureController::CaptureEngineListener::OnEvent(
 
   if (!capture_controller_->IsInitialized() &&
       !capture_controller_->CaptureEngineInitializing()) {
-    // printf(
-    //     "Got capture engine event while capture engine is not initialized or
-    //     " "initializing.\n");
-    // fflush(stdout);
+    // TODO: call capture_controller_->OnCaptureEngineError()
+    // with proper error message
     return event_hr;
   }
 
@@ -1132,50 +1124,25 @@ STDMETHODIMP CaptureController::CaptureEngineListener::OnEvent(
     hr = event->GetExtendedType(&extended_type_guid);
     if (SUCCEEDED(hr)) {
       if (extended_type_guid == MF_CAPTURE_ENGINE_ERROR) {
-        // printf("MF_CAPTURE_ENGINE_ERROR\n");
-        // fflush(stdout);
         capture_controller_->OnCaptureEngineError();
       } else if (extended_type_guid == MF_CAPTURE_ENGINE_INITIALIZED) {
-        // printf("MF_CAPTURE_ENGINE_INITIALIZED\n");
-        // fflush(stdout);
         capture_controller_->OnCaptureEngineInitialized(SUCCEEDED(event_hr));
       } else if (extended_type_guid == MF_CAPTURE_ENGINE_PREVIEW_STARTED) {
-        // printf("MF_CAPTURE_ENGINE_PREVIEW_STARTED\n");
-        // fflush(stdout);
         capture_controller_->OnPreviewStarted(
             SUCCEEDED(event_hr), capture_controller_->InitializingPreview());
       } else if (extended_type_guid == MF_CAPTURE_ENGINE_PREVIEW_STOPPED) {
-        // printf("MF_CAPTURE_ENGINE_PREVIEW_STOPPED\n");
-        // fflush(stdout);
         capture_controller_->OnPreviewStopped(SUCCEEDED(event_hr));
       } else if (extended_type_guid == MF_CAPTURE_ENGINE_RECORD_STARTED) {
-        // printf("MF_CAPTURE_ENGINE_RECORD_STARTED\n");
-        // fflush(stdout);
         capture_controller_->OnRecordStarted(SUCCEEDED(event_hr));
       } else if (extended_type_guid == MF_CAPTURE_ENGINE_RECORD_STOPPED) {
-        // printf("MF_CAPTURE_ENGINE_RECORD_STOPPED\n");
-        // fflush(stdout);
         capture_controller_->OnRecordStopped(SUCCEEDED(event_hr));
       } else if (extended_type_guid == MF_CAPTURE_ENGINE_PHOTO_TAKEN) {
-        // printf("MF_CAPTURE_ENGINE_PHOTO_TAKEN\n");
-        // fflush(stdout);
         capture_controller_->OnPicture(SUCCEEDED(event_hr));
-      } /* else {
-        LPOLESTR str;
-        if (SUCCEEDED(StringFromCLSID(extended_type_guid, &str))) {
-          std::wstring event_type((wchar_t *)str);
-
-          // Print unhandled events for development purposes
-          printf("Got unhandled capture event: %s\n",
-                 Utf8FromUtf16(event_type).c_str());
-          fflush(stdout);
-        }
-        CoTaskMemFree(str);
-      }*/
+      }
     }
   }
 
-  // TODO: pass this error directly to the handlers
+  // TODO: pass this error directly to the handlers?
   if (FAILED(event_hr)) {
     std::string message = std::system_category().message(event_hr);
 
@@ -1188,7 +1155,6 @@ STDMETHODIMP CaptureController::CaptureEngineListener::OnEvent(
 
 // Method from IMFCaptureEngineOnSampleCallback
 HRESULT CaptureController::CaptureEngineListener::OnSample(IMFSample *sample) {
-  // std::cout << "Got sample\n";
   HRESULT hr = S_OK;
 
   if (this->capture_controller_ == nullptr ||
