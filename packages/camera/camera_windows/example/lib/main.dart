@@ -19,30 +19,20 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _cameraInfo = 'Unknown';
   List<CameraDescription> _cameras = <CameraDescription>[];
-
   int _cameraId = -1;
-
-  Widget? _texture;
-
   bool _initialized = false;
   bool _recording = false;
-
   Size? _previewSize;
 
   @override
   void initState() {
     super.initState();
     WidgetsFlutterBinding.ensureInitialized();
-    initCameraList().then((value) {
-      debugPrint("Got list of available cameras: ${_cameras.isNotEmpty}");
-      if (_cameras.isNotEmpty) {
-        initializeCamera();
-      }
-    });
+    getAvailableCameras();
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initCameraList() async {
+  // Fetches list of available cameras from camera_windows plugin
+  Future<void> getAvailableCameras() async {
     String cameraInfo;
     List<CameraDescription> cameras = <CameraDescription>[];
 
@@ -66,33 +56,31 @@ class _MyAppState extends State<MyApp> {
   }
 
   /// Initializes the camera on the device.
-  ///
-  /// Throws a [CameraException] if the initialization fails.
-  Future<void> initializeCamera() async {
+  void initializeFirstCamera() async {
+    assert(_cameras.isNotEmpty);
+    assert(!_initialized);
     try {
       Completer<CameraInitializedEvent> _initializeCompleter = Completer();
 
-      _cameraId = await CameraPlatform.instance.createCamera(
-        _cameras.first,
+      final CameraDescription camera = _cameras.first;
+
+      final cameraId = await CameraPlatform.instance.createCamera(
+        camera,
         ResolutionPreset.veryHigh,
         enableAudio: true,
       );
 
-      debugPrint("Got camera id: $_cameraId");
-
       unawaited(CameraPlatform.instance
-          .onCameraInitialized(_cameraId)
+          .onCameraInitialized(cameraId)
           .first
           .then((event) {
         _initializeCompleter.complete(event);
       }));
 
       await CameraPlatform.instance.initializeCamera(
-        _cameraId,
+        cameraId,
         imageFormatGroup: ImageFormatGroup.unknown,
       );
-
-      debugPrint("Camera (${_cameraId}) initialized");
 
       _previewSize = await _initializeCompleter.future
           .then((CameraInitializedEvent event) => Size(
@@ -100,25 +88,51 @@ class _MyAppState extends State<MyApp> {
                 event.previewHeight,
               ));
 
-      debugPrint("PreviewSize $_previewSize");
-
       setState(() {
         _initialized = true;
-        _texture = CameraPlatform.instance.buildPreview(_cameraId);
+        _cameraId = cameraId;
+        _cameraInfo = "Capturing camera: ${camera.name}";
       });
     } on PlatformException catch (e) {
-      throw CameraException(e.code, e.message);
+      setState(() {
+        _initialized = false;
+        _cameraId = -1;
+        _cameraInfo = "Failed to initialize camera: ${e.code}: ${e.message}";
+      });
     }
   }
 
-  void TakePicture() async {
-    XFile _file = await CameraPlatform.instance.takePicture(_cameraId);
-    debugPrint("File path: ${_file.path}, length: ${await _file.length()}");
-    if (!await launch("file:${_file.path}"))
-      throw 'Could not open file: "${_file.path}"';
+  void disposeCurrentCamera() async {
+    assert(_cameraId > 0);
+    assert(_initialized);
+    try {
+      await CameraPlatform.instance.dispose(_cameraId);
+      setState(() {
+        _initialized = false;
+        _cameraId = -1;
+        _cameraInfo = "Camera disposed";
+        _previewSize = null;
+      });
+      getAvailableCameras();
+    } on PlatformException catch (e) {
+      setState(() {
+        _cameraInfo = "Failed to dispose camera: ${e.code}: ${e.message}";
+      });
+    }
   }
 
-  void ToggleRecord() async {
+  Widget buildPreview() {
+    return CameraPlatform.instance.buildPreview(_cameraId);
+  }
+
+  void takePicture() async {
+    XFile _file = await CameraPlatform.instance.takePicture(_cameraId);
+    if (!await launch("file:${_file.path}")) {
+      throw 'Could not open file: "${_file.path}"';
+    }
+  }
+
+  void toggleRecord() async {
     if (_initialized && _cameraId > 0) {
       if (!_recording) {
         await CameraPlatform.instance.startVideoRecording(_cameraId);
@@ -126,10 +140,9 @@ class _MyAppState extends State<MyApp> {
         XFile _file =
             await CameraPlatform.instance.stopVideoRecording(_cameraId);
 
-        debugPrint(
-            "Video capture file path: ${_file.path}, length: ${await _file.length()}");
-        if (!await launch("file:${_file.path}"))
+        if (!await launch("file:${_file.path}")) {
           throw 'Could not open file: "${_file.path}"';
+        }
       }
       setState(() {
         _recording = !_recording;
@@ -145,28 +158,40 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: ListView(children: [
-          Text('Camerainfo: $_cameraInfo'),
-          SizedBox(height: 5),
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            TextButton(
-                onPressed: _initialized ? TakePicture : null,
-                child: Text("Take picture")),
-            SizedBox(width: 5),
-            TextButton(
-                onPressed: _initialized ? ToggleRecord : null,
-                child: Text(_recording ? "Stop recording" : "Record Video"))
-          ]),
-          SizedBox(height: 5),
-          if (_texture != null && _previewSize != null)
+          Padding(
+              padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+              child: Text(_cameraInfo)),
+          if (_cameras.isNotEmpty)
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              ElevatedButton(
+                  onPressed: _initialized
+                      ? disposeCurrentCamera
+                      : initializeFirstCamera,
+                  child:
+                      Text(_initialized ? "Dispose camera" : "Create camera")),
+              const SizedBox(width: 5),
+              ElevatedButton(
+                onPressed: _initialized ? takePicture : null,
+                child: const Text("Take picture"),
+              ),
+              const SizedBox(width: 5),
+              ElevatedButton(
+                  onPressed: _initialized ? toggleRecord : null,
+                  child: Text(_recording ? "Stop recording" : "Record Video"))
+            ]),
+          const SizedBox(height: 5),
+          if (_initialized && _cameraId > 0 && _previewSize != null)
             Padding(
-                padding: EdgeInsets.symmetric(vertical: 10),
+                padding: const EdgeInsets.symmetric(vertical: 10),
                 child: Align(
                     alignment: Alignment.center,
                     child: Container(
-                        height: 500,
-                        width: 500 *
-                            (_previewSize!.width / _previewSize!.height),
-                        child: _texture!))),
+                      constraints: const BoxConstraints(maxHeight: 500),
+                      child: AspectRatio(
+                          aspectRatio:
+                              (_previewSize!.width / _previewSize!.height),
+                          child: buildPreview()),
+                    ))),
           if (_previewSize != null)
             Center(
                 child: Text(
