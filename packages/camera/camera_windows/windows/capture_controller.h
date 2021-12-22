@@ -18,6 +18,8 @@
 #include <string>
 
 #include "capture_controller_listener.h"
+#include "capture_engine_listener.h"
+
 namespace camera_windows {
 
 enum ResolutionPreset {
@@ -54,72 +56,75 @@ void Release(T** ppT) {
 }
 
 class CaptureController {
-  class CaptureEngineListener : public IMFCaptureEngineOnSampleCallback,
-                                public IMFCaptureEngineOnEventCallback {
-   public:
-    CaptureEngineListener(CaptureController* capture_controller)
-        : ref_(1), capture_controller_(capture_controller) {}
+ public:
+  CaptureController() {};
+  virtual ~CaptureController() = default;
 
-    ~CaptureEngineListener(){};
+  // Disallow copy and move.
+  CaptureController(const CaptureController&) = delete;
+  CaptureController& operator=(const CaptureController&) = delete;
 
-    // IUnknown
-    STDMETHODIMP_(ULONG) AddRef();
-    STDMETHODIMP_(ULONG) Release();
-    STDMETHODIMP_(HRESULT) QueryInterface(const IID& riid, void** ppv);
+  virtual void CreateCaptureDevice(flutter::TextureRegistrar* texture_registrar,
+                                   const std::string& device_id,
+                                   bool enable_audio,
+                                   ResolutionPreset resolution_preset) = 0;
 
-    // IMFCaptureEngineOnEventCallback
-    STDMETHODIMP OnEvent(IMFMediaEvent* pEvent);
+  virtual int64_t GetTextureId() = 0;
+  virtual uint32_t GetPreviewWidth() = 0;
+  virtual uint32_t GetPreviewHeight() = 0;
 
-    // IMFCaptureEngineOnSampleCallback
-    STDMETHODIMP_(HRESULT) OnSample(IMFSample* pSample);
-
-   private:
-    CaptureController* capture_controller_;
-    volatile ULONG ref_;
-  };
-
+  // Actions
+  virtual void StartPreview(bool initializing_preview) = 0;
+  virtual void StopPreview() = 0;
+  virtual void StartRecord(const std::string& filepath,
+                           int64_t max_capture_duration) = 0;
+  virtual void StopRecord() = 0;
+  virtual void TakePicture(const std::string filepath) = 0;
+};
+class CaptureControllerImpl : public CaptureController,
+                              public CaptureEngineObserver {
  public:
   static bool EnumerateVideoCaptureDeviceSources(IMFActivate*** devices,
                                                  UINT32* count);
 
-  CaptureController(CaptureControllerListener* listener);
-  virtual ~CaptureController();
+  CaptureControllerImpl(CaptureControllerListener* listener);
+  virtual ~CaptureControllerImpl();
 
   bool IsInitialized() { return initialized_; }
-  bool CaptureEngineInitializing() {
-    return capture_engine_initialization_pending_;
-  }
-  bool InitializingPreview() { return initializing_preview_; }
   bool IsPreviewing() { return previewing_; }
-  void ResetCaptureEngineState();
-
-  uint8_t* GetSourceBuffer(uint32_t current_length);
-  void OnBufferUpdate();
 
   void CreateCaptureDevice(flutter::TextureRegistrar* texture_registrar,
                            const std::string& device_id, bool enable_audio,
-                           ResolutionPreset resolution_preset);
+                           ResolutionPreset resolution_preset) override;
+  int64_t GetTextureId() override { return texture_id_; }
+  uint32_t GetPreviewWidth() override { return preview_frame_width_; }
+  uint32_t GetPreviewHeight() override { return preview_frame_height_; }
 
-  int64_t GetTextureId() { return texture_id_; }
-  uint32_t GetPreviewWidth() { return preview_frame_width_; }
-  uint32_t GetPreviewHeight() { return preview_frame_height_; }
-  uint32_t GetMaxPreviewHeight();
-
-  // Actions
-  void StartPreview(bool initializing_preview);
-  void StopPreview();
-  void StartRecord(const std::string& filepath, int64_t max_capture_duration);
-  void StopRecord();
-  void TakePicture(const std::string filepath);
+  void StartPreview(bool initializing_preview) override;
+  void StopPreview() override;
+  void StartRecord(const std::string& filepath,
+                   int64_t max_capture_duration) override;
+  void StopRecord() override;
+  void TakePicture(const std::string filepath) override;
 
   // Handlers for CaptureEngineListener events
-  void OnCaptureEngineInitialized(bool success);
-  void OnCaptureEngineError();
-  void OnPicture(bool success);
-  void OnPreviewStarted(bool success, bool initializing_preview);
-  void OnPreviewStopped(bool success);
-  void OnRecordStarted(bool success);
-  void OnRecordStopped(bool success);
+  // From CaptureEngineObserver
+  bool IsReadyForEvents() override {
+    return initialized_ || capture_engine_initialization_pending_;
+  };
+  bool IsReadyForSample() override { return initialized_ && previewing_; }
+  void OnCaptureEngineInitialized(bool success) override;
+  void OnCaptureEngineError() override;
+  void OnPicture(bool success) override;
+  void OnPreviewStarted(bool success) override {
+    OnPreviewStarted(success, initializing_preview_);
+  };
+  void OnPreviewStopped(bool success) override;
+  void OnRecordStarted(bool success) override;
+  void OnRecordStopped(bool success) override;
+
+  uint8_t* GetSourceBuffer(uint32_t current_length) override;
+  void OnBufferUpdate() override;
 
  private:
   CaptureControllerListener* capture_controller_listener_ = nullptr;
@@ -179,6 +184,8 @@ class CaptureController {
   std::string pending_picture_path_ = "";
   std::string pending_record_path_ = "";
 
+  void ResetCaptureEngineState();
+  uint32_t GetMaxPreviewHeight();
   HRESULT CreateDefaultAudioCaptureSource();
   HRESULT CreateVideoCaptureSourceForDevice(const std::string& video_device_id);
   HRESULT CreateD3DManagerWithDX11Device();
@@ -192,6 +199,9 @@ class CaptureController {
 
   const FlutterDesktopPixelBuffer* ConvertPixelBufferForFlutter(size_t width,
                                                                 size_t height);
+
+  // internal implementation of OnPreviewStarted
+  void OnPreviewStarted(bool success, bool initializing_preview);
 };
 }  // namespace camera_windows
 

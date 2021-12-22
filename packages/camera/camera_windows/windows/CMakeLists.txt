@@ -7,15 +7,17 @@ project(${PROJECT_NAME} LANGUAGES CXX)
 set(PLUGIN_NAME "${PROJECT_NAME}_plugin")
 
 list(APPEND PLUGIN_SOURCES
-  "camera_plugin.cpp"
   "camera_plugin.h"
-  "capture_controller.cpp"
+  "camera_plugin.cpp"
   "capture_controller.h"
+  "capture_controller.cpp"
   "capture_controller_listener.h"
-  "string_utils.cpp"
+  "capture_engine_listener.h"
+  "capture_engine_listener.cpp"
   "string_utils.h"
-  "device_info.cpp"
+  "string_utils.cpp"
   "device_info.h"
+  "device_info.cpp"
 )
 
 add_library(${PLUGIN_NAME} SHARED

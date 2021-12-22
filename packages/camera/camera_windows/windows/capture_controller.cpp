@@ -4,18 +4,13 @@
 
 #include "capture_controller.h"
 
-#include <d3d11.h>
 #include <wincodec.h>
-#include <wrl/client.h>
 
 #include <cassert>
-#include <memory>
-#include <system_error>
 
 #include "string_utils.h"
 
 namespace camera_windows {
-using Microsoft::WRL::ComPtr;
 
 struct FlutterDesktop_Pixel {
   BYTE r = 0;
@@ -31,16 +26,17 @@ struct MFVideoFormat_RGB32_Pixel {
   BYTE x = 0;
 };
 
-CaptureController::CaptureController(CaptureControllerListener *listener)
-    : capture_controller_listener_(listener){};
+CaptureControllerImpl::CaptureControllerImpl(
+    CaptureControllerListener *listener)
+    : capture_controller_listener_(listener), CaptureController(){};
 
-CaptureController::~CaptureController() {
+CaptureControllerImpl::~CaptureControllerImpl() {
   ResetCaptureEngineState();
   capture_controller_listener_ = nullptr;
 };
 
 // static
-bool CaptureController::EnumerateVideoCaptureDeviceSources(
+bool CaptureControllerImpl::EnumerateVideoCaptureDeviceSources(
     IMFActivate ***devices, UINT32 *count) {
   IMFAttributes *attributes = nullptr;
 
@@ -223,7 +219,7 @@ HRESULT BuildMediaTypeForAudioCapture(IMFMediaType **audio_record_media_type) {
 
 // Uses first audio source to capture audio. Enumerating audio sources via
 // platform interface is not supported.
-HRESULT CaptureController::CreateDefaultAudioCaptureSource() {
+HRESULT CaptureControllerImpl::CreateDefaultAudioCaptureSource() {
   this->audio_source_ = nullptr;
   IMFActivate **devices = nullptr;
   UINT32 count = 0;
@@ -282,7 +278,7 @@ HRESULT CaptureController::CreateDefaultAudioCaptureSource() {
   return hr;
 }
 
-HRESULT CaptureController::CreateVideoCaptureSourceForDevice(
+HRESULT CaptureControllerImpl::CreateVideoCaptureSourceForDevice(
     const std::string &video_device_id) {
   this->video_source_ = nullptr;
 
@@ -318,7 +314,7 @@ HRESULT CaptureController::CreateVideoCaptureSourceForDevice(
 //       can be written if needed
 //       D3D_FEATURE_LEVEL min_feature_level = D3D_FEATURE_LEVEL_9_1;
 //       D3D12CreateDevice(nullptr,min_feature_level,...);
-HRESULT CaptureController::CreateD3DManagerWithDX11Device() {
+HRESULT CaptureControllerImpl::CreateD3DManagerWithDX11Device() {
   HRESULT hr = S_OK;
   /*
   // Captures selected feature level
@@ -364,7 +360,7 @@ HRESULT CaptureController::CreateD3DManagerWithDX11Device() {
   return hr;
 }
 
-HRESULT CaptureController::CreateCaptureEngine(
+HRESULT CaptureControllerImpl::CreateCaptureEngine(
     const std::string &video_device_id) {
   HRESULT hr = S_OK;
   IMFAttributes *attributes = nullptr;
@@ -418,7 +414,7 @@ HRESULT CaptureController::CreateCaptureEngine(
   return hr;
 }
 
-void CaptureController::ResetCaptureEngineState() {
+void CaptureControllerImpl::ResetCaptureEngineState() {
   initialized_ = false;
   if (previewing_) {
     StopPreview();
@@ -470,7 +466,7 @@ void CaptureController::ResetCaptureEngineState() {
   }
 }
 
-uint8_t *CaptureController::GetSourceBuffer(uint32_t current_length) {
+uint8_t *CaptureControllerImpl::GetSourceBuffer(uint32_t current_length) {
   if (this->source_buffer_data_ == nullptr ||
       this->source_buffer_size_ != current_length) {
     // Update source buffer size
@@ -481,13 +477,13 @@ uint8_t *CaptureController::GetSourceBuffer(uint32_t current_length) {
   return this->source_buffer_data_.get();
 }
 
-void CaptureController::OnBufferUpdate() {
+void CaptureControllerImpl::OnBufferUpdate() {
   if (this->texture_registrar_ && this->texture_id_ >= 0) {
     this->texture_registrar_->MarkTextureFrameAvailable(this->texture_id_);
   }
 }
 
-void CaptureController::CreateCaptureDevice(
+void CaptureControllerImpl::CreateCaptureDevice(
     flutter::TextureRegistrar *texture_registrar, const std::string &device_id,
     bool enable_audio, ResolutionPreset resolution_preset) {
   assert(capture_controller_listener_);
@@ -519,8 +515,8 @@ void CaptureController::CreateCaptureDevice(
 }
 
 const FlutterDesktopPixelBuffer *
-CaptureController::ConvertPixelBufferForFlutter(size_t target_width,
-                                                size_t target_height) {
+CaptureControllerImpl::ConvertPixelBufferForFlutter(size_t target_width,
+                                                    size_t target_height) {
   if (this->source_buffer_data_ && this->source_buffer_size_ > 0 &&
       this->preview_frame_width_ > 0 && this->preview_frame_height_ > 0) {
     uint32_t pixels_total =
@@ -546,7 +542,7 @@ CaptureController::ConvertPixelBufferForFlutter(size_t target_width,
   return nullptr;
 }
 
-void CaptureController::TakePicture(const std::string filepath) {
+void CaptureControllerImpl::TakePicture(const std::string filepath) {
   assert(capture_controller_listener_);
 
   if (!initialized_) {
@@ -575,7 +571,7 @@ void CaptureController::TakePicture(const std::string filepath) {
   }
 }
 
-void CaptureController::OnPicture(bool success) {
+void CaptureControllerImpl::OnPicture(bool success) {
   if (capture_controller_listener_) {
     if (success && !pending_picture_path_.empty()) {
       capture_controller_listener_->OnPictureSuccess(pending_picture_path_);
@@ -587,7 +583,7 @@ void CaptureController::OnPicture(bool success) {
   pending_picture_path_ = std::string();
 }
 
-void CaptureController::OnCaptureEngineInitialized(bool success) {
+void CaptureControllerImpl::OnCaptureEngineInitialized(bool success) {
   if (capture_controller_listener_) {
     // Create flutter desktop pixelbuffer texture;
     texture_ =
@@ -610,7 +606,7 @@ void CaptureController::OnCaptureEngineInitialized(bool success) {
   capture_engine_initialization_pending_ = false;
 }
 
-void CaptureController::OnCaptureEngineError() {
+void CaptureControllerImpl::OnCaptureEngineError() {
   // TODO: detect error type and update state depending of error type, also send
   // other than capture engine creation errors to separate error handler
   if (capture_controller_listener_) {
@@ -622,8 +618,8 @@ void CaptureController::OnCaptureEngineError() {
   capture_engine_initialization_pending_ = false;
 }
 
-void CaptureController::OnPreviewStarted(bool success,
-                                         bool initializing_preview) {
+void CaptureControllerImpl::OnPreviewStarted(bool success,
+                                             bool initializing_preview) {
   if (capture_controller_listener_) {
     if (success && preview_frame_width_ > 0 && preview_frame_height_ > 0) {
       if (initializing_preview) {
@@ -649,7 +645,7 @@ void CaptureController::OnPreviewStarted(bool success,
   previewing_ = success;
 };
 
-void CaptureController::OnPreviewStopped(bool success) {
+void CaptureControllerImpl::OnPreviewStopped(bool success) {
   if (capture_controller_listener_) {
     if (success) {
       capture_controller_listener_->OnStopPreviewSucceeded();
@@ -663,7 +659,7 @@ void CaptureController::OnPreviewStopped(bool success) {
   previewing_ = false;
 };
 
-void CaptureController::OnRecordStarted(bool success) {
+void CaptureControllerImpl::OnRecordStarted(bool success) {
   if (capture_controller_listener_) {
     if (success) {
       capture_controller_listener_->OnStartRecordSucceeded();
@@ -678,7 +674,7 @@ void CaptureController::OnRecordStarted(bool success) {
   recording_ = success;
 };
 
-void CaptureController::OnRecordStopped(bool success) {
+void CaptureControllerImpl::OnRecordStopped(bool success) {
   if (capture_controller_listener_) {
     if (success && !pending_record_path_.empty()) {
       capture_controller_listener_->OnStopRecordSucceeded(pending_record_path_);
@@ -693,8 +689,8 @@ void CaptureController::OnRecordStopped(bool success) {
   pending_record_path_ = std::string();
 }
 
-void CaptureController::StartRecord(const std::string &filepath,
-                                    int64_t max_capture_duration) {
+void CaptureControllerImpl::StartRecord(const std::string &filepath,
+                                        int64_t max_capture_duration) {
   assert(capture_controller_listener_);
   if (!initialized_) {
     return capture_controller_listener_->OnStartRecordFailed(
@@ -727,7 +723,7 @@ void CaptureController::StartRecord(const std::string &filepath,
   }
 }
 
-void CaptureController::StopRecord() {
+void CaptureControllerImpl::StopRecord() {
   assert(capture_controller_listener_);
 
   if (!initialized_) {
@@ -747,7 +743,7 @@ void CaptureController::StopRecord() {
   }
 }
 
-uint32_t CaptureController::GetMaxPreviewHeight() {
+uint32_t CaptureControllerImpl::GetMaxPreviewHeight() {
   switch (resolution_preset_) {
     case RESOLUTION_PRESET_LOW:
       return 240;
@@ -772,7 +768,7 @@ uint32_t CaptureController::GetMaxPreviewHeight() {
   }
 }
 
-HRESULT CaptureController::FindBaseMediaTypes() {
+HRESULT CaptureControllerImpl::FindBaseMediaTypes() {
   if (!initialized_) {
     return E_FAIL;
   }
@@ -846,7 +842,7 @@ HRESULT CaptureController::FindBaseMediaTypes() {
   return hr;
 }
 
-HRESULT CaptureController::InitPreviewSink() {
+HRESULT CaptureControllerImpl::InitPreviewSink() {
   if (!initialized_) {
     return E_FAIL;
   }
@@ -896,7 +892,7 @@ HRESULT CaptureController::InitPreviewSink() {
   return hr;
 }
 
-HRESULT CaptureController::InitPhotoSink(const std::string &filepath) {
+HRESULT CaptureControllerImpl::InitPhotoSink(const std::string &filepath) {
   HRESULT hr = S_OK;
 
   if (photo_sink_) {
@@ -956,7 +952,7 @@ HRESULT CaptureController::InitPhotoSink(const std::string &filepath) {
   return hr;
 }
 
-HRESULT CaptureController::InitRecordSink(const std::string &filepath) {
+HRESULT CaptureControllerImpl::InitRecordSink(const std::string &filepath) {
   HRESULT hr = S_OK;
 
   if (record_sink_) {
@@ -1029,7 +1025,7 @@ HRESULT CaptureController::InitRecordSink(const std::string &filepath) {
   return hr;
 }
 
-void CaptureController::StartPreview(bool initialize) {
+void CaptureControllerImpl::StartPreview(bool initialize) {
   assert(capture_controller_listener_);
 
   if (!initialized_ || previewing_) {
@@ -1052,7 +1048,7 @@ void CaptureController::StartPreview(bool initialize) {
   }
 }
 
-void CaptureController::StopPreview() {
+void CaptureControllerImpl::StopPreview() {
   assert(capture_controller_listener_);
 
   if (!initialized_) {
@@ -1070,128 +1066,6 @@ void CaptureController::StopPreview() {
     capture_controller_listener_->OnStopPreviewFailed(
         "Failed to stop previewing");
   };
-}
-
-// Method from IUnknown
-STDMETHODIMP_(ULONG) CaptureController::CaptureEngineListener::AddRef() {
-  return InterlockedIncrement(&ref_);
-}
-// Method from IUnknown
-STDMETHODIMP_(ULONG)
-CaptureController::CaptureEngineListener::Release() {
-  LONG ref = InterlockedDecrement(&ref_);
-  if (ref == 0) {
-    delete this;
-  }
-  return ref;
-}
-// Method from IUnknown
-STDMETHODIMP_(HRESULT)
-CaptureController::CaptureEngineListener::QueryInterface(const IID &riid,
-                                                         void **ppv) {
-  HRESULT hr = E_NOINTERFACE;
-  *ppv = nullptr;
-
-  if (riid == IID_IMFCaptureEngineOnEventCallback) {
-    *ppv = static_cast<IMFCaptureEngineOnEventCallback *>(this);
-    ((IUnknown *)*ppv)->AddRef();
-    hr = S_OK;
-  } else if (riid == IID_IMFCaptureEngineOnSampleCallback) {
-    *ppv = static_cast<IMFCaptureEngineOnSampleCallback *>(this);
-    ((IUnknown *)*ppv)->AddRef();
-    hr = S_OK;
-  }
-
-  return hr;
-}
-
-STDMETHODIMP CaptureController::CaptureEngineListener::OnEvent(
-    IMFMediaEvent *event) {
-  fflush(stdout);
-
-  HRESULT event_hr;
-  HRESULT hr = event->GetStatus(&event_hr);
-
-  if (!capture_controller_->IsInitialized() &&
-      !capture_controller_->CaptureEngineInitializing()) {
-    // TODO: call capture_controller_->OnCaptureEngineError()
-    // with proper error message
-    return event_hr;
-  }
-
-  if (SUCCEEDED(hr)) {
-    GUID extended_type_guid;
-    hr = event->GetExtendedType(&extended_type_guid);
-    if (SUCCEEDED(hr)) {
-      if (extended_type_guid == MF_CAPTURE_ENGINE_ERROR) {
-        capture_controller_->OnCaptureEngineError();
-      } else if (extended_type_guid == MF_CAPTURE_ENGINE_INITIALIZED) {
-        capture_controller_->OnCaptureEngineInitialized(SUCCEEDED(event_hr));
-      } else if (extended_type_guid == MF_CAPTURE_ENGINE_PREVIEW_STARTED) {
-        capture_controller_->OnPreviewStarted(
-            SUCCEEDED(event_hr), capture_controller_->InitializingPreview());
-      } else if (extended_type_guid == MF_CAPTURE_ENGINE_PREVIEW_STOPPED) {
-        capture_controller_->OnPreviewStopped(SUCCEEDED(event_hr));
-      } else if (extended_type_guid == MF_CAPTURE_ENGINE_RECORD_STARTED) {
-        capture_controller_->OnRecordStarted(SUCCEEDED(event_hr));
-      } else if (extended_type_guid == MF_CAPTURE_ENGINE_RECORD_STOPPED) {
-        capture_controller_->OnRecordStopped(SUCCEEDED(event_hr));
-      } else if (extended_type_guid == MF_CAPTURE_ENGINE_PHOTO_TAKEN) {
-        capture_controller_->OnPicture(SUCCEEDED(event_hr));
-      }
-    }
-  }
-
-  // TODO: pass this error directly to the handlers?
-  if (FAILED(event_hr)) {
-    std::string message = std::system_category().message(event_hr);
-
-    printf("Got capture event error: %s\n", message.c_str());
-    fflush(stdout);
-  }
-
-  return event_hr;
-}
-
-// Method from IMFCaptureEngineOnSampleCallback
-HRESULT CaptureController::CaptureEngineListener::OnSample(IMFSample *sample) {
-  HRESULT hr = S_OK;
-
-  if (this->capture_controller_ == nullptr ||
-      !this->capture_controller_->IsInitialized() ||
-      !this->capture_controller_->IsPreviewing()) {
-    // no texture target available or not previewing
-    return hr;
-  }
-
-  if (SUCCEEDED(hr) && sample) {
-    IMFMediaBuffer *buffer = nullptr;
-    hr = sample->ConvertToContiguousBuffer(&buffer);
-
-    // Draw the frame.
-    if (SUCCEEDED(hr)) {
-      DWORD max_length = 0;
-      DWORD current_length = 0;
-      uint8_t *data;
-      if (SUCCEEDED(buffer->Lock(&data, &max_length, &current_length))) {
-        uint8_t *src_buffer =
-            this->capture_controller_->GetSourceBuffer(current_length);
-        if (src_buffer) {
-          CopyMemory(src_buffer, data, current_length);
-        }
-      }
-      hr = buffer->Unlock();
-      if (SUCCEEDED(hr)) {
-        this->capture_controller_->OnBufferUpdate();
-      }
-    }
-
-    if (buffer) {
-      buffer->Release();
-      buffer = nullptr;
-    }
-  }
-  return hr;
 }
 
 }  // namespace camera_windows

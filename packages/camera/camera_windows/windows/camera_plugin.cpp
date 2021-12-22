@@ -193,7 +193,7 @@ void GetAvailableCameras(std::unique_ptr<flutter::MethodResult<>> result) {
   // Enumerate devices.
   IMFActivate **devices;
   UINT32 count;
-  if (!CaptureController::EnumerateVideoCaptureDeviceSources(&devices,
+  if (!CaptureControllerImpl::EnumerateVideoCaptureDeviceSources(&devices,
                                                              &count)) {
     result->Error("System error", "Failed to get available cameras");
     CoTaskMemFree(devices);
@@ -350,7 +350,7 @@ void CameraPlugin::CreateCameraMethodHandler(
 
   if (AddPendingResult(PendingResultType::CREATE_CAMERA, std::move(result))) {
     capture_controller_ = nullptr;
-    capture_controller_ = std::make_unique<CaptureController>(this);
+    capture_controller_ = std::make_unique<CaptureControllerImpl>(this);
     capture_controller_->CreateCaptureDevice(registrar_->texture_registrar(),
                                              deviceInfo->device_id,
                                              *enable_audio, resolutionPreset);
