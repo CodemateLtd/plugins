@@ -9,6 +9,8 @@ set(PLUGIN_NAME "${PROJECT_NAME}_plugin")
 list(APPEND PLUGIN_SOURCES
   "camera_plugin.h"
   "camera_plugin.cpp"
+  "camera.h"
+  "camera.cpp"
   "capture_controller.h"
   "capture_controller.cpp"
   "capture_controller_listener.h"

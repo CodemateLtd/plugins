@@ -17,7 +17,7 @@ struct CaptureDeviceInfo {
 
 std::string GetUniqueDeviceName(std::unique_ptr<CaptureDeviceInfo> device_info);
 
-std::unique_ptr<CaptureDeviceInfo> ParseDeviceInfoFromDeviceName(
+std::unique_ptr<CaptureDeviceInfo> ParseDeviceInfoFromCameraName(
     const std::string &device_name);
 
 }  // namespace camera_windows

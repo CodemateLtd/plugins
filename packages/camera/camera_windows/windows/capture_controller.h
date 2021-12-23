@@ -57,7 +57,7 @@ void Release(T** ppT) {
 
 class CaptureController {
  public:
-  CaptureController() {};
+  CaptureController(){};
   virtual ~CaptureController() = default;
 
   // Disallow copy and move.
@@ -81,6 +81,7 @@ class CaptureController {
   virtual void StopRecord() = 0;
   virtual void TakePicture(const std::string filepath) = 0;
 };
+
 class CaptureControllerImpl : public CaptureController,
                               public CaptureEngineObserver {
  public:
