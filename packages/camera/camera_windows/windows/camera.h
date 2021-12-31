@@ -98,6 +98,10 @@ class CameraImpl : public Camera {
                   bool enable_audio,
                   ResolutionPreset resolution_preset) override;
 
+ protected:
+  std::unique_ptr<MethodResult<>> GetPendingResultByType(
+      PendingResultType type);
+
  private:
   std::unique_ptr<CaptureController> capture_controller_;
   int64_t camera_id_;
@@ -105,8 +109,6 @@ class CameraImpl : public Camera {
 
   // Pending results
   std::map<PendingResultType, std::unique_ptr<MethodResult<>>> pending_results_;
-  std::unique_ptr<MethodResult<>> GetPendingResultByType(
-      PendingResultType type);
   void ClearPendingResultByType(PendingResultType type);
   void ClearPendingResults();
 };

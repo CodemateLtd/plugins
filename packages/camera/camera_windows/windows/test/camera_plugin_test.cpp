@@ -14,8 +14,6 @@
 #include <memory>
 #include <string>
 
-#include "camera.h"
-#include "camera_plugin.h"
 #include "mocks.h"
 
 namespace camera_windows {

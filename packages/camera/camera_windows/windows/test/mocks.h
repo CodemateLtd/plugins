@@ -12,6 +12,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "camera.h"
+#include "camera_plugin.h"
+
 namespace camera_windows {
 namespace test {
 
@@ -86,17 +89,40 @@ class MockCameraFactory : public CameraFactory {
   std::unique_ptr<Camera> pending_camera_;
 };
 
-class MockCamera : public Camera {
+class MockCamera : public CameraImpl {
  public:
   MockCamera(const std::string& device_id)
-      : device_id_(device_id), Camera(device_id){};
+      : device_id_(device_id), CameraImpl(device_id){};
   ~MockCamera() = default;
 
   MockCamera(const MockCamera&) = delete;
   MockCamera& operator=(const MockCamera&) = delete;
 
+  void DelegateToReal() {
+    ON_CALL(*this, AddPendingResult)
+        .WillByDefault([this](PendingResultType type,
+                              std::unique_ptr<MethodResult<>> result) {
+          return CameraImpl::AddPendingResult(type, std::move(result));
+        });
+    ON_CALL(*this, HasPendingResultByType)
+        .WillByDefault([this](PendingResultType type) {
+          return CameraImpl::HasPendingResultByType(type);
+        });
+    ON_CALL(*this, OnCreateCaptureEngineSucceeded)
+        .WillByDefault([this](int64_t texture_id) {
+          CameraImpl::OnCreateCaptureEngineSucceeded(texture_id);
+        });
+
+    ON_CALL(*this, GetPendingResultByType)
+        .WillByDefault([this](PendingResultType type) {
+          return CameraImpl::GetPendingResultByType(type);
+        });
+  }
+
   MOCK_METHOD(void, OnCreateCaptureEngineSucceeded, (int64_t texture_id),
               (override));
+  MOCK_METHOD(std::unique_ptr<flutter::MethodResult<>>, GetPendingResultByType,
+              (PendingResultType type));
   MOCK_METHOD(void, OnCreateCaptureEngineFailed, (const std::string& error),
               (override));
 

@@ -68,7 +68,8 @@ FetchContent_MakeAvailable(googletest)
 # directly into the test binary rather than using the DLL.
 add_executable(${TEST_RUNNER}
   test/mocks.h
-  test/camera_windows_test.cpp
+  test/camera_plugin_test.cpp
+  test/camera_test.cpp
   ${PLUGIN_SOURCES}
 )
 apply_standard_settings(${TEST_RUNNER})
