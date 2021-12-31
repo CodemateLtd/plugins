@@ -22,8 +22,8 @@ class CaptureControllerListener {
   virtual void OnResumePreviewSucceeded() = 0;
   virtual void OnResumePreviewFailed(const std::string& error) = 0;
 
-  virtual void OnStopPreviewSucceeded() = 0;
-  virtual void OnStopPreviewFailed(const std::string& error) = 0;
+  virtual void OnPausePreviewSucceeded() = 0;
+  virtual void OnPausePreviewFailed(const std::string& error) = 0;
 
   virtual void OnStartRecordSucceeded() = 0;
   virtual void OnStartRecordFailed(const std::string& error) = 0;

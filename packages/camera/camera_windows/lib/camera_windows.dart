@@ -113,7 +113,6 @@ class CameraWindows extends CameraPlatform {
       'initialize',
       <String, dynamic>{
         'cameraId': requestedCameraId,
-        'imageFormatGroup': imageFormatGroup.name(),
       },
     );
 

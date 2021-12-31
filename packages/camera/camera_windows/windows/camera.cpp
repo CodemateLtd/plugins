@@ -10,7 +10,10 @@ using flutter::EncodableMap;
 using flutter::EncodableValue;
 
 CameraImpl::CameraImpl(const std::string &device_id)
-    : device_id_(device_id), capture_controller_(nullptr), Camera(device_id) {}
+    : device_id_(device_id),
+      capture_controller_(nullptr),
+      camera_id_(-1),
+      Camera(device_id) {}
 CameraImpl::~CameraImpl() {
   capture_controller_ = nullptr;
   ClearPendingResults();
@@ -145,7 +148,7 @@ void CameraImpl::OnResumePreviewFailed(const std::string &error) {
 }
 
 // From CaptureControllerListener
-void CameraImpl::OnStopPreviewSucceeded() {
+void CameraImpl::OnPausePreviewSucceeded() {
   auto pending_result =
       GetPendingResultByType(PendingResultType::PAUSE_PREVIEW);
   if (pending_result) {
@@ -154,7 +157,7 @@ void CameraImpl::OnStopPreviewSucceeded() {
 }
 
 // From CaptureControllerListener
-void CameraImpl::OnStopPreviewFailed(const std::string &error) {
+void CameraImpl::OnPausePreviewFailed(const std::string &error) {
   auto pending_result =
       GetPendingResultByType(PendingResultType::PAUSE_PREVIEW);
   if (pending_result) {

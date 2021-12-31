@@ -22,12 +22,11 @@
 #include "string_utils.h"
 
 namespace camera_windows {
-
-namespace {
-
 using flutter::EncodableList;
 using flutter::EncodableMap;
 using flutter::EncodableValue;
+
+namespace {
 
 // Channel events
 const char kChannelName[] = "plugins.flutter.io/camera";
@@ -101,7 +100,6 @@ bool HasCurrentTextureId(int64_t current_camera_id, const EncodableMap &args) {
   return current_camera_id == *camera_id;
 }
 
-
 std::unique_ptr<flutter::MethodChannel<>> BuildChannelForCamera(
     flutter::PluginRegistrarWindows *registrar, int64_t current_texture_id) {
   auto channel_name = std::string(kCameraMethodChannelBaseName) +
@@ -114,7 +112,7 @@ std::unique_ptr<flutter::MethodChannel<>> BuildChannelForCamera(
 
 std::unique_ptr<CaptureDeviceInfo> GetDeviceInfo(IMFActivate *device) {
   assert(device);
-  auto deviceInfo = std::make_unique<CaptureDeviceInfo>();
+  auto device_info = std::make_unique<CaptureDeviceInfo>();
   wchar_t *name;
   UINT32 name_size;
 
@@ -127,15 +125,15 @@ std::unique_ptr<CaptureDeviceInfo> GetDeviceInfo(IMFActivate *device) {
         MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &id, &id_size);
 
     if (SUCCEEDED(hr)) {
-      deviceInfo->display_name = Utf8FromUtf16(std::wstring(name, name_size));
-      deviceInfo->device_id = Utf8FromUtf16(std::wstring(id, id_size));
+      device_info->display_name = Utf8FromUtf16(std::wstring(name, name_size));
+      device_info->device_id = Utf8FromUtf16(std::wstring(id, id_size));
     }
 
     ::CoTaskMemFree(id);
   }
 
   ::CoTaskMemFree(name);
-  return deviceInfo;
+  return device_info;
 }
 
 std::string GetCurrentTimeString() {
@@ -189,42 +187,6 @@ bool GetFilePathForVideo(std::string &filename) {
 
   return SUCCEEDED(hr);
 }
-
-void GetAvailableCameras(std::unique_ptr<flutter::MethodResult<>> result) {
-  // Enumerate devices.
-  IMFActivate **devices;
-  UINT32 count;
-  if (!CaptureControllerImpl::EnumerateVideoCaptureDeviceSources(&devices,
-                                                                 &count)) {
-    result->Error("System error", "Failed to get available cameras");
-    CoTaskMemFree(devices);
-    return;
-  }
-
-  if (count == 0) {
-    result->Success(EncodableValue(EncodableList()));
-    CoTaskMemFree(devices);
-    return;
-  }
-
-  // Format found devices to the response
-  EncodableList devices_list;
-  for (UINT32 i = 0; i < count; ++i) {
-    auto deviceInfo = GetDeviceInfo(devices[i]);
-    auto deviceName = GetUniqueDeviceName(std::move(deviceInfo));
-
-    // TODO: get lens facing info and sensor orientation from devices
-    devices_list.push_back(EncodableMap({
-        {EncodableValue("name"), EncodableValue(deviceName)},
-        {EncodableValue("lensFacing"), EncodableValue("front")},
-        {EncodableValue("sensorOrientation"), EncodableValue(0)},
-    }));
-  }
-
-  CoTaskMemFree(devices);
-  result->Success(std::move(EncodableValue(devices_list)));
-}
-
 }  // namespace
 
 // static
@@ -235,7 +197,7 @@ void CameraPlugin::RegisterWithRegistrar(
       &flutter::StandardMethodCodec::GetInstance());
 
   std::unique_ptr<CameraPlugin> plugin =
-      std::make_unique<CameraPlugin>(registrar);
+      std::make_unique<CameraPlugin>(registrar->texture_registrar());
 
   channel->SetMethodCallHandler(
       [plugin_pointer = plugin.get()](const auto &call, auto result) {
@@ -245,10 +207,15 @@ void CameraPlugin::RegisterWithRegistrar(
   registrar->AddPlugin(std::move(plugin));
 }
 
-CameraPlugin::CameraPlugin(flutter::PluginRegistrarWindows *registrar)
-    : registrar_(registrar) {}
+CameraPlugin::CameraPlugin(flutter::TextureRegistrar *texture_registrar)
+    : texture_registrar_(texture_registrar),
+      camera_factory_(std::make_unique<CameraFactoryImpl>()) {}
 
-// TODO: make sure everything is cleared
+CameraPlugin::CameraPlugin(flutter::TextureRegistrar *texture_registrar,
+                           std::unique_ptr<CameraFactory> camera_factory)
+    : texture_registrar_(texture_registrar),
+      camera_factory_(std::move(camera_factory)) {}
+
 CameraPlugin::~CameraPlugin() {}
 
 void CameraPlugin::HandleMethodCall(
@@ -257,13 +224,13 @@ void CameraPlugin::HandleMethodCall(
   const std::string &method_name = method_call.method_name();
 
   if (method_name.compare(kAvailableCamerasMethod) == 0) {
-    return GetAvailableCameras(std::move(result));
+    return AvailableCamerasMethodHandler(std::move(result));
   } else if (method_name.compare(kCreateMethod) == 0) {
     const auto *arguments =
         std::get_if<flutter::EncodableMap>(method_call.arguments());
     assert(arguments);
 
-    return CreateCameraMethodHandler(*arguments, std::move(result));
+    return CreateMethodHandler(*arguments, std::move(result));
   } else if (method_name.compare(kInitializeMethod) == 0) {
     const auto *arguments =
         std::get_if<flutter::EncodableMap>(method_call.arguments());
@@ -310,6 +277,48 @@ void CameraPlugin::HandleMethodCall(
     result->NotImplemented();
   }
 }
+
+void CameraPlugin::AvailableCamerasMethodHandler(
+    std::unique_ptr<flutter::MethodResult<>> result) {
+  // Enumerate devices.
+  IMFActivate **devices;
+  UINT32 count = 0;
+  if (!this->EnumerateVideoCaptureDeviceSources(&devices, &count)) {
+    result->Error("System error", "Failed to get available cameras");
+    // No need to free devices here, cos allocation failed
+    return;
+  }
+
+  if (count == 0) {
+    result->Success(EncodableValue(EncodableList()));
+    CoTaskMemFree(devices);
+    return;
+  }
+
+  // Format found devices to the response
+  EncodableList devices_list;
+  for (UINT32 i = 0; i < count; ++i) {
+    auto device_info = GetDeviceInfo(devices[i]);
+    auto deviceName = GetUniqueDeviceName(std::move(device_info));
+
+    // TODO: get lens facing info and sensor orientation from devices
+    devices_list.push_back(EncodableMap({
+        {EncodableValue("name"), EncodableValue(deviceName)},
+        {EncodableValue("lensFacing"), EncodableValue("front")},
+        {EncodableValue("sensorOrientation"), EncodableValue(0)},
+    }));
+  }
+
+  CoTaskMemFree(devices);
+  result->Success(std::move(EncodableValue(devices_list)));
+}
+
+bool CameraPlugin::EnumerateVideoCaptureDeviceSources(IMFActivate ***devices,
+                                                      UINT32 *count) {
+  return CaptureControllerImpl::EnumerateVideoCaptureDeviceSources(devices,
+                                                                   count);
+}
+
 // Loops through cameras and returns camera with matching device_id or nullptr
 Camera *CameraPlugin::GetCameraByDeviceId(std::string &device_id) {
   for (auto it = begin(cameras_); it != end(cameras_); ++it) {
@@ -341,9 +350,7 @@ void CameraPlugin::DisposeCameraByCameraId(int64_t camera_id) {
 
 // Creates and initializes capture controller
 // and MFCaptureEngine for requested device
-// TODO: support multiple camera streams with multiple
-// capture_controllers and pending results
-void CameraPlugin::CreateCameraMethodHandler(
+void CameraPlugin::CreateMethodHandler(
     const EncodableMap &args, std::unique_ptr<flutter::MethodResult<>> result) {
   // Parse enableAudio argument
   const auto *enable_audio =
@@ -360,16 +367,21 @@ void CameraPlugin::CreateCameraMethodHandler(
     return result->Error("Argument error",
                          std::string(kCameraNameKey) + " argument missing");
   }
-  auto deviceInfo = ParseDeviceInfoFromCameraName(*camera_name);
+  auto device_info = ParseDeviceInfoFromCameraName(*camera_name);
 
-  if (GetCameraByDeviceId(deviceInfo->device_id)) {
+  if (!device_info) {
+    return result->Error(
+        "Camera error", "Cannot parse argument " + std::string(kCameraNameKey));
+  }
+
+  if (GetCameraByDeviceId(device_info->device_id)) {
     return result->Error(
         "Camera error",
         "Camera with given " + std::string(*camera_name) + " already exists");
   }
 
-  // TODO: use camera factory
-  auto camera = std::make_unique<CameraImpl>(deviceInfo->device_id);
+  std::unique_ptr<camera_windows::Camera> camera =
+      camera_factory_->CreateCamera(device_info->device_id);
 
   if (camera->HasPendingResultByType(PendingResultType::CREATE_CAMERA)) {
     // This should never happen
@@ -388,19 +400,17 @@ void CameraPlugin::CreateCameraMethodHandler(
     } else {
       resolution_preset = ResolutionPreset::RESOLUTION_PRESET_AUTO;
     }
-
-    camera->InitCamera(registrar_->texture_registrar(), *enable_audio,
-                       resolution_preset);
+    camera->InitCamera(texture_registrar_, *enable_audio, resolution_preset);
+    cameras_.push_back(std::move(camera));
   }
-
-  cameras_.push_back(std::move(camera));
 }
 
 void CameraPlugin::InitializeMethodHandler(
     const EncodableMap &args, std::unique_ptr<flutter::MethodResult<>> result) {
   auto camera_id = std::get_if<std::int64_t>(ValueOrNull(args, kCameraIdKey));
   if (!camera_id) {
-    return result->Error("Argument error", std::string(kCameraIdKey) + " missing");
+    return result->Error("Argument error",
+                         std::string(kCameraIdKey) + " missing");
   }
 
   auto camera = GetCameraByCameraId(*camera_id);
@@ -415,7 +425,9 @@ void CameraPlugin::InitializeMethodHandler(
 
   if (camera->AddPendingResult(PendingResultType::INITIALIZE,
                                std::move(result))) {
-    camera->GetCaptureController()->StartPreview(true);
+    auto cc = camera->GetCaptureController();
+    assert(cc);
+    cc->StartPreview();
   }
 }
 
@@ -423,7 +435,8 @@ void CameraPlugin::PausePreviewMethodHandler(
     const EncodableMap &args, std::unique_ptr<flutter::MethodResult<>> result) {
   auto camera_id = std::get_if<std::int64_t>(ValueOrNull(args, kCameraIdKey));
   if (!camera_id) {
-    return result->Error("Argument error", std::string(kCameraIdKey) + " missing");
+    return result->Error("Argument error",
+                         std::string(kCameraIdKey) + " missing");
   }
 
   auto camera = GetCameraByCameraId(*camera_id);
@@ -440,7 +453,9 @@ void CameraPlugin::PausePreviewMethodHandler(
                                std::move(result))) {
     // Capture engine does not really have pause feature...
     // so preview is stopped instead.
-    camera->GetCaptureController()->StopPreview();
+    auto cc = camera->GetCaptureController();
+    assert(cc);
+    cc->PausePreview();
   }
 }
 
@@ -448,7 +463,8 @@ void CameraPlugin::ResumePreviewMethodHandler(
     const EncodableMap &args, std::unique_ptr<flutter::MethodResult<>> result) {
   auto camera_id = std::get_if<std::int64_t>(ValueOrNull(args, kCameraIdKey));
   if (!camera_id) {
-    return result->Error("Argument error", std::string(kCameraIdKey) + " missing");
+    return result->Error("Argument error",
+                         std::string(kCameraIdKey) + " missing");
   }
 
   auto camera = GetCameraByCameraId(*camera_id);
@@ -461,10 +477,13 @@ void CameraPlugin::ResumePreviewMethodHandler(
                          "Resume preview method already called");
   }
 
-  if (camera->AddPendingResult(PendingResultType::RESUME_PREVIEW, std::move(result))) {
+  if (camera->AddPendingResult(PendingResultType::RESUME_PREVIEW,
+                               std::move(result))) {
     // Capture engine does not really have pause feature...
     // so preview is started instead
-    camera->GetCaptureController()->StartPreview(false);
+    auto cc = camera->GetCaptureController();
+    assert(cc);
+    cc->ResumePreview();
   }
 }
 
@@ -472,7 +491,8 @@ void CameraPlugin::StartVideoRecordingMethodHandler(
     const EncodableMap &args, std::unique_ptr<flutter::MethodResult<>> result) {
   auto camera_id = std::get_if<std::int64_t>(ValueOrNull(args, kCameraIdKey));
   if (!camera_id) {
-    return result->Error("Argument error", std::string(kCameraIdKey) + " missing");
+    return result->Error("Argument error",
+                         std::string(kCameraIdKey) + " missing");
   }
 
   auto camera = GetCameraByCameraId(*camera_id);
@@ -496,9 +516,12 @@ void CameraPlugin::StartVideoRecordingMethodHandler(
 
   std::string path;
   if (GetFilePathForVideo(path)) {
-    if (camera->AddPendingResult(PendingResultType::START_RECORD, std::move(result))) {
+    if (camera->AddPendingResult(PendingResultType::START_RECORD,
+                                 std::move(result))) {
       auto str_path = std::string(path);
-      camera->GetCaptureController()->StartRecord(str_path, max_capture_duration);
+      auto cc = camera->GetCaptureController();
+      assert(cc);
+      cc->StartRecord(str_path, max_capture_duration);
     }
   } else {
     return result->Error("System error",
@@ -510,7 +533,8 @@ void CameraPlugin::StopVideoRecordingMethodHandler(
     const EncodableMap &args, std::unique_ptr<flutter::MethodResult<>> result) {
   auto camera_id = std::get_if<std::int64_t>(ValueOrNull(args, kCameraIdKey));
   if (!camera_id) {
-    return result->Error("Argument error", std::string(kCameraIdKey) + " missing");
+    return result->Error("Argument error",
+                         std::string(kCameraIdKey) + " missing");
   }
 
   auto camera = GetCameraByCameraId(*camera_id);
@@ -522,8 +546,12 @@ void CameraPlugin::StopVideoRecordingMethodHandler(
     return result->Error("Failed to stop video recording",
                          "Video recording stopping already");
   }
-  if (camera->AddPendingResult(PendingResultType::STOP_RECORD, std::move(result))) {
-    camera->GetCaptureController()->StopRecord();
+
+  if (camera->AddPendingResult(PendingResultType::STOP_RECORD,
+                               std::move(result))) {
+    auto cc = camera->GetCaptureController();
+    assert(cc);
+    cc->StopRecord();
   }
 }
 
@@ -531,7 +559,8 @@ void CameraPlugin::TakePictureMethodHandler(
     const EncodableMap &args, std::unique_ptr<flutter::MethodResult<>> result) {
   auto camera_id = std::get_if<std::int64_t>(ValueOrNull(args, kCameraIdKey));
   if (!camera_id) {
-    return result->Error("Argument error", std::string(kCameraIdKey) + " missing");
+    return result->Error("Argument error",
+                         std::string(kCameraIdKey) + " missing");
   }
 
   auto camera = GetCameraByCameraId(*camera_id);
@@ -539,13 +568,20 @@ void CameraPlugin::TakePictureMethodHandler(
     return result->Error("Camera not created", "Please create camera first");
   }
 
-  camera->AddPendingResult(PendingResultType::TAKE_PICTURE, std::move(result));
+  if (camera->HasPendingResultByType(PendingResultType::TAKE_PICTURE)) {
+    return result->Error("Taking picture failed", "Picture already requested");
+  }
 
   std::string path;
   if (GetFilePathForPicture(path)) {
-    camera->GetCaptureController()->TakePicture(path);
+    if (camera->AddPendingResult(PendingResultType::TAKE_PICTURE,
+                                 std::move(result))) {
+      auto cc = camera->GetCaptureController();
+      assert(cc);
+      cc->TakePicture(path);
+    }
   } else {
-    camera->OnPictureFailed("Failed to get path for picture");
+    return result->Error("Taking picture failed", "Failed to get proper path");
   }
 }
 
@@ -553,7 +589,8 @@ void CameraPlugin::DisposeMethodHandler(
     const EncodableMap &args, std::unique_ptr<flutter::MethodResult<>> result) {
   auto camera_id = std::get_if<std::int64_t>(ValueOrNull(args, kCameraIdKey));
   if (!camera_id) {
-    return result->Error("Argument error", std::string(kCameraIdKey) + " missing");
+    return result->Error("Argument error",
+                         std::string(kCameraIdKey) + " missing");
   }
 
   DisposeCameraByCameraId(*camera_id);

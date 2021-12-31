@@ -55,6 +55,12 @@ void Release(T** ppT) {
   }
 }
 
+class VideoCaptureDeviceEnumerator {
+ protected:
+  virtual bool EnumerateVideoCaptureDeviceSources(IMFActivate*** devices,
+                                                  UINT32* count) = 0;
+};
+
 class CaptureController {
  public:
   CaptureController(){};
@@ -74,8 +80,10 @@ class CaptureController {
   virtual uint32_t GetPreviewHeight() = 0;
 
   // Actions
-  virtual void StartPreview(bool initializing_preview) = 0;
+  virtual void StartPreview() = 0;
   virtual void StopPreview() = 0;
+  virtual void PausePreview() = 0;
+  virtual void ResumePreview() = 0;
   virtual void StartRecord(const std::string& filepath,
                            int64_t max_capture_duration) = 0;
   virtual void StopRecord() = 0;
@@ -101,8 +109,10 @@ class CaptureControllerImpl : public CaptureController,
   uint32_t GetPreviewWidth() override { return preview_frame_width_; }
   uint32_t GetPreviewHeight() override { return preview_frame_height_; }
 
-  void StartPreview(bool initializing_preview) override;
+  void StartPreview() override;
   void StopPreview() override;
+  void PausePreview() override;
+  void ResumePreview() override;
   void StartRecord(const std::string& filepath,
                    int64_t max_capture_duration) override;
   void StopRecord() override;
@@ -113,13 +123,13 @@ class CaptureControllerImpl : public CaptureController,
   bool IsReadyForEvents() override {
     return initialized_ || capture_engine_initialization_pending_;
   };
-  bool IsReadyForSample() override { return initialized_ && previewing_; }
+  bool IsReadyForSample() override {
+    return initialized_ && previewing_ && !preview_paused_;
+  }
   void OnCaptureEngineInitialized(bool success) override;
   void OnCaptureEngineError() override;
   void OnPicture(bool success) override;
-  void OnPreviewStarted(bool success) override {
-    OnPreviewStarted(success, initializing_preview_);
-  };
+  void OnPreviewStarted(bool success) override;
   void OnPreviewStopped(bool success) override;
   void OnRecordStarted(bool success) override;
   void OnRecordStopped(bool success) override;
@@ -162,8 +172,7 @@ class CaptureControllerImpl : public CaptureController,
   uint32_t bytes_per_pixel_ = 4;  // MFVideoFormat_RGB32
 
   // Preview
-  bool initializing_preview_ = false;
-
+  bool preview_paused_ = false;
   bool preview_pending_ = false;
   bool previewing_ = false;
   uint32_t preview_frame_width_ = 0;
@@ -200,9 +209,6 @@ class CaptureControllerImpl : public CaptureController,
 
   const FlutterDesktopPixelBuffer* ConvertPixelBufferForFlutter(size_t width,
                                                                 size_t height);
-
-  // internal implementation of OnPreviewStarted
-  void OnPreviewStarted(bool success, bool initializing_preview);
 };
 }  // namespace camera_windows
 

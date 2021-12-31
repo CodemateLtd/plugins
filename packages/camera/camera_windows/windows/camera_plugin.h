@@ -19,11 +19,17 @@
 namespace camera_windows {
 using flutter::MethodResult;
 
-class CameraPlugin : public flutter::Plugin {
+class CameraPlugin : public flutter::Plugin,
+                     public VideoCaptureDeviceEnumerator {
  public:
   static void RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar);
 
-  CameraPlugin(flutter::PluginRegistrarWindows *registrar);
+  CameraPlugin(flutter::TextureRegistrar *texture_registrar);
+
+  // Creates a plugin instance with the given CameraFactory instance.
+  // Exists for unit testing with mock implementations.
+  CameraPlugin(flutter::TextureRegistrar *texture_registrar,
+               std::unique_ptr<CameraFactory> camera_factory);
 
   virtual ~CameraPlugin();
 
@@ -35,10 +41,27 @@ class CameraPlugin : public flutter::Plugin {
   void HandleMethodCall(const flutter::MethodCall<> &method_call,
                         std::unique_ptr<MethodResult<>> result);
 
+ protected:
+  std::vector<std::unique_ptr<Camera>> cameras_;
+
+  Camera *GetCameraByDeviceId(std::string &device_id);
+  Camera *GetCameraByCameraId(int64_t camera_id);
+  void DisposeCameraByCameraId(int64_t camera_id);
+
+  bool EnumerateVideoCaptureDeviceSources(IMFActivate ***devices,
+                                          UINT32 *count) override;
+
  private:
+  std::unique_ptr<CameraFactory> camera_factory_;
+  flutter::TextureRegistrar *texture_registrar_;
+
   // Method handlers
-  void CreateCameraMethodHandler(const EncodableMap &args,
-                                 std::unique_ptr<MethodResult<>> result);
+
+  void AvailableCamerasMethodHandler(
+      std::unique_ptr<flutter::MethodResult<>> result);
+
+  void CreateMethodHandler(const EncodableMap &args,
+                           std::unique_ptr<MethodResult<>> result);
 
   void InitializeMethodHandler(const EncodableMap &args,
                                std::unique_ptr<MethodResult<>> result);
@@ -60,13 +83,6 @@ class CameraPlugin : public flutter::Plugin {
 
   void DisposeMethodHandler(const EncodableMap &args,
                             std::unique_ptr<MethodResult<>> result);
-
-  Camera *GetCameraByDeviceId(std::string &device_id);
-  Camera *GetCameraByCameraId(int64_t camera_id);
-  void DisposeCameraByCameraId(int64_t camera_id);
-
-  std::vector<std::unique_ptr<Camera>> cameras_;
-  flutter::PluginRegistrarWindows *registrar_;
 };
 
 }  // namespace camera_windows

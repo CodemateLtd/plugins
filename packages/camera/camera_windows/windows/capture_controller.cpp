@@ -428,7 +428,6 @@ void CaptureControllerImpl::ResetCaptureEngineState() {
   capture_engine_initialization_pending_ = false;
   preview_pending_ = false;
   previewing_ = false;
-  initializing_preview_ = false;
   record_pending_ = false;
   recording_ = false;
   pending_image_capture_ = false;
@@ -464,6 +463,7 @@ void CaptureControllerImpl::ResetCaptureEngineState() {
   if (texture_registrar_ && texture_id_ > -1) {
     texture_registrar_->UnregisterTexture(texture_id_);
   }
+  texture_ = nullptr;
 }
 
 uint8_t *CaptureControllerImpl::GetSourceBuffer(uint32_t current_length) {
@@ -618,43 +618,23 @@ void CaptureControllerImpl::OnCaptureEngineError() {
   capture_engine_initialization_pending_ = false;
 }
 
-void CaptureControllerImpl::OnPreviewStarted(bool success,
-                                             bool initializing_preview) {
+void CaptureControllerImpl::OnPreviewStarted(bool success) {
   if (capture_controller_listener_) {
     if (success && preview_frame_width_ > 0 && preview_frame_height_ > 0) {
-      if (initializing_preview) {
-        capture_controller_listener_->OnStartPreviewSucceeded(
-            preview_frame_width_, preview_frame_height_);
-      } else {
-        capture_controller_listener_->OnResumePreviewSucceeded();
-      }
+      capture_controller_listener_->OnStartPreviewSucceeded(
+          preview_frame_width_, preview_frame_height_);
     } else {
-      if (initializing_preview) {
-        capture_controller_listener_->OnStartPreviewFailed(
-            "Failed to start preview");
-      } else {
-        capture_controller_listener_->OnResumePreviewFailed(
-            "Failed to resume preview");
-      }
+      capture_controller_listener_->OnStartPreviewFailed(
+          "Failed to start preview");
     }
   }
 
   // update state
-  initializing_preview_ = false;
   preview_pending_ = false;
   previewing_ = success;
 };
 
 void CaptureControllerImpl::OnPreviewStopped(bool success) {
-  if (capture_controller_listener_) {
-    if (success) {
-      capture_controller_listener_->OnStopPreviewSucceeded();
-    } else {
-      capture_controller_listener_->OnStopPreviewFailed(
-          "Failed to stop preview");
-    }
-  }
-
   // update state
   previewing_ = false;
 };
@@ -822,11 +802,6 @@ HRESULT CaptureControllerImpl::FindBaseMediaTypes() {
           preview_frame_width_ = frame_width;
           preview_frame_height_ = frame_height;
         }
-
-        // printf("Available frame size: width: %d, height: %d\n",
-        // frame_width,
-        //        frame_height);
-        // fflush(stdout);
       }
     }
     Release(&media_type);
@@ -1025,17 +1000,16 @@ HRESULT CaptureControllerImpl::InitRecordSink(const std::string &filepath) {
   return hr;
 }
 
-void CaptureControllerImpl::StartPreview(bool initialize) {
+void CaptureControllerImpl::StartPreview() {
   assert(capture_controller_listener_);
 
   if (!initialized_ || previewing_) {
-    return OnPreviewStarted(false, initialize);
+    return OnPreviewStarted(false);
   }
 
   HRESULT hr = InitPreviewSink();
 
   if (SUCCEEDED(hr)) {
-    initializing_preview_ = initialize;
     preview_pending_ = true;
 
     // Request to start preview.
@@ -1044,7 +1018,7 @@ void CaptureControllerImpl::StartPreview(bool initialize) {
   }
 
   if (FAILED(hr)) {
-    return OnPreviewStarted(false, initializing_preview_);
+    return OnPreviewStarted(false);
   }
 }
 
@@ -1052,10 +1026,10 @@ void CaptureControllerImpl::StopPreview() {
   assert(capture_controller_listener_);
 
   if (!initialized_) {
-    return capture_controller_listener_->OnStopPreviewFailed(
+    return capture_controller_listener_->OnPausePreviewFailed(
         "Capture not initialized");
   } else if (!previewing_ && !preview_pending_) {
-    return capture_controller_listener_->OnStopPreviewFailed("Not previewing");
+    return capture_controller_listener_->OnPausePreviewFailed("Not previewing");
   }
 
   // Request to stop preview.
@@ -1063,9 +1037,23 @@ void CaptureControllerImpl::StopPreview() {
   HRESULT hr = capture_engine_->StopPreview();
 
   if (FAILED(hr)) {
-    capture_controller_listener_->OnStopPreviewFailed(
+    capture_controller_listener_->OnPausePreviewFailed(
         "Failed to stop previewing");
   };
 }
 
+void CaptureControllerImpl::PausePreview() {
+  if (!previewing_) {
+    preview_paused_ = false;
+    return capture_controller_listener_->OnPausePreviewFailed(
+        "Preview not started");
+  }
+  preview_paused_ = true;
+  capture_controller_listener_->OnPausePreviewSucceeded();
+}
+
+void CaptureControllerImpl::ResumePreview() {
+  preview_paused_ = false;
+  capture_controller_listener_->OnResumePreviewSucceeded();
+}
 }  // namespace camera_windows

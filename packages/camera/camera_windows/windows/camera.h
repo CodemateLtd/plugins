@@ -16,6 +16,7 @@ namespace camera_windows {
 
 using flutter::EncodableMap;
 using flutter::MethodResult;
+
 enum PendingResultType {
   CREATE_CAMERA,
   INITIALIZE,
@@ -54,13 +55,17 @@ class CameraImpl : public Camera {
   CameraImpl(const std::string &device_id);
   virtual ~CameraImpl();
 
+  // Disallow copy and move.
+  CameraImpl(const CameraImpl &) = delete;
+  CameraImpl &operator=(const CameraImpl &) = delete;
+
   // From CaptureControllerListener
   void OnCreateCaptureEngineSucceeded(int64_t texture_id) override;
   void OnCreateCaptureEngineFailed(const std::string &error) override;
   void OnStartPreviewSucceeded(int32_t width, int32_t height) override;
   void OnStartPreviewFailed(const std::string &error) override;
-  void OnStopPreviewSucceeded() override;
-  void OnStopPreviewFailed(const std::string &error) override;
+  void OnPausePreviewSucceeded() override;
+  void OnPausePreviewFailed(const std::string &error) override;
   void OnResumePreviewSucceeded() override;
   void OnResumePreviewFailed(const std::string &error) override;
   void OnStartRecordSucceeded() override;
@@ -90,11 +95,12 @@ class CameraImpl : public Camera {
   };
 
   void InitCamera(flutter::TextureRegistrar *texture_registrar,
-                  bool enable_audio, ResolutionPreset resolution_preset);
+                  bool enable_audio,
+                  ResolutionPreset resolution_preset) override;
 
  private:
   std::unique_ptr<CaptureController> capture_controller_;
-  int64_t camera_id_ = -1;
+  int64_t camera_id_;
   std::string device_id_;
 
   // Pending results
@@ -103,6 +109,33 @@ class CameraImpl : public Camera {
       PendingResultType type);
   void ClearPendingResultByType(PendingResultType type);
   void ClearPendingResults();
+};
+
+class CameraFactory {
+ public:
+  CameraFactory(){};
+  virtual ~CameraFactory() = default;
+
+  // Disallow copy and move.
+  CameraFactory(const CameraFactory &) = delete;
+  CameraFactory &operator=(const CameraFactory &) = delete;
+
+  virtual std::unique_ptr<Camera> CreateCamera(
+      const std::string &device_id) = 0;
+};
+
+class CameraFactoryImpl : public CameraFactory {
+ public:
+  CameraFactoryImpl(){};
+  virtual ~CameraFactoryImpl() = default;
+
+  // Disallow copy and move.
+  CameraFactoryImpl(const CameraFactoryImpl &) = delete;
+  CameraFactoryImpl &operator=(const CameraFactoryImpl &) = delete;
+
+  std::unique_ptr<Camera> CreateCamera(const std::string &device_id) override {
+    return std::make_unique<CameraImpl>(device_id);
+  };
 };
 
 }  // namespace camera_windows
