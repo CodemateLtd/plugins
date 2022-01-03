@@ -70,9 +70,7 @@ TEST(CameraPlugin, AvailableCamerasHandlerErrorIfFailsToEnumerateDevices) {
 
   EXPECT_CALL(plugin, EnumerateVideoCaptureDeviceSources)
       .Times(1)
-      .WillOnce([](IMFActivate*** devices, UINT32* count) {
-        return false;
-      });
+      .WillOnce([](IMFActivate*** devices, UINT32* count) { return false; });
 
   EXPECT_CALL(*result, ErrorInternal).Times(1);
   EXPECT_CALL(*result, SuccessInternal).Times(0);

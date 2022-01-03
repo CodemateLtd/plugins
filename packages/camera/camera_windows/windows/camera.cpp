@@ -22,9 +22,20 @@ CameraImpl::~CameraImpl() {
 void CameraImpl::InitCamera(flutter::TextureRegistrar *texture_registrar,
                             bool enable_audio,
                             ResolutionPreset resolution_preset) {
+  auto capture_controller_factory =
+      std::make_unique<CaptureControllerFactoryImpl>();
+  InitCamera(std::move(capture_controller_factory), texture_registrar,
+             enable_audio, resolution_preset);
+}
+
+void CameraImpl::InitCamera(
+    std::unique_ptr<CaptureControllerFactory> capture_controller_factory,
+    flutter::TextureRegistrar *texture_registrar, bool enable_audio,
+    ResolutionPreset resolution_preset) {
   assert(!device_id_.empty());
   capture_controller_ = nullptr;
-  capture_controller_ = std::make_unique<CaptureControllerImpl>(this);
+  capture_controller_ =
+      capture_controller_factory->CreateCaptureController(this);
   capture_controller_->CreateCaptureDevice(texture_registrar, device_id_,
                                            enable_audio, resolution_preset);
 }
@@ -177,7 +188,7 @@ void CameraImpl::OnStartRecordSucceeded() {
 void CameraImpl::OnStartRecordFailed(const std::string &error) {
   auto pending_result = GetPendingResultByType(PendingResultType::START_RECORD);
   if (pending_result) {
-    pending_result->Error("System error", "Failed to start video video");
+    pending_result->Error("Failed to start recording", error);
   }
 };
 
@@ -193,7 +204,7 @@ void CameraImpl::OnStopRecordSucceeded(const std::string &filepath) {
 void CameraImpl::OnStopRecordFailed(const std::string &error) {
   auto pending_result = GetPendingResultByType(PendingResultType::STOP_RECORD);
   if (pending_result) {
-    pending_result->Error("System error", "Failed to capture video");
+    pending_result->Error("Failed to stop recording", error);
   }
 };
 

@@ -45,6 +45,7 @@ class MockMethodResult : public flutter::MethodResult<> {
 class MockTextureRegistrar : public flutter::TextureRegistrar {
  public:
   MockTextureRegistrar() {
+    // TODO: create separate fake implementation
     ON_CALL(*this, RegisterTexture)
         .WillByDefault([this](flutter::TextureVariant* texture) -> int64_t {
           this->texture_id = 1000;
@@ -89,35 +90,14 @@ class MockCameraFactory : public CameraFactory {
   std::unique_ptr<Camera> pending_camera_;
 };
 
-class MockCamera : public CameraImpl {
+class MockCamera : public Camera {
  public:
   MockCamera(const std::string& device_id)
-      : device_id_(device_id), CameraImpl(device_id){};
+      : device_id_(device_id), Camera(device_id){};
   ~MockCamera() = default;
 
   MockCamera(const MockCamera&) = delete;
   MockCamera& operator=(const MockCamera&) = delete;
-
-  void DelegateToReal() {
-    ON_CALL(*this, AddPendingResult)
-        .WillByDefault([this](PendingResultType type,
-                              std::unique_ptr<MethodResult<>> result) {
-          return CameraImpl::AddPendingResult(type, std::move(result));
-        });
-    ON_CALL(*this, HasPendingResultByType)
-        .WillByDefault([this](PendingResultType type) {
-          return CameraImpl::HasPendingResultByType(type);
-        });
-    ON_CALL(*this, OnCreateCaptureEngineSucceeded)
-        .WillByDefault([this](int64_t texture_id) {
-          CameraImpl::OnCreateCaptureEngineSucceeded(texture_id);
-        });
-
-    ON_CALL(*this, GetPendingResultByType)
-        .WillByDefault([this](PendingResultType type) {
-          return CameraImpl::GetPendingResultByType(type);
-        });
-  }
 
   MOCK_METHOD(void, OnCreateCaptureEngineSucceeded, (int64_t texture_id),
               (override));
@@ -172,6 +152,20 @@ class MockCamera : public CameraImpl {
   std::unique_ptr<MethodResult<>> pending_result_;
   std::string device_id_;
   int64_t camera_id_ = -1;
+};
+
+class MockCaptureControllerFactory : public CaptureControllerFactory {
+ public:
+  MockCaptureControllerFactory(){};
+  virtual ~MockCaptureControllerFactory() = default;
+
+  // Disallow copy and move.
+  MockCaptureControllerFactory(const MockCaptureControllerFactory&) = delete;
+  MockCaptureControllerFactory& operator=(const MockCaptureControllerFactory&) =
+      delete;
+
+  MOCK_METHOD(std::unique_ptr<CaptureController>, CreateCaptureController,
+              (CaptureControllerListener * listener), (override));
 };
 
 class MockCaptureController : public CaptureController {

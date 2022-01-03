@@ -210,6 +210,36 @@ class CaptureControllerImpl : public CaptureController,
   const FlutterDesktopPixelBuffer* ConvertPixelBufferForFlutter(size_t width,
                                                                 size_t height);
 };
+
+class CaptureControllerFactory {
+ public:
+  CaptureControllerFactory(){};
+  virtual ~CaptureControllerFactory() = default;
+
+  // Disallow copy and move.
+  CaptureControllerFactory(const CaptureControllerFactory&) = delete;
+  CaptureControllerFactory& operator=(const CaptureControllerFactory&) = delete;
+
+  virtual std::unique_ptr<CaptureController> CreateCaptureController(
+      CaptureControllerListener* listener) = 0;
+};
+
+class CaptureControllerFactoryImpl : public CaptureControllerFactory {
+ public:
+  CaptureControllerFactoryImpl(){};
+  virtual ~CaptureControllerFactoryImpl() = default;
+
+  // Disallow copy and move.
+  CaptureControllerFactoryImpl(const CaptureControllerFactoryImpl&) = delete;
+  CaptureControllerFactoryImpl& operator=(const CaptureControllerFactoryImpl&) =
+      delete;
+
+  std::unique_ptr<CaptureController> CreateCaptureController(
+      CaptureControllerListener* listener) override {
+    return std::make_unique<CaptureControllerImpl>(listener);
+  };
+};
+
 }  // namespace camera_windows
 
 #endif  // PACKAGES_CAMERA_CAMERA_WINDOWS_WINDOWS_CAPTURE_CONTROLLER_H_

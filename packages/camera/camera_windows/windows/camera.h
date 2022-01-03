@@ -98,9 +98,10 @@ class CameraImpl : public Camera {
                   bool enable_audio,
                   ResolutionPreset resolution_preset) override;
 
- protected:
-  std::unique_ptr<MethodResult<>> GetPendingResultByType(
-      PendingResultType type);
+  void InitCamera(
+      std::unique_ptr<CaptureControllerFactory> capture_controller_factory,
+      flutter::TextureRegistrar *texture_registrar, bool enable_audio,
+      ResolutionPreset resolution_preset);
 
  private:
   std::unique_ptr<CaptureController> capture_controller_;
@@ -109,6 +110,8 @@ class CameraImpl : public Camera {
 
   // Pending results
   std::map<PendingResultType, std::unique_ptr<MethodResult<>>> pending_results_;
+  std::unique_ptr<MethodResult<>> GetPendingResultByType(
+      PendingResultType type);
   void ClearPendingResultByType(PendingResultType type);
   void ClearPendingResults();
 };
