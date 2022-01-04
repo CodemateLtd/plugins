@@ -46,6 +46,7 @@ class Camera : public CaptureControllerListener {
   virtual camera_windows::CaptureController *GetCaptureController() = 0;
 
   virtual void InitCamera(flutter::TextureRegistrar *texture_registrar,
+                          flutter::BinaryMessenger *messenger,
                           bool enable_audio,
                           ResolutionPreset resolution_preset) = 0;
 };
@@ -74,6 +75,9 @@ class CameraImpl : public Camera {
   void OnStopRecordFailed(const std::string &error) override;
   void OnPictureSuccess(const std::string &filepath) override;
   void OnPictureFailed(const std::string &error) override;
+  void OnVideoRecordedSuccess(const std::string &filepath,
+                                        int64_t video_duration) override;
+  void OnVideoRecordedFailed(const std::string &error) override;
 
   // From Camera
 
@@ -95,16 +99,18 @@ class CameraImpl : public Camera {
   };
 
   void InitCamera(flutter::TextureRegistrar *texture_registrar,
-                  bool enable_audio,
+                  flutter::BinaryMessenger *messenger, bool enable_audio,
                   ResolutionPreset resolution_preset) override;
 
   void InitCamera(
       std::unique_ptr<CaptureControllerFactory> capture_controller_factory,
-      flutter::TextureRegistrar *texture_registrar, bool enable_audio,
+      flutter::TextureRegistrar *texture_registrar,
+      flutter::BinaryMessenger *messenger, bool enable_audio,
       ResolutionPreset resolution_preset);
 
  private:
   std::unique_ptr<CaptureController> capture_controller_;
+  flutter::BinaryMessenger* messenger_;
   int64_t camera_id_;
   std::string device_id_;
 

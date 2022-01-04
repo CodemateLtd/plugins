@@ -30,6 +30,7 @@ using ::testing::Eq;
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SetArgPointee;
+using ::testing::NiceMock;
 
 class MockMethodResult : public flutter::MethodResult<> {
  public:
@@ -40,6 +41,19 @@ class MockMethodResult : public flutter::MethodResult<> {
                const EncodableValue* details),
               (override));
   MOCK_METHOD(void, NotImplementedInternal, (), (override));
+};
+
+class MockBinaryMessenger : public flutter::BinaryMessenger {
+ public:
+  MOCK_METHOD(void, Send,
+              (const std::string& channel, const uint8_t* message,
+               size_t message_size, flutter::BinaryReply reply),
+              (const));
+
+  MOCK_METHOD(void, SetMessageHandler,
+              (const std::string& channel,
+               flutter::BinaryMessageHandler handler),
+              ());
 };
 
 class MockTextureRegistrar : public flutter::TextureRegistrar {
@@ -131,6 +145,12 @@ class MockCamera : public Camera {
               (override));
   MOCK_METHOD(void, OnPictureFailed, (const std::string& error), (override));
 
+  MOCK_METHOD(void, OnVideoRecordedSuccess,
+              (const std::string& filepath, int64_t video_duration),
+              (override));
+  MOCK_METHOD(void, OnVideoRecordedFailed, (const std::string& error),
+              (override));
+
   MOCK_METHOD(bool, HasDeviceId, (std::string & device_id), (override));
   MOCK_METHOD(bool, HasCameraId, (int64_t camera_id), (override));
 
@@ -144,7 +164,8 @@ class MockCamera : public Camera {
               (override));
 
   MOCK_METHOD(void, InitCamera,
-              (flutter::TextureRegistrar * texture_registrar, bool enable_audio,
+              (flutter::TextureRegistrar * texture_registrar,
+               flutter::BinaryMessenger* messenger, bool enable_audio,
                ResolutionPreset resolution_preset),
               (override));
 
@@ -186,7 +207,7 @@ class MockCaptureController : public CaptureController {
   MOCK_METHOD(void, ResumePreview, (), (override));
   MOCK_METHOD(void, PausePreview, (), (override));
   MOCK_METHOD(void, StartRecord,
-              (const std::string& filepath, int64_t max_capture_duration),
+              (const std::string& filepath, int64_t max_video_duration_ms),
               (override));
   MOCK_METHOD(void, StopRecord, (), (override));
   MOCK_METHOD(void, TakePicture, (const std::string filepath), (override));
@@ -197,14 +218,16 @@ class MockCaptureController : public CaptureController {
 // system calls
 class MockCameraPlugin : public CameraPlugin {
  public:
-  MockCameraPlugin(flutter::TextureRegistrar* texture_registrar)
-      : CameraPlugin(texture_registrar){};
+  MockCameraPlugin(flutter::TextureRegistrar* texture_registrar,
+                   flutter::BinaryMessenger* messenger)
+      : CameraPlugin(texture_registrar, messenger){};
 
   // Creates a plugin instance with the given CameraFactory instance.
   // Exists for unit testing with mock implementations.
   MockCameraPlugin(flutter::TextureRegistrar* texture_registrar,
+                   flutter::BinaryMessenger* messenger,
                    std::unique_ptr<CameraFactory> camera_factory)
-      : CameraPlugin(texture_registrar, std::move(camera_factory)){};
+      : CameraPlugin(texture_registrar, messenger, std::move(camera_factory)){};
 
   MockCameraPlugin(const MockCameraPlugin&) = delete;
   MockCameraPlugin& operator=(const MockCameraPlugin&) = delete;

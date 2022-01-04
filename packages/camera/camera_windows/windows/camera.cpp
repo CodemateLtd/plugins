@@ -9,9 +9,26 @@ using flutter::EncodableList;
 using flutter::EncodableMap;
 using flutter::EncodableValue;
 
+namespace {
+// Camera channel events
+const char kCameraMethodChannelBaseName[] = "flutter.io/cameraPlugin/camera";
+const char kVideoRecordedEvent[] = "video_recorded";
+
+// Helper function for creating messaging channel for camera
+std::unique_ptr<flutter::MethodChannel<>> BuildChannelForCamera(
+    flutter::BinaryMessenger *messenger, int64_t camera_id) {
+  auto channel_name =
+      std::string(kCameraMethodChannelBaseName) + std::to_string(camera_id);
+  return std::make_unique<flutter::MethodChannel<>>(
+      messenger, channel_name, &flutter::StandardMethodCodec::GetInstance());
+}
+
+}  // namespace
+
 CameraImpl::CameraImpl(const std::string &device_id)
     : device_id_(device_id),
       capture_controller_(nullptr),
+      messenger_(nullptr),
       camera_id_(-1),
       Camera(device_id) {}
 CameraImpl::~CameraImpl() {
@@ -20,20 +37,22 @@ CameraImpl::~CameraImpl() {
 }
 
 void CameraImpl::InitCamera(flutter::TextureRegistrar *texture_registrar,
+                            flutter::BinaryMessenger *messenger,
                             bool enable_audio,
                             ResolutionPreset resolution_preset) {
   auto capture_controller_factory =
       std::make_unique<CaptureControllerFactoryImpl>();
   InitCamera(std::move(capture_controller_factory), texture_registrar,
-             enable_audio, resolution_preset);
+             messenger, enable_audio, resolution_preset);
 }
 
 void CameraImpl::InitCamera(
     std::unique_ptr<CaptureControllerFactory> capture_controller_factory,
-    flutter::TextureRegistrar *texture_registrar, bool enable_audio,
+    flutter::TextureRegistrar *texture_registrar,
+    flutter::BinaryMessenger *messenger, bool enable_audio,
     ResolutionPreset resolution_preset) {
   assert(!device_id_.empty());
-  capture_controller_ = nullptr;
+  messenger_ = messenger;
   capture_controller_ =
       capture_controller_factory->CreateCaptureController(this);
   capture_controller_->CreateCaptureDevice(texture_registrar, device_id_,
@@ -224,5 +243,24 @@ void CameraImpl::OnPictureFailed(const std::string &error) {
     pending_take_picture_result->Error("Failed to take picture", error);
   }
 };
+
+// From CaptureControllerListener
+void CameraImpl::OnVideoRecordedSuccess(const std::string &filepath,
+                                        int64_t video_duration) {
+  if (messenger_ && camera_id_ >= 0) {
+    auto channel = BuildChannelForCamera(messenger_, camera_id_);
+
+    std::unique_ptr<EncodableValue> message_data =
+        std::make_unique<EncodableValue>(
+            EncodableMap({{EncodableValue("path"), EncodableValue(filepath)},
+                          {EncodableValue("maxVideoDuration"),
+                           EncodableValue(video_duration)}}));
+
+    channel->InvokeMethod(kVideoRecordedEvent, std::move(message_data));
+  }
+}
+
+// From CaptureControllerListener
+void CameraImpl::OnVideoRecordedFailed(const std::string &error){};
 
 }  // namespace camera_windows

@@ -117,6 +117,13 @@ HRESULT CaptureEngineListener::OnSample(IMFSample *sample) {
       }
     }
 
+    LONGLONG raw_time_stamp = 0;
+    // Receives the presentation time, in 100-nanosecond units
+    sample->GetSampleTime(&raw_time_stamp);
+
+    // Report time in microseconds
+    this->observer_->UpdateCaptureTime(static_cast<uint64_t>(raw_time_stamp/10));
+
     if (buffer) {
       buffer->Release();
       buffer = nullptr;

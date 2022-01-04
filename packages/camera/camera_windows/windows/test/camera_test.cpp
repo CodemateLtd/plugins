@@ -22,20 +22,20 @@ namespace test {
 TEST(Camera, InitCameraCreatesCaptureController) {
   std::unique_ptr<CameraImpl> camera =
       std::make_unique<CameraImpl>(MOCK_DEVICE_ID);
-  std::unique_ptr<MockTextureRegistrar> texture_registrar_ =
-      std::make_unique<MockTextureRegistrar>();
   std::unique_ptr<MockCaptureControllerFactory> capture_controller_factory =
       std::make_unique<MockCaptureControllerFactory>();
 
   EXPECT_CALL(*capture_controller_factory, CreateCaptureController)
       .Times(1)
-      .WillOnce([]() { return std::make_unique<MockCaptureController>(); });
+      .WillOnce(
+          []() { return std::make_unique<NiceMock<MockCaptureController>>(); });
 
   EXPECT_TRUE(camera->GetCaptureController() == nullptr);
 
   // Init camera with mock capture controller factory
   camera->InitCamera(std::move(capture_controller_factory),
-                     texture_registrar_.get(), false,
+                     std::make_unique<MockTextureRegistrar>().get(),
+                     std::make_unique<MockBinaryMessenger>().get(), false,
                      ResolutionPreset::RESOLUTION_PRESET_AUTO);
 
   EXPECT_TRUE(camera->GetCaptureController() != nullptr);
@@ -291,6 +291,41 @@ TEST(Camera, OnPictureFailedReturnsError) {
   camera->AddPendingResult(PendingResultType::TAKE_PICTURE, std::move(result));
 
   camera->OnPictureFailed(error_text);
+}
+
+TEST(Camera, OnVideoRecordedSuccessInvokesCameraChannelEvent) {
+  std::unique_ptr<CameraImpl> camera =
+      std::make_unique<CameraImpl>(MOCK_DEVICE_ID);
+  std::unique_ptr<MockCaptureControllerFactory> capture_controller_factory =
+      std::make_unique<MockCaptureControllerFactory>();
+
+  std::unique_ptr<MockBinaryMessenger> binary_messenger =
+      std::make_unique<MockBinaryMessenger>();
+
+  std::string filepath = "C:\temp\filename.mp4";
+  int64_t camera_id = 12345;
+  std::string camera_channel =
+      std::string("flutter.io/cameraPlugin/camera") + std::to_string(camera_id);
+  int64_t video_duration = 1000000;
+
+  EXPECT_CALL(*capture_controller_factory, CreateCaptureController)
+      .Times(1)
+      .WillOnce(
+          []() { return std::make_unique<NiceMock<MockCaptureController>>(); });
+
+  // TODO: test binary content
+  EXPECT_CALL(*binary_messenger, Send(Eq(camera_channel), _, _, _)).Times(1);
+
+  // Init camera with mock capture controller factory
+  camera->InitCamera(std::move(capture_controller_factory),
+                     std::make_unique<MockTextureRegistrar>().get(),
+                     binary_messenger.get(), false,
+                     ResolutionPreset::RESOLUTION_PRESET_AUTO);
+
+  // Pass camera id for camera
+  camera->OnCreateCaptureEngineSucceeded(camera_id);
+
+  camera->OnVideoRecordedSuccess(filepath, video_duration);
 }
 
 }  // namespace test

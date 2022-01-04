@@ -32,6 +32,7 @@ class CaptureEngineObserver {
   // Sample functions
   virtual uint8_t* GetSourceBuffer(uint32_t current_length) = 0;
   virtual void OnBufferUpdate() = 0;
+  virtual void UpdateCaptureTime(uint64_t capture_time) = 0;
 };
 
 class CaptureEngineListener : public IMFCaptureEngineOnSampleCallback,

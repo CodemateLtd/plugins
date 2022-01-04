@@ -33,6 +33,10 @@ class CaptureControllerListener {
 
   virtual void OnPictureSuccess(const std::string& filepath) = 0;
   virtual void OnPictureFailed(const std::string& error) = 0;
+
+  virtual void OnVideoRecordedSuccess(const std::string& filepath,
+                                      int64_t video_duration) = 0;
+  virtual void OnVideoRecordedFailed(const std::string& error) = 0;
 };
 
 }  // namespace camera_windows

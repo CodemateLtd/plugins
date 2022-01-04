@@ -24,11 +24,13 @@ class CameraPlugin : public flutter::Plugin,
  public:
   static void RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar);
 
-  CameraPlugin(flutter::TextureRegistrar *texture_registrar);
+  CameraPlugin(flutter::TextureRegistrar *texture_registrar,
+               flutter::BinaryMessenger *messenger);
 
   // Creates a plugin instance with the given CameraFactory instance.
   // Exists for unit testing with mock implementations.
   CameraPlugin(flutter::TextureRegistrar *texture_registrar,
+               flutter::BinaryMessenger *messenger,
                std::unique_ptr<CameraFactory> camera_factory);
 
   virtual ~CameraPlugin();
@@ -54,6 +56,7 @@ class CameraPlugin : public flutter::Plugin,
  private:
   std::unique_ptr<CameraFactory> camera_factory_;
   flutter::TextureRegistrar *texture_registrar_;
+  flutter::BinaryMessenger *messenger_;
 
   // Method handlers
 

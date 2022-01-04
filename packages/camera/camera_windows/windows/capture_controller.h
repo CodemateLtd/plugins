@@ -14,6 +14,7 @@
 #include <mfidl.h>
 #include <windows.h>
 
+#include <chrono>
 #include <memory>
 #include <string>
 
@@ -43,6 +44,12 @@ enum ResolutionPreset {
 
   /// The highest resolution available.
   RESOLUTION_PRESET_MAX,
+};
+
+enum RecordingType {
+  RECORDING_TYPE_NOT_SET,
+  RECORDING_TYPE_CONTINUOUS,
+  RECORDING_TYPE_TIMED
 };
 
 template <class T>
@@ -85,7 +92,7 @@ class CaptureController {
   virtual void PausePreview() = 0;
   virtual void ResumePreview() = 0;
   virtual void StartRecord(const std::string& filepath,
-                           int64_t max_capture_duration) = 0;
+                           int64_t max_video_duration_ms) = 0;
   virtual void StopRecord() = 0;
   virtual void TakePicture(const std::string filepath) = 0;
 };
@@ -114,7 +121,7 @@ class CaptureControllerImpl : public CaptureController,
   void PausePreview() override;
   void ResumePreview() override;
   void StartRecord(const std::string& filepath,
-                   int64_t max_capture_duration) override;
+                   int64_t max_video_duration_ms) override;
   void StopRecord() override;
   void TakePicture(const std::string filepath) override;
 
@@ -136,6 +143,7 @@ class CaptureControllerImpl : public CaptureController,
 
   uint8_t* GetSourceBuffer(uint32_t current_length) override;
   void OnBufferUpdate() override;
+  void UpdateCaptureTime(uint64_t capture_time) override;
 
  private:
   CaptureControllerListener* capture_controller_listener_ = nullptr;
@@ -164,7 +172,7 @@ class CaptureControllerImpl : public CaptureController,
   flutter::TextureRegistrar* texture_registrar_ = nullptr;
   std::unique_ptr<flutter::TextureVariant> texture_;
 
-  // TODO: add release_callback and clear buffer if needed
+  // TODO: add release_callback and clear buffer after each frame
   FlutterDesktopPixelBuffer flutter_desktop_pixel_buffer_ = {};
   uint32_t source_buffer_size_ = 0;
   std::unique_ptr<uint8_t[]> source_buffer_data_ = nullptr;
@@ -182,9 +190,12 @@ class CaptureControllerImpl : public CaptureController,
 
   // Photo / Record
   bool pending_image_capture_ = false;
-  bool record_pending_ = false;
+  bool record_start_pending_ = false;
+  bool record_stop_pending_ = false;
   bool recording_ = false;
-  int64_t max_capture_duration_ = -1;
+  int64_t record_start_timestamp_us_ = -1;
+  uint64_t recording_duration_us_ = 0;
+  int64_t max_video_duration_ms_ = -1;
 
   uint32_t capture_frame_width_ = 0;
   uint32_t capture_frame_height_ = 0;
@@ -193,6 +204,8 @@ class CaptureControllerImpl : public CaptureController,
   IMFCaptureRecordSink* record_sink_ = nullptr;
   std::string pending_picture_path_ = "";
   std::string pending_record_path_ = "";
+
+  RecordingType recording_type_ = RecordingType::RECORDING_TYPE_NOT_SET;
 
   void ResetCaptureEngineState();
   uint32_t GetMaxPreviewHeight();
@@ -206,6 +219,8 @@ class CaptureControllerImpl : public CaptureController,
   HRESULT InitPreviewSink();
   HRESULT InitPhotoSink(const std::string& filepath);
   HRESULT InitRecordSink(const std::string& filepath);
+
+  void StopTimedRecord();
 
   const FlutterDesktopPixelBuffer* ConvertPixelBufferForFlutter(size_t width,
                                                                 size_t height);

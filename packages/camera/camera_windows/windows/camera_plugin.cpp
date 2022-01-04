@@ -41,10 +41,6 @@ const char kPausePreview[] = "pausePreview";
 const char kResumePreview[] = "resumePreview";
 const char kDisposeMethod[] = "dispose";
 
-// Camera channel events
-const char kCameraMethodChannelBaseName[] = "flutter.io/cameraPlugin/camera";
-const char kInitializedMethod[] = "initialized";
-
 const char kCameraNameKey[] = "cameraName";
 const char kResolutionPresetKey[] = "resolutionPreset";
 const char kEnableAudioKey[] = "enableAudio";
@@ -98,16 +94,6 @@ bool HasCurrentTextureId(int64_t current_camera_id, const EncodableMap &args) {
     return false;
   }
   return current_camera_id == *camera_id;
-}
-
-std::unique_ptr<flutter::MethodChannel<>> BuildChannelForCamera(
-    flutter::PluginRegistrarWindows *registrar, int64_t current_texture_id) {
-  auto channel_name = std::string(kCameraMethodChannelBaseName) +
-                      std::to_string(current_texture_id);
-
-  return std::make_unique<flutter::MethodChannel<>>(
-      registrar->messenger(), channel_name,
-      &flutter::StandardMethodCodec::GetInstance());
 }
 
 std::unique_ptr<CaptureDeviceInfo> GetDeviceInfo(IMFActivate *device) {
@@ -196,8 +182,8 @@ void CameraPlugin::RegisterWithRegistrar(
       registrar->messenger(), kChannelName,
       &flutter::StandardMethodCodec::GetInstance());
 
-  std::unique_ptr<CameraPlugin> plugin =
-      std::make_unique<CameraPlugin>(registrar->texture_registrar());
+  std::unique_ptr<CameraPlugin> plugin = std::make_unique<CameraPlugin>(
+      registrar->texture_registrar(), registrar->messenger());
 
   channel->SetMethodCallHandler(
       [plugin_pointer = plugin.get()](const auto &call, auto result) {
@@ -207,13 +193,17 @@ void CameraPlugin::RegisterWithRegistrar(
   registrar->AddPlugin(std::move(plugin));
 }
 
-CameraPlugin::CameraPlugin(flutter::TextureRegistrar *texture_registrar)
+CameraPlugin::CameraPlugin(flutter::TextureRegistrar *texture_registrar,
+                           flutter::BinaryMessenger *messenger)
     : texture_registrar_(texture_registrar),
+      messenger_(messenger),
       camera_factory_(std::make_unique<CameraFactoryImpl>()) {}
 
 CameraPlugin::CameraPlugin(flutter::TextureRegistrar *texture_registrar,
+                           flutter::BinaryMessenger *messenger,
                            std::unique_ptr<CameraFactory> camera_factory)
     : texture_registrar_(texture_registrar),
+      messenger_(messenger),
       camera_factory_(std::move(camera_factory)) {}
 
 CameraPlugin::~CameraPlugin() {}
@@ -400,7 +390,9 @@ void CameraPlugin::CreateMethodHandler(
     } else {
       resolution_preset = ResolutionPreset::RESOLUTION_PRESET_AUTO;
     }
-    camera->InitCamera(texture_registrar_, *enable_audio, resolution_preset);
+
+    camera->InitCamera(texture_registrar_, messenger_, *enable_audio,
+                       resolution_preset);
     cameras_.push_back(std::move(camera));
   }
 }
@@ -506,12 +498,12 @@ void CameraPlugin::StartVideoRecordingMethodHandler(
   }
 
   // Get max video duration
-  int64_t max_capture_duration = -1;
-  const auto *requested_max_capture_duration =
-      std::get_if<std::int64_t>(ValueOrNull(args, kMaxVideoDurationKey));
+  int64_t max_video_duration_ms = -1;
+  auto requested_max_video_duration_ms =
+      std::get_if<std::int32_t>(ValueOrNull(args, kMaxVideoDurationKey));
 
-  if (requested_max_capture_duration) {
-    max_capture_duration = *requested_max_capture_duration;
+  if (requested_max_video_duration_ms != nullptr) {
+    max_video_duration_ms = *requested_max_video_duration_ms;
   }
 
   std::string path;
@@ -521,7 +513,7 @@ void CameraPlugin::StartVideoRecordingMethodHandler(
       auto str_path = std::string(path);
       auto cc = camera->GetCaptureController();
       assert(cc);
-      cc->StartRecord(str_path, max_capture_duration);
+      cc->StartRecord(str_path, max_video_duration_ms);
     }
   } else {
     return result->Error("System error",

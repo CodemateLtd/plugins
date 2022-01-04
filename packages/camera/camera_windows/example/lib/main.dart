@@ -21,6 +21,8 @@ class _MyAppState extends State<MyApp> {
   int _cameraId = -1;
   bool _initialized = false;
   bool _recording = false;
+  bool _recordingTimed = false;
+  bool _recordAudio = true;
   Size? _previewSize;
 
   @override
@@ -69,7 +71,7 @@ class _MyAppState extends State<MyApp> {
       final int cameraId = await CameraPlatform.instance.createCamera(
         camera,
         ResolutionPreset.veryHigh,
-        enableAudio: true,
+        enableAudio: _recordAudio,
       );
 
       unawaited(
@@ -117,6 +119,8 @@ class _MyAppState extends State<MyApp> {
         _cameraId = -1;
         _cameraInfo = 'Camera disposed';
         _previewSize = null;
+        _recording = false;
+        _recordingTimed = false;
       });
       getAvailableCameras();
     } on PlatformException catch (e) {
@@ -134,6 +138,33 @@ class _MyAppState extends State<MyApp> {
     final XFile _file = await CameraPlatform.instance.takePicture(_cameraId);
     if (!await launch('file:${_file.path}')) {
       throw 'Could not open file: "${_file.path}"';
+    }
+  }
+
+  Future<void> recordTimed(int seconds) async {
+    if (_initialized && _cameraId > 0 && !_recordingTimed) {
+      CameraPlatform.instance
+          .onVideoRecordedEvent(_cameraId)
+          .first
+          .then((VideoRecordedEvent event) async {
+        if (mounted) {
+          setState(() {
+            _recordingTimed = false;
+          });
+          if (!await launch('file:${event.file.path}')) {
+            throw 'Could not open file: "${event.file.path}"';
+          }
+        }
+      });
+
+      await CameraPlatform.instance.startVideoRecording(
+        _cameraId,
+        maxVideoDuration: Duration(seconds: seconds),
+      );
+
+      setState(() {
+        _recordingTimed = true;
+      });
     }
   }
 
@@ -189,10 +220,33 @@ class _MyAppState extends State<MyApp> {
                   ),
                   const SizedBox(width: 5),
                   ElevatedButton(
-                    onPressed: _initialized ? toggleRecord : null,
+                    onPressed: (_initialized && !_recordingTimed)
+                        ? toggleRecord
+                        : null,
                     child: Text(
                       _recording ? 'Stop recording' : 'Record Video',
                     ),
+                  ),
+                  const SizedBox(width: 5),
+                  ElevatedButton(
+                    onPressed: (_initialized && !_recording && !_recordingTimed)
+                        ? () => recordTimed(5)
+                        : null,
+                    child: const Text(
+                      'Record 5 seconds',
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  const Text(
+                    'Audio:',
+                  ),
+                  Switch(
+                    value: _recordAudio,
+                    onChanged: !_initialized
+                        ? (bool state) => setState(() {
+                              _recordAudio = state;
+                            })
+                        : null,
                   ),
                 ],
               ),

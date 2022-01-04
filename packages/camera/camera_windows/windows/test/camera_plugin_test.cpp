@@ -22,23 +22,24 @@ namespace test {
 using flutter::EncodableMap;
 using flutter::EncodableValue;
 using ::testing::_;
-using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::EndsWith;
 using ::testing::Eq;
 using ::testing::Pointee;
 using ::testing::Return;
-using ::testing::SetArgPointee;
 
 TEST(CameraPlugin, AvailableCamerasHandlerSuccessIfNoCameras) {
   std::unique_ptr<MockTextureRegistrar> texture_registrar_ =
       std::make_unique<MockTextureRegistrar>();
+  std::unique_ptr<MockBinaryMessenger> messenger_ =
+      std::make_unique<MockBinaryMessenger>();
   std::unique_ptr<MockCameraFactory> camera_factory_ =
       std::make_unique<MockCameraFactory>();
   std::unique_ptr<MockMethodResult> result =
       std::make_unique<MockMethodResult>();
 
-  MockCameraPlugin plugin(texture_registrar_.get(), std::move(camera_factory_));
+  MockCameraPlugin plugin(texture_registrar_.get(), messenger_.get(),
+                          std::move(camera_factory_));
 
   EXPECT_CALL(plugin, EnumerateVideoCaptureDeviceSources)
       .Times(1)
@@ -61,12 +62,15 @@ TEST(CameraPlugin, AvailableCamerasHandlerSuccessIfNoCameras) {
 TEST(CameraPlugin, AvailableCamerasHandlerErrorIfFailsToEnumerateDevices) {
   std::unique_ptr<MockTextureRegistrar> texture_registrar_ =
       std::make_unique<MockTextureRegistrar>();
+  std::unique_ptr<MockBinaryMessenger> messenger_ =
+      std::make_unique<MockBinaryMessenger>();
   std::unique_ptr<MockCameraFactory> camera_factory_ =
       std::make_unique<MockCameraFactory>();
   std::unique_ptr<MockMethodResult> result =
       std::make_unique<MockMethodResult>();
 
-  MockCameraPlugin plugin(texture_registrar_.get(), std::move(camera_factory_));
+  MockCameraPlugin plugin(texture_registrar_.get(), messenger_.get(),
+                          std::move(camera_factory_));
 
   EXPECT_CALL(plugin, EnumerateVideoCaptureDeviceSources)
       .Times(1)
@@ -86,6 +90,8 @@ TEST(CameraPlugin, CreateHandlerCallsInitCamera) {
       std::make_unique<MockMethodResult>();
   std::unique_ptr<MockTextureRegistrar> texture_registrar_ =
       std::make_unique<MockTextureRegistrar>();
+  std::unique_ptr<MockBinaryMessenger> messenger_ =
+      std::make_unique<MockBinaryMessenger>();
   std::unique_ptr<MockCameraFactory> camera_factory_ =
       std::make_unique<MockCameraFactory>();
   std::unique_ptr<MockCamera> camera =
@@ -108,7 +114,8 @@ TEST(CameraPlugin, CreateHandlerCallsInitCamera) {
       .Times(1)
       .WillOnce([cam = camera.get()](
                     flutter::TextureRegistrar* texture_registrar,
-                    bool enable_audio, ResolutionPreset resolution_preset) {
+                    flutter::BinaryMessenger* messenger, bool enable_audio,
+                    ResolutionPreset resolution_preset) {
         assert(cam->pending_result_);
         return cam->pending_result_->Success(EncodableValue(1));
       });
@@ -122,7 +129,8 @@ TEST(CameraPlugin, CreateHandlerCallsInitCamera) {
   EXPECT_CALL(*result, ErrorInternal).Times(0);
   EXPECT_CALL(*result, SuccessInternal(Pointee(EncodableValue(1))));
 
-  CameraPlugin plugin(texture_registrar_.get(), std::move(camera_factory_));
+  CameraPlugin plugin(texture_registrar_.get(), messenger_.get(),
+                      std::move(camera_factory_));
   EncodableMap args = {
       {EncodableValue("cameraName"), EncodableValue(MOCK_CAMERA_NAME)},
       {EncodableValue("resolutionPreset"), EncodableValue(nullptr)},
@@ -140,10 +148,13 @@ TEST(CameraPlugin, CreateHandlerErrorOnInvalidDeviceId) {
       std::make_unique<MockMethodResult>();
   std::unique_ptr<MockTextureRegistrar> texture_registrar_ =
       std::make_unique<MockTextureRegistrar>();
+  std::unique_ptr<MockBinaryMessenger> messenger_ =
+      std::make_unique<MockBinaryMessenger>();
   std::unique_ptr<MockCameraFactory> camera_factory_ =
       std::make_unique<MockCameraFactory>();
 
-  CameraPlugin plugin(texture_registrar_.get(), std::move(camera_factory_));
+  CameraPlugin plugin(texture_registrar_.get(), messenger_.get(),
+                      std::move(camera_factory_));
   EncodableMap args = {
       {EncodableValue("cameraName"), EncodableValue(MOCK_INVALID_CAMERA_NAME)},
       {EncodableValue("resolutionPreset"), EncodableValue(nullptr)},
@@ -165,6 +176,8 @@ TEST(CameraPlugin, CreateHandlerErrorOnExistingDeviceId) {
       std::make_unique<MockMethodResult>();
   std::unique_ptr<MockTextureRegistrar> texture_registrar_ =
       std::make_unique<MockTextureRegistrar>();
+  std::unique_ptr<MockBinaryMessenger> messenger_ =
+      std::make_unique<MockBinaryMessenger>();
   std::unique_ptr<MockCameraFactory> camera_factory_ =
       std::make_unique<MockCameraFactory>();
   std::unique_ptr<MockCamera> camera =
@@ -187,7 +200,8 @@ TEST(CameraPlugin, CreateHandlerErrorOnExistingDeviceId) {
       .Times(1)
       .WillOnce([cam = camera.get()](
                     flutter::TextureRegistrar* texture_registrar,
-                    bool enable_audio, ResolutionPreset resolution_preset) {
+                    flutter::BinaryMessenger* messenger, bool enable_audio,
+                    ResolutionPreset resolution_preset) {
         assert(cam->pending_result_);
         return cam->pending_result_->Success(EncodableValue(1));
       });
@@ -208,7 +222,8 @@ TEST(CameraPlugin, CreateHandlerErrorOnExistingDeviceId) {
   EXPECT_CALL(*first_create_result,
               SuccessInternal(Pointee(EncodableValue(1))));
 
-  CameraPlugin plugin(texture_registrar_.get(), std::move(camera_factory_));
+  CameraPlugin plugin(texture_registrar_.get(), messenger_.get(),
+                      std::move(camera_factory_));
   EncodableMap args = {
       {EncodableValue("cameraName"), EncodableValue(MOCK_CAMERA_NAME)},
       {EncodableValue("resolutionPreset"), EncodableValue(nullptr)},
@@ -278,6 +293,7 @@ TEST(CameraPlugin, InitializeHandlerCallStartPreview) {
   camera->capture_controller_ = std::move(capture_controller);
 
   MockCameraPlugin plugin(std::make_unique<MockTextureRegistrar>().get(),
+                          std::make_unique<MockBinaryMessenger>().get(),
                           std::make_unique<MockCameraFactory>());
 
   // Add mocked camera to plugins camera list
@@ -323,6 +339,7 @@ TEST(CameraPlugin, InitializeHandlerErrorOnInvalidCameraId) {
   camera->camera_id_ = mock_camera_id;
 
   MockCameraPlugin plugin(std::make_unique<MockTextureRegistrar>().get(),
+                          std::make_unique<MockBinaryMessenger>().get(),
                           std::make_unique<MockCameraFactory>());
 
   // Add mocked camera to plugins camera list
@@ -390,6 +407,7 @@ TEST(CameraPlugin, TakePictureHandlerCallsTakePictureWithPath) {
   camera->capture_controller_ = std::move(capture_controller);
 
   MockCameraPlugin plugin(std::make_unique<MockTextureRegistrar>().get(),
+                          std::make_unique<MockBinaryMessenger>().get(),
                           std::make_unique<MockCameraFactory>());
 
   // Add mocked camera to plugins camera list
@@ -435,6 +453,7 @@ TEST(CameraPlugin, TakePictureHandlerErrorOnInvalidCameraId) {
   camera->camera_id_ = mock_camera_id;
 
   MockCameraPlugin plugin(std::make_unique<MockTextureRegistrar>().get(),
+                          std::make_unique<MockBinaryMessenger>().get(),
                           std::make_unique<MockCameraFactory>());
 
   // Add mocked camera to plugins camera list
@@ -494,7 +513,7 @@ TEST(CameraPlugin, StartVideoRecordingHandlerCallsStartRecordWithPath) {
   EXPECT_CALL(*capture_controller, StartRecord(EndsWith(".mp4"), -1))
       .Times(1)
       .WillOnce([cam = camera.get()](const std::string filepath,
-                                     int64_t max_capture_duration) {
+                                     int64_t max_video_duration_ms) {
         assert(cam->pending_result_);
         return cam->pending_result_->Success();
       });
@@ -503,6 +522,7 @@ TEST(CameraPlugin, StartVideoRecordingHandlerCallsStartRecordWithPath) {
   camera->capture_controller_ = std::move(capture_controller);
 
   MockCameraPlugin plugin(std::make_unique<MockTextureRegistrar>().get(),
+                          std::make_unique<MockBinaryMessenger>().get(),
                           std::make_unique<MockCameraFactory>());
 
   // Add mocked camera to plugins camera list
@@ -524,7 +544,7 @@ TEST(CameraPlugin, StartVideoRecordingHandlerCallsStartRecordWithPath) {
 TEST(CameraPlugin,
      StartVideoRecordingHandlerCallsStartRecordWithPathAndCaptureDuration) {
   int64_t mock_camera_id = 1234;
-  int64_t mock_capture_duration = 100000;
+  int32_t mock_video_duration = 100000;
 
   std::unique_ptr<MockMethodResult> initialize_result =
       std::make_unique<MockMethodResult>();
@@ -562,10 +582,10 @@ TEST(CameraPlugin,
       });
 
   EXPECT_CALL(*capture_controller,
-              StartRecord(EndsWith(".mp4"), Eq(mock_capture_duration)))
+              StartRecord(EndsWith(".mp4"), Eq(mock_video_duration)))
       .Times(1)
       .WillOnce([cam = camera.get()](const std::string filepath,
-                                     int64_t max_capture_duration) {
+                                     int64_t max_video_duration_ms) {
         assert(cam->pending_result_);
         return cam->pending_result_->Success();
       });
@@ -574,6 +594,7 @@ TEST(CameraPlugin,
   camera->capture_controller_ = std::move(capture_controller);
 
   MockCameraPlugin plugin(std::make_unique<MockTextureRegistrar>().get(),
+                          std::make_unique<MockBinaryMessenger>().get(),
                           std::make_unique<MockCameraFactory>());
 
   // Add mocked camera to plugins camera list
@@ -585,7 +606,7 @@ TEST(CameraPlugin,
   EncodableMap args = {
       {EncodableValue("cameraId"), EncodableValue(mock_camera_id)},
       {EncodableValue("maxVideoDuration"),
-       EncodableValue(mock_capture_duration)},
+       EncodableValue(mock_video_duration)},
   };
 
   plugin.HandleMethodCall(
@@ -621,6 +642,7 @@ TEST(CameraPlugin, StartVideoRecordingHandlerErrorOnInvalidCameraId) {
   camera->camera_id_ = mock_camera_id;
 
   MockCameraPlugin plugin(std::make_unique<MockTextureRegistrar>().get(),
+                          std::make_unique<MockBinaryMessenger>().get(),
                           std::make_unique<MockCameraFactory>());
 
   // Add mocked camera to plugins camera list
@@ -688,6 +710,7 @@ TEST(CameraPlugin, StopVideoRecordingHandlerCallsStopRecord) {
   camera->capture_controller_ = std::move(capture_controller);
 
   MockCameraPlugin plugin(std::make_unique<MockTextureRegistrar>().get(),
+                          std::make_unique<MockBinaryMessenger>().get(),
                           std::make_unique<MockCameraFactory>());
 
   // Add mocked camera to plugins camera list
@@ -733,6 +756,7 @@ TEST(CameraPlugin, StopVideoRecordingHandlerErrorOnInvalidCameraId) {
   camera->camera_id_ = mock_camera_id;
 
   MockCameraPlugin plugin(std::make_unique<MockTextureRegistrar>().get(),
+                          std::make_unique<MockBinaryMessenger>().get(),
                           std::make_unique<MockCameraFactory>());
 
   // Add mocked camera to plugins camera list
@@ -801,6 +825,7 @@ TEST(CameraPlugin, ResumePreviewHandlerCallsResumePreview) {
   camera->capture_controller_ = std::move(capture_controller);
 
   MockCameraPlugin plugin(std::make_unique<MockTextureRegistrar>().get(),
+                          std::make_unique<MockBinaryMessenger>().get(),
                           std::make_unique<MockCameraFactory>());
 
   // Add mocked camera to plugins camera list
@@ -846,6 +871,7 @@ TEST(CameraPlugin, ResumePreviewHandlerErrorOnInvalidCameraId) {
   camera->camera_id_ = mock_camera_id;
 
   MockCameraPlugin plugin(std::make_unique<MockTextureRegistrar>().get(),
+                          std::make_unique<MockBinaryMessenger>().get(),
                           std::make_unique<MockCameraFactory>());
 
   // Add mocked camera to plugins camera list
@@ -914,6 +940,7 @@ TEST(CameraPlugin, PausePreviewHandlerCallsPausePreview) {
   camera->capture_controller_ = std::move(capture_controller);
 
   MockCameraPlugin plugin(std::make_unique<MockTextureRegistrar>().get(),
+                          std::make_unique<MockBinaryMessenger>().get(),
                           std::make_unique<MockCameraFactory>());
 
   // Add mocked camera to plugins camera list
@@ -959,6 +986,7 @@ TEST(CameraPlugin, PausePreviewHandlerErrorOnInvalidCameraId) {
   camera->camera_id_ = mock_camera_id;
 
   MockCameraPlugin plugin(std::make_unique<MockTextureRegistrar>().get(),
+                          std::make_unique<MockBinaryMessenger>().get(),
                           std::make_unique<MockCameraFactory>());
 
   // Add mocked camera to plugins camera list
