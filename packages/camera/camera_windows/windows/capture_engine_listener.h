@@ -18,9 +18,9 @@ class CaptureEngineObserver {
   virtual bool IsReadyForEvents() = 0;
   virtual bool IsReadyForSample() = 0;
 
+  // Event functions
   // TODO: Instead of separate functions for each event,
   // just have OnEvent handler;
-  // Event functions
   virtual void OnCaptureEngineInitialized(bool success) = 0;
   virtual void OnCaptureEngineError() = 0;
   virtual void OnPicture(bool success) = 0;
