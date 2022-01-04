@@ -605,8 +605,7 @@ TEST(CameraPlugin,
 
   EncodableMap args = {
       {EncodableValue("cameraId"), EncodableValue(mock_camera_id)},
-      {EncodableValue("maxVideoDuration"),
-       EncodableValue(mock_video_duration)},
+      {EncodableValue("maxVideoDuration"), EncodableValue(mock_video_duration)},
   };
 
   plugin.HandleMethodCall(

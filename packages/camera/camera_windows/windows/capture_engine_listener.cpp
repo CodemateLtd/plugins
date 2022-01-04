@@ -4,6 +4,7 @@
 // found in the LICENSE file.
 
 #include "capture_engine_listener.h"
+
 #include <system_error>
 
 namespace camera_windows {
@@ -122,7 +123,8 @@ HRESULT CaptureEngineListener::OnSample(IMFSample *sample) {
     sample->GetSampleTime(&raw_time_stamp);
 
     // Report time in microseconds
-    this->observer_->UpdateCaptureTime(static_cast<uint64_t>(raw_time_stamp/10));
+    this->observer_->UpdateCaptureTime(
+        static_cast<uint64_t>(raw_time_stamp / 10));
 
     if (buffer) {
       buffer->Release();

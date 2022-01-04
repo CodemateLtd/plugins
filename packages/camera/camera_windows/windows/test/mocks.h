@@ -27,10 +27,10 @@ using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::EndsWith;
 using ::testing::Eq;
+using ::testing::NiceMock;
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SetArgPointee;
-using ::testing::NiceMock;
 
 class MockMethodResult : public flutter::MethodResult<> {
  public:

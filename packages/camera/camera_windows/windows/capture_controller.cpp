@@ -386,7 +386,7 @@ HRESULT CaptureControllerImpl::CreateCaptureEngine(
 
   if (SUCCEEDED(hr)) {
     hr = attributes->SetUINT32(MF_CAPTURE_ENGINE_USE_VIDEO_DEVICE_ONLY,
-                                !enable_audio_record_);
+                               !enable_audio_record_);
   }
 
   if (SUCCEEDED(hr)) {

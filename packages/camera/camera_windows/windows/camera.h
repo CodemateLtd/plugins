@@ -76,7 +76,7 @@ class CameraImpl : public Camera {
   void OnPictureSuccess(const std::string &filepath) override;
   void OnPictureFailed(const std::string &error) override;
   void OnVideoRecordedSuccess(const std::string &filepath,
-                                        int64_t video_duration) override;
+                              int64_t video_duration) override;
   void OnVideoRecordedFailed(const std::string &error) override;
 
   // From Camera
@@ -110,7 +110,7 @@ class CameraImpl : public Camera {
 
  private:
   std::unique_ptr<CaptureController> capture_controller_;
-  flutter::BinaryMessenger* messenger_;
+  flutter::BinaryMessenger *messenger_;
   int64_t camera_id_;
   std::string device_id_;
 
