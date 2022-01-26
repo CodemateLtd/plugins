@@ -95,7 +95,7 @@ Upon first app launch, the operating system creates a special directory for use 
 (and only by your app) called a container. Your app has unrestricted read/write access to the 
 container and its subdirectories. To access file system locations outside of its container use 
 entitlements. See
-[the Apple documentation](https:/https://developer.apple.com/documentation/security/app_sandbox)
+[the Apple documentation](https://developer.apple.com/documentation/security/app_sandbox)
 for more information.
 
 .entitlements file content example:
