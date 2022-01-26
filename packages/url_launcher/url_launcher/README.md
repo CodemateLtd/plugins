@@ -96,26 +96,38 @@ takes a string argument containing a URL. This URL
 can be formatted using a number of different URL schemes. The supported
 URL schemes depend on the underlying platform and installed apps.
 
-Common schemes supported by both iOS and Android:
+Common schemes supported by plugin:
 
 | Scheme | Action |
-|---|---|
-| `http:<URL>` , `https:<URL>`, e.g. `http://flutter.dev` | Open URL in the default browser |
-| `mailto:<email address>?subject=<subject>&body=<body>`, e.g. `mailto:smith@example.org?subject=News&body=New%20plugin` | Create email to <email address> in the default email app |
-| `tel:<phone number>`, e.g. `tel:+1 555 010 999` | Make a phone call to <phone number> using the default phone app |
-| `sms:<phone number>`, e.g. `sms:5550101234` | Send an SMS message to <phone number> using the default messaging app |
+|:---|:---|
+| `http:<URL>` , `https:<URL>`, e.g `https://flutter.dev` | Open URL in the default browser |
+| `mailto:<email address>?subject=<subject>&body=<body>`, e.g  `mailto:smith@example.org?subject=News&body=New%20plugin` | Create email to <email address> in the default email app |
+| `tel:<phone number>`, e.g `tel:+1 555 010 999` | Make a phone call to <phone number> using the default phone app |
+| `sms:<phone number>`, e.g `sms:5550101234` | Send an SMS message to <phone number> using the default messaging app |
+| `file:/<path>`, e.g `file:/home/` | Opens file or folder using default app association |
 
-More details can be found here for [iOS](https://developer.apple.com/library/content/featuredarticles/iPhoneURLScheme_Reference/Introduction/Introduction.html) and [Android](https://developer.android.com/guide/components/intents-common.html)
+More details can be found here for [iOS](https://developer.apple.com/library/content/featuredarticles/iPhoneURLScheme_Reference/Introduction/Introduction.html)
+and [Android](https://developer.android.com/guide/components/intents-common.html)
 
 **Note**: URL schemes are only supported if there are apps installed on the device that can
 support them. For example, iOS simulators don't have a default email or phone
 apps installed, so can't open `tel:` or `mailto:` links.
 
+Common schemes supported by platform:
+
+| Scheme | Android | iOS | macOS | Linux | Windows
+|:---|:---:|:---:|:---:|:---:|:---:|
+| `http` , `https` | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| `mailto` | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| `tel` | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| `sms` | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| `file` | ❌ | ❌ | ✔️ | ✔️ | ✔️ |
+
 ### Encoding URLs
 
 URLs must be properly encoded, especially when including spaces or other special
 characters. This can be done using the
-[`Uri` class](https://api.dart.dev/stable/2.7.1/dart-core/Uri-class.html).
+[`Uri` class](https://api.dart.dev/dart-core/Uri-class.html).
 For example:
 ```dart
 String? encodeQueryParameters(Map<String, String> params) {
@@ -164,3 +176,28 @@ If you do this for a URL of a page containing JavaScript, make sure to pass in
 `enableJavaScript: true`, or else the launch method will not work properly. On
 iOS, the default behavior is to open all web URLs within the app. Everything
 else is redirected to the app handler.
+
+## File scheme handling
+File scheme can be used on desktop platforms: `windows`, `macOS` and `linux`.
+
+We recommend always checking first if directory/file exists and then if file extension is associated
+on application and can be lauched on platform using the
+[`canLaunch`](https://pub.dev/documentation/url_launcher/latest/url_launcher/canLaunch.html) method
+prior to calling `launch`.
+
+`canLaunch` method only checks if file type is associated with appication and can be opened, but is
+not checking directory/file existence, which should be done before calling `canLaunch`.
+
+Example:
+```dart
+import 'dart:io' as io;
+var directoryPath = '/path/to/directory/';
+
+final Uri uri = Uri.directory(directoryPath, windows: Platform.isWindows);
+
+if (await Directory(directoryPath).exists()) {
+  await canLaunch(uri.toString())
+      ? await launch(uri.toString())
+      : throw 'Could not launch $directoryPath';
+}
+```
