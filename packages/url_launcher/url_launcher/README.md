@@ -115,7 +115,7 @@ apps installed, so can't open `tel:` or `mailto:` links.
 
 Common schemes supported by platform:
 
-| Scheme | Android | iOS | macOS | Linux | Windows
+| Scheme | Android | iOS | macOS | Linux | Windows |
 |:---|:---:|:---:|:---:|:---:|:---:|
 | `http` , `https` | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
 | `mailto` | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
