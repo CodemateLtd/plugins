@@ -89,6 +89,25 @@ for examples of other queries.
 </queries>
 ```
 
+### macOS
+
+Upon first app launch, the operating system creates a special directory for use by your app 
+(and only by your app) called a container. Your app has unrestricted read/write access to the 
+container and its subdirectories. To access file system locations outside of its container use 
+entitlements. See
+[the Apple documentation](https:/https://developer.apple.com/documentation/security/app_sandbox)
+for more information.
+
+.entitlements file content example:
+```xml
+<dict>
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+    <key>com.apple.security.files.user-selected.read-only</key>
+    <true/>
+</dict>
+```
+
 ## Supported URL schemes
 
 The [`launch`](https://pub.dev/documentation/url_launcher/latest/url_launcher/launch.html) method
