@@ -96,7 +96,7 @@ takes a string argument containing a URL. This URL
 can be formatted using a number of different URL schemes. The supported
 URL schemes depend on the underlying platform and installed apps.
 
-Common schemes supported by plugin:
+Common schemes supported:
 
 | Scheme | Action |
 |:---|:---|
