@@ -101,10 +101,10 @@ Common schemes supported by plugin:
 | Scheme | Action |
 |:---|:---|
 | `http:<URL>` , `https:<URL>`, e.g `https://flutter.dev` | Open URL in the default browser |
-| `mailto:<email address>?subject=<subject>&body=<body>`, e.g  `mailto:smith@example.org?subject=News&body=New%20plugin` | Create email to <email address> in the default email app |
+| `mailto:<email address>?subject=<subject>&body=<body>`, e.g `mailto:smith@example.org?subject=News&body=New%20plugin` | Create email to <email address> in the default email app |
 | `tel:<phone number>`, e.g `tel:+1 555 010 999` | Make a phone call to <phone number> using the default phone app |
 | `sms:<phone number>`, e.g `sms:5550101234` | Send an SMS message to <phone number> using the default messaging app |
-| `file:/<path>`, e.g `file:/home/` | Opens file or folder using default app association |
+| `file:/<path>`, e.g `file:/home` | Opens file or folder using default app association |
 
 More details can be found here for [iOS](https://developer.apple.com/library/content/featuredarticles/iPhoneURLScheme_Reference/Introduction/Introduction.html)
 and [Android](https://developer.android.com/guide/components/intents-common.html)
