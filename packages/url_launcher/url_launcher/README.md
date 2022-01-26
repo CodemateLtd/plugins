@@ -115,13 +115,13 @@ apps installed, so can't open `tel:` or `mailto:` links.
 
 Common schemes supported by platform:
 
-| Scheme | Android | iOS | macOS | Linux | Windows |
-|:---|:---:|:---:|:---:|:---:|:---:|
-| `http` , `https` | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
-| `mailto` | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
-| `tel` | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
-| `sms` | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
-| `file` | ❌ | ❌ | ✔️ | ✔️ | ✔️ |
+| Scheme | Android | iOS | macOS | Linux | Web | Windows |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| `http` , `https` | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| `mailto` | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| `tel` | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| `sms` | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| `file` | ❌ | ❌ | ✔️ | ✔️ | ❌ | ✔️ |
 
 ### Encoding URLs
 
