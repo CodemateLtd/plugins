@@ -27,4 +27,17 @@ void main() {
     // tel: and mailto: links may not be openable on every device. iOS
     // simulators notably can't open these link types.
   });
+  testWidgets('fileScheme', (WidgetTester _) async {
+    // Folder handling is available
+    if (Platform.isMacOS) {
+      String directoryPath = 'randomstring';
+      Uri uri = Uri.directory(directoryPath, windows: Platform.isWindows);
+      expect(await canLaunch(uri.toString()), false);
+
+      directoryPath = '/Home';
+      uri = Uri.directory(directoryPath, windows: Platform.isWindows);
+      expect(await canLaunch(uri.toString()), true);
+      expect(await launch(uri.toString()), true);
+    }
+  });
 }
