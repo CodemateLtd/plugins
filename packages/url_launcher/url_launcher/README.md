@@ -210,11 +210,11 @@ not checking directory/file existence, which should be done before calling `canL
 Example:
 ```dart
 import 'dart:io' as io;
-var directoryPath = '/path/to/directory/';
+var filePath = '/path/to/file';
 
-final Uri uri = Uri.directory(directoryPath, windows: Platform.isWindows);
+final Uri uri = Uri.file(filePath, windows: Platform.isWindows);
 
-if (await Directory(directoryPath).exists()) {
+if (await File(filePath).exists()) {
   await canLaunch(uri.toString())
       ? await launch(uri.toString())
       : throw 'Could not launch $directoryPath';
