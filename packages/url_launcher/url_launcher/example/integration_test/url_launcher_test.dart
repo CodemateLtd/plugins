@@ -27,6 +27,7 @@ void main() {
     // tel: and mailto: links may not be openable on every device. iOS
     // simulators notably can't open these link types.
   });
+
   testWidgets('fileScheme', (WidgetTester _) async {
     // Folder handling is available
     if (Platform.isMacOS) {
