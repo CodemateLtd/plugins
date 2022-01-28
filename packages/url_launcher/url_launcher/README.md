@@ -89,25 +89,6 @@ for examples of other queries.
 </queries>
 ```
 
-### macOS
-
-Upon first app launch, the operating system creates a special directory for use by your app 
-(and only by your app) called a container. Your app has unrestricted read/write access to the 
-container and its subdirectories. To access file system locations outside of its container use 
-entitlements. See
-[the Apple documentation](https://developer.apple.com/documentation/security/app_sandbox)
-for more information.
-
-.entitlements file content example:
-```xml
-<dict>
-    <key>com.apple.security.app-sandbox</key>
-    <true/>
-    <key>com.apple.security.files.user-selected.read-only</key>
-    <true/>
-</dict>
-```
-
 ## Supported URL schemes
 
 The [`launch`](https://pub.dev/documentation/url_launcher/latest/url_launcher/launch.html) method
@@ -123,7 +104,7 @@ Common schemes supported:
 | `mailto:<email address>?subject=<subject>&body=<body>`, e.g `mailto:smith@example.org?subject=News&body=New%20plugin` | Create email to <email address> in the default email app |
 | `tel:<phone number>`, e.g `tel:+1 555 010 999` | Make a phone call to <phone number> using the default phone app |
 | `sms:<phone number>`, e.g `sms:5550101234` | Send an SMS message to <phone number> using the default messaging app |
-| `file:/<path>`, e.g `file:/home` | Opens file or folder using default app association |
+| `file:/<path>`, e.g `file:/home` | Opens file or folder using default app association, supported on desktop platforms |
 
 More details can be found here for [iOS](https://developer.apple.com/library/content/featuredarticles/iPhoneURLScheme_Reference/Introduction/Introduction.html)
 and [Android](https://developer.android.com/guide/components/intents-common.html)
@@ -131,16 +112,6 @@ and [Android](https://developer.android.com/guide/components/intents-common.html
 **Note**: URL schemes are only supported if there are apps installed on the device that can
 support them. For example, iOS simulators don't have a default email or phone
 apps installed, so can't open `tel:` or `mailto:` links.
-
-Common schemes supported by platform:
-
-| Scheme | Android | iOS | macOS | Linux | Web | Windows |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|
-| `http` , `https` | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
-| `mailto` | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
-| `tel` | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
-| `sms` | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
-| `file` | ❌ | ❌ | ✔️ | ✔️ | ❌ | ✔️ |
 
 ### Encoding URLs
 
@@ -197,15 +168,9 @@ iOS, the default behavior is to open all web URLs within the app. Everything
 else is redirected to the app handler.
 
 ## File scheme handling
-File scheme can be used on desktop platforms: `windows`, `macOS` and `linux`.
+`file:` scheme can be used on desktop platforms: `macOS`, `linux` and `windows`.
 
-We recommend always checking first if directory/file exists and then if file extension is associated
-on application and can be lauched on platform using the
-[`canLaunch`](https://pub.dev/documentation/url_launcher/latest/url_launcher/canLaunch.html) method
-prior to calling `launch`.
-
-`canLaunch` method only checks if file type is associated with appication and can be opened, but is
-not checking directory/file existence, which should be done before calling `canLaunch`.
+We recommend checking first whether the directory and/or file exists before calling the `launch`.
 
 Example:
 ```dart
@@ -214,9 +179,28 @@ var filePath = '/path/to/file';
 
 final Uri uri = Uri.file(filePath, windows: Platform.isWindows);
 
-if (await File(filePath).exists()) {
-  await canLaunch(uri.toString())
-      ? await launch(uri.toString())
-      : throw 'Could not launch $directoryPath';
+if (await File(uri.toFilePath(windows: Platform.isWindows)).exists()) {
+    if (!await launch(uri.toString())) {
+      throw 'Could not launch $uri';
+    }
 }
+```
+
+### macOS file access configuration
+
+Upon first app launch, the operating system creates a special directory for use by your app
+(and only by your app) called a container. Your app has unrestricted read/write access to the
+container and its subdirectories. To access file system locations outside of its container use
+entitlements. See
+[the Apple documentation](https://developer.apple.com/documentation/security/app_sandbox)
+for more information.
+
+.entitlements file content example:
+```xml
+<dict>
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+    <key>com.apple.security.files.user-selected.read-only</key>
+    <true/>
+</dict>
 ```
