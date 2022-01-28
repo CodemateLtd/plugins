@@ -175,7 +175,6 @@ We recommend checking first whether the directory and/or file exists before call
 Example:
 ```dart
 var filePath = '/path/to/file';
-
 final Uri uri = Uri.file(filePath, windows: Platform.isWindows);
 
 if (await File(uri.toFilePath(windows: Platform.isWindows)).exists()) {
