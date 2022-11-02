@@ -4,12 +4,14 @@
 
 #import <Flutter/Flutter.h>
 #import <GoogleMaps/GoogleMaps.h>
+#import <Google-Maps-iOS-Utils/GMUClusterManager.h>
 #import "GoogleMapController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 // Defines marker controllable by Flutter.
 @interface FLTGoogleMapMarkerController : NSObject
+@property(weak, nonatomic) GMUClusterManager *clusterManager;
 @property(assign, nonatomic, readonly) BOOL consumeTapEvents;
 - (instancetype)initMarkerWithPosition:(CLLocationCoordinate2D)position
                             identifier:(NSString *)identifier
@@ -21,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface FLTMarkersController : NSObject
+@property(weak, nonatomic) GMUClusterManager *clusterManager;
 - (instancetype)initWithMethodChannel:(FlutterMethodChannel *)methodChannel
                               mapView:(GMSMapView *)mapView
                             registrar:(NSObject<FlutterPluginRegistrar> *)registrar;

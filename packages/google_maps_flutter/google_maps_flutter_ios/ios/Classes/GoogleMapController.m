@@ -62,6 +62,7 @@
 @property(nonatomic, strong) FlutterMethodChannel *channel;
 @property(nonatomic, assign) BOOL trackCameraPosition;
 @property(nonatomic, weak) NSObject<FlutterPluginRegistrar> *registrar;
+@property(nonatomic, strong) FLTMarkerClustersController *markerClustersController;
 @property(nonatomic, strong) FLTMarkersController *markersController;
 @property(nonatomic, strong) FLTPolygonsController *polygonsController;
 @property(nonatomic, strong) FLTPolylinesController *polylinesController;
@@ -106,6 +107,9 @@
     _mapView.delegate = weakSelf;
     _mapView.paddingAdjustmentBehavior = kGMSMapViewPaddingAdjustmentBehaviorNever;
     _registrar = registrar;
+    _markerClustersController = [[FLTMarkerClustersController alloc] initWithMethodChannel:_channel
+                                                                     mapView:_mapView
+                                                                   registrar:registrar];
     _markersController = [[FLTMarkersController alloc] initWithMethodChannel:_channel
                                                                      mapView:_mapView
                                                                    registrar:registrar];
@@ -125,6 +129,12 @@
     if ([markersToAdd isKindOfClass:[NSArray class]]) {
       [_markersController addMarkers:markersToAdd];
     }
+
+    id markerClustersToAdd = args[@"markerClustersToAdd"];
+    if ([markerClustersToAdd isKindOfClass:[NSArray class]]) {
+      [_markerClustersController addMarkerClusters:markerClustersToAdd];
+    }
+
     id polygonsToAdd = args[@"polygonsToAdd"];
     if ([polygonsToAdd isKindOfClass:[NSArray class]]) {
       [_polygonsController addPolygons:polygonsToAdd];
@@ -524,6 +534,9 @@
 
 - (BOOL)mapView:(GMSMapView *)mapView didTapMarker:(GMSMarker *)marker {
   NSString *markerId = marker.userData[0];
+  // if ([marker.userData conformsToProtocol:@protocol(GMUCluster)]) {
+  //   return [self.markerClustersController didTapMarkerWithIdentifier:markerId];
+  // }
   return [self.markersController didTapMarkerWithIdentifier:markerId];
 }
 

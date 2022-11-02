@@ -83,7 +83,15 @@
 }
 
 - (void)setVisible:(BOOL)visible {
-  self.marker.map = visible ? self.mapView : nil;
+  if (_clusterManager) {
+    if (visible) {
+      [_clusterManager addItem:self.marker];
+    } else {
+      [_clusterManager removeItem:self.marker];
+    }
+  } else {
+    self.marker.map = visible ? self.mapView : nil;
+  }
 }
 
 - (void)setZIndex:(int)zIndex {
@@ -253,6 +261,9 @@
         [[FLTGoogleMapMarkerController alloc] initMarkerWithPosition:position
                                                           identifier:identifier
                                                              mapView:self.mapView];
+    if (_clusterManager) {
+      [controller setClusterManager:_clusterManager];
+    }
     [controller interpretMarkerOptions:marker registrar:self.registrar];
     self.markerIdentifierToController[identifier] = controller;
   }

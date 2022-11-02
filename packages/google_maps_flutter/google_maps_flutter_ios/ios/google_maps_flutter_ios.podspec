@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'google_maps_flutter_ios'
-  s.version          = '0.0.1'
+  s.version          = '0.0.2'
   s.summary          = 'Google Maps for Flutter'
   s.description      = <<-DESC
 A Flutter plugin that provides a Google Maps widget.
@@ -19,6 +19,7 @@ Downloaded by pub (not CocoaPods).
   s.module_map = 'Classes/google_maps_flutter_ios.modulemap'
   s.dependency 'Flutter'
   s.dependency 'GoogleMaps'
+  s.dependency 'Google-Maps-iOS-Utils'
   s.static_framework = true
   s.platform = :ios, '9.0'
   # GoogleMaps does not support arm64 simulators.
