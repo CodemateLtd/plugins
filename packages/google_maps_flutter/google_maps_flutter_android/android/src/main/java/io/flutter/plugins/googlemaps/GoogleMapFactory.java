@@ -35,6 +35,9 @@ public class GoogleMapFactory extends PlatformViewFactory {
       CameraPosition position = Convert.toCameraPosition(params.get("initialCameraPosition"));
       builder.setInitialCameraPosition(position);
     }
+    if (params.containsKey("clustersToAdd")) {
+      builder.setInitialClusters(params.get("clustersToAdd"));
+    }
     if (params.containsKey("markersToAdd")) {
       builder.setInitialMarkers(params.get("markersToAdd"));
     }

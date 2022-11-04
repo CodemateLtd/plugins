@@ -145,6 +145,19 @@ abstract class GoogleMapsFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('updateTileOverlays() has not been implemented.');
   }
 
+  /// Updates cluster configuration.
+  ///
+  /// Change listeners are notified once the update has been made on the
+  /// platform side.
+  ///
+  /// The returned [Future] completes after listeners have been notified.
+  Future<void> updateClusters(
+    ClusterUpdates clusterUpdates, {
+    required int mapId,
+  }) {
+    throw UnimplementedError('updateClusters() has not been implemented.');
+  }
+
   /// Clears the tile cache so that all tiles will be requested again from the
   /// [TileProvider].
   ///
@@ -360,6 +373,18 @@ abstract class GoogleMapsFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('onLongPress() has not been implemented.');
   }
 
+  /// A [Marker] has been tapped on cluster.
+  Stream<MarkerTapEvent> onClusterMarkerTap(
+      {required int mapId, required int clusterId}) {
+    throw UnimplementedError('onClusterMarkerTap() has not been implemented.');
+  }
+
+  /// A [Cluster] icon has been tapped.
+  Stream<MarkerTapEvent> onClusterTap(
+      {required int mapId, required int clusterId}) {
+    throw UnimplementedError('onClusterTap() has not been implemented.');
+  }
+
   /// Dispose of whatever resources the `mapId` is holding on to.
   void dispose({required int mapId}) {
     throw UnimplementedError('dispose() has not been implemented.');
@@ -376,6 +401,7 @@ abstract class GoogleMapsFlutterPlatform extends PlatformInterface {
     Set<Polyline> polylines = const <Polyline>{},
     Set<Circle> circles = const <Circle>{},
     Set<TileOverlay> tileOverlays = const <TileOverlay>{},
+    Set<Cluster> clusters = const <Cluster>{},
     Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers =
         const <Factory<OneSequenceGestureRecognizer>>{},
     // TODO(stuartmorgan): Replace with a structured type that's part of the

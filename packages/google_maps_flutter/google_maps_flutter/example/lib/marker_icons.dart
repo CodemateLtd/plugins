@@ -61,15 +61,15 @@ class MarkerIconsBodyState extends State<MarkerIconsBody> {
   Marker _createMarker() {
     if (_markerIcon != null) {
       return Marker(
-        markerId: const MarkerId('marker_1'),
-        position: _kMapCenter,
-        icon: _markerIcon!,
-      );
+          markerId: const MarkerId('marker_1'),
+          position: _kMapCenter,
+          icon: _markerIcon!,
+          infoWindow: InfoWindow(title: "TESTING"));
     } else {
       return const Marker(
-        markerId: MarkerId('marker_1'),
-        position: _kMapCenter,
-      );
+          markerId: MarkerId('marker_1'),
+          position: _kMapCenter,
+          infoWindow: InfoWindow(title: "TESTING"));
     }
   }
 

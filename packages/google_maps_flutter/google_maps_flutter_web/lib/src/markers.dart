@@ -14,6 +14,7 @@ class MarkersController extends GeometryController {
 
   // A cache of [MarkerController]s indexed by their [MarkerId].
   final Map<MarkerId, MarkerController> _markerIdToController;
+  final Map<MarkerId, ClusterId> _markerIdToClusterId;
 
   // The stream over which markers broadcast their events
   final StreamController<MapEvent<Object?>> _streamController;

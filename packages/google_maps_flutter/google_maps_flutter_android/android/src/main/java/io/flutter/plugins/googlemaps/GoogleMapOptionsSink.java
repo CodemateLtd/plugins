@@ -48,6 +48,8 @@ interface GoogleMapOptionsSink {
 
   void setInitialMarkers(Object initialMarkers);
 
+  void setInitialClusters(Object initialClusters);
+
   void setInitialPolygons(Object initialPolygons);
 
   void setInitialPolylines(Object initialPolylines);

@@ -525,6 +525,7 @@ class GoogleMapsFlutterIOS extends GoogleMapsFlutterPlatform {
     Set<Polyline> polylines = const <Polyline>{},
     Set<Circle> circles = const <Circle>{},
     Set<TileOverlay> tileOverlays = const <TileOverlay>{},
+    Set<Cluster> clusters = const <Cluster>{},
     Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers,
     Map<String, dynamic> mapOptions = const <String, dynamic>{},
   }) {
@@ -539,7 +540,8 @@ class GoogleMapsFlutterIOS extends GoogleMapsFlutterPlatform {
           polygons: polygons,
           polylines: polylines,
           circles: circles,
-          tileOverlays: tileOverlays),
+          tileOverlays: tileOverlays,
+          clusters: clusters),
       mapOptions: mapOptions,
     );
   }
@@ -554,6 +556,7 @@ class GoogleMapsFlutterIOS extends GoogleMapsFlutterPlatform {
     Set<Polyline> polylines = const <Polyline>{},
     Set<Circle> circles = const <Circle>{},
     Set<TileOverlay> tileOverlays = const <TileOverlay>{},
+    Set<Cluster> clusters = const <Cluster>{},
     Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers,
     Map<String, dynamic> mapOptions = const <String, dynamic>{},
   }) {
@@ -567,6 +570,7 @@ class GoogleMapsFlutterIOS extends GoogleMapsFlutterPlatform {
       polylines: polylines,
       circles: circles,
       tileOverlays: tileOverlays,
+      clusters: clusters,
       gestureRecognizers: gestureRecognizers,
       mapOptions: mapOptions,
     );

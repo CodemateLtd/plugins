@@ -34,6 +34,8 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.Polyline;
+import com.google.maps.android.clustering.Cluster;
+import com.google.maps.android.collections.MarkerManager;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
@@ -49,19 +51,22 @@ import java.util.Map;
 /** Controller of a single GoogleMaps MapView instance. */
 final class GoogleMapController
     implements DefaultLifecycleObserver,
-        ActivityPluginBinding.OnSaveInstanceStateListener,
-        GoogleMapOptionsSink,
-        MethodChannel.MethodCallHandler,
-        OnMapReadyCallback,
-        GoogleMapListener,
-        PlatformView {
+    ActivityPluginBinding.OnSaveInstanceStateListener,
+    GoogleMapOptionsSink,
+    MethodChannel.MethodCallHandler,
+    OnMapReadyCallback,
+    GoogleMapListener,
+    ClusterListener,
+    PlatformView {
 
   private static final String TAG = "GoogleMapController";
   private final int id;
   private final MethodChannel methodChannel;
   private final GoogleMapOptions options;
-  @Nullable private MapView mapView;
-  @Nullable private GoogleMap googleMap;
+  @Nullable
+  private MapView mapView;
+  @Nullable
+  private GoogleMap googleMap;
   private boolean trackCameraPosition = false;
   private boolean myLocationEnabled = false;
   private boolean myLocationButtonEnabled = false;
@@ -75,11 +80,15 @@ final class GoogleMapController
   private final Context context;
   private final LifecycleProvider lifecycleProvider;
   private final MarkersController markersController;
+  private final ClustersController clustersController;
   private final PolygonsController polygonsController;
   private final PolylinesController polylinesController;
   private final CirclesController circlesController;
   private final TileOverlaysController tileOverlaysController;
+  private MarkerManager markerManager;
+  private MarkerManager.Collection markerCollection;
   private List<Object> initialMarkers;
+  private List<Object> initialClusters;
   private List<Object> initialPolygons;
   private List<Object> initialPolylines;
   private List<Object> initialCircles;
@@ -91,20 +100,22 @@ final class GoogleMapController
       BinaryMessenger binaryMessenger,
       LifecycleProvider lifecycleProvider,
       GoogleMapOptions options) {
+    Log.e(TAG, "HERE 1");
     this.id = id;
     this.context = context;
     this.options = options;
     this.mapView = new MapView(context, options);
     this.density = context.getResources().getDisplayMetrics().density;
-    methodChannel =
-        new MethodChannel(binaryMessenger, "plugins.flutter.dev/google_maps_android_" + id);
+    methodChannel = new MethodChannel(binaryMessenger, "plugins.flutter.dev/google_maps_android_" + id);
     methodChannel.setMethodCallHandler(this);
     this.lifecycleProvider = lifecycleProvider;
-    this.markersController = new MarkersController(methodChannel);
+    this.clustersController = new ClustersController(methodChannel, context);
+    this.markersController = new MarkersController(methodChannel, clustersController);
     this.polygonsController = new PolygonsController(methodChannel, density);
     this.polylinesController = new PolylinesController(methodChannel, density);
     this.circlesController = new CirclesController(methodChannel, density);
     this.tileOverlaysController = new TileOverlaysController(methodChannel);
+    Log.e(TAG, "HERE 2");
   }
 
   @Override
@@ -113,7 +124,7 @@ final class GoogleMapController
   }
 
   @VisibleForTesting
-  /*package*/ void setView(MapView view) {
+  /* package */ void setView(MapView view) {
     mapView = view;
   }
 
@@ -139,17 +150,26 @@ final class GoogleMapController
   /**
    * Invalidates the map view after the map has finished rendering.
    *
-   * <p>gmscore GL renderer uses a {@link android.view.TextureView}. Android platform views that are
-   * displayed as a texture after Flutter v3.0.0. require that the view hierarchy is notified after
+   * <p>
+   * gmscore GL renderer uses a {@link android.view.TextureView}. Android platform
+   * views that are
+   * displayed as a texture after Flutter v3.0.0. require that the view hierarchy
+   * is notified after
    * all drawing operations have been flushed.
    *
-   * <p>Since the GL renderer doesn't use standard Android views, and instead uses GL directly, we
+   * <p>
+   * Since the GL renderer doesn't use standard Android views, and instead uses GL
+   * directly, we
    * notify the view hierarchy by invalidating the view.
    *
-   * <p>Unfortunately, when {@link GoogleMap.OnMapLoadedCallback} is fired, the texture may not have
+   * <p>
+   * Unfortunately, when {@link GoogleMap.OnMapLoadedCallback} is fired, the
+   * texture may not have
    * been updated yet.
    *
-   * <p>To workaround this limitation, wait two frames. This ensures that at least the frame budget
+   * <p>
+   * To workaround this limitation, wait two frames. This ensures that at least
+   * the frame budget
    * (16.66ms at 60hz) have passed since the drawing operation was issued.
    */
   private void invalidateMapIfNeeded() {
@@ -188,6 +208,7 @@ final class GoogleMapController
 
   @Override
   public void onMapReady(GoogleMap googleMap) {
+    Log.e(TAG, "HERE 3");
     this.googleMap = googleMap;
     this.googleMap.setIndoorEnabled(this.indoorEnabled);
     this.googleMap.setTrafficEnabled(this.trafficEnabled);
@@ -197,18 +218,25 @@ final class GoogleMapController
       mapReadyResult.success(null);
       mapReadyResult = null;
     }
-    setGoogleMapListener(this);
+    markerManager = new MarkerManager(googleMap);
+    markerCollection = markerManager.newCollection();
     updateMyLocationSettings();
-    markersController.setGoogleMap(googleMap);
+    markersController.setCollection(markerCollection);
+    clustersController.init(googleMap, markerManager);
     polygonsController.setGoogleMap(googleMap);
     polylinesController.setGoogleMap(googleMap);
     circlesController.setGoogleMap(googleMap);
     tileOverlaysController.setGoogleMap(googleMap);
+    setGoogleMapListener(this);
+    setMarkerCollectionListener(this);
+    setClusterListener(this);
+    updateInitialClusters();
     updateInitialMarkers();
     updateInitialPolygons();
     updateInitialPolylines();
     updateInitialCircles();
     updateInitialTileOverlays();
+    Log.e(TAG, "HERE 4");
   }
 
   @Override
@@ -221,270 +249,248 @@ final class GoogleMapController
         }
         mapReadyResult = result;
         break;
-      case "map#update":
-        {
-          Convert.interpretGoogleMapOptions(call.argument("options"), this);
-          result.success(Convert.cameraPositionToJson(getCameraPosition()));
-          break;
+      case "map#update": {
+        Convert.interpretGoogleMapOptions(call.argument("options"), this);
+        result.success(Convert.cameraPositionToJson(getCameraPosition()));
+        break;
+      }
+      case "map#getVisibleRegion": {
+        if (googleMap != null) {
+          LatLngBounds latLngBounds = googleMap.getProjection().getVisibleRegion().latLngBounds;
+          result.success(Convert.latlngBoundsToJson(latLngBounds));
+        } else {
+          result.error(
+              "GoogleMap uninitialized",
+              "getVisibleRegion called prior to map initialization",
+              null);
         }
-      case "map#getVisibleRegion":
-        {
-          if (googleMap != null) {
-            LatLngBounds latLngBounds = googleMap.getProjection().getVisibleRegion().latLngBounds;
-            result.success(Convert.latlngBoundsToJson(latLngBounds));
-          } else {
-            result.error(
-                "GoogleMap uninitialized",
-                "getVisibleRegion called prior to map initialization",
-                null);
-          }
-          break;
+        break;
+      }
+      case "map#getScreenCoordinate": {
+        if (googleMap != null) {
+          LatLng latLng = Convert.toLatLng(call.arguments);
+          Point screenLocation = googleMap.getProjection().toScreenLocation(latLng);
+          result.success(Convert.pointToJson(screenLocation));
+        } else {
+          result.error(
+              "GoogleMap uninitialized",
+              "getScreenCoordinate called prior to map initialization",
+              null);
         }
-      case "map#getScreenCoordinate":
-        {
-          if (googleMap != null) {
-            LatLng latLng = Convert.toLatLng(call.arguments);
-            Point screenLocation = googleMap.getProjection().toScreenLocation(latLng);
-            result.success(Convert.pointToJson(screenLocation));
-          } else {
-            result.error(
-                "GoogleMap uninitialized",
-                "getScreenCoordinate called prior to map initialization",
-                null);
-          }
-          break;
+        break;
+      }
+      case "map#getLatLng": {
+        if (googleMap != null) {
+          Point point = Convert.toPoint(call.arguments);
+          LatLng latLng = googleMap.getProjection().fromScreenLocation(point);
+          result.success(Convert.latLngToJson(latLng));
+        } else {
+          result.error(
+              "GoogleMap uninitialized", "getLatLng called prior to map initialization", null);
         }
-      case "map#getLatLng":
-        {
-          if (googleMap != null) {
-            Point point = Convert.toPoint(call.arguments);
-            LatLng latLng = googleMap.getProjection().fromScreenLocation(point);
-            result.success(Convert.latLngToJson(latLng));
-          } else {
-            result.error(
-                "GoogleMap uninitialized", "getLatLng called prior to map initialization", null);
-          }
-          break;
+        break;
+      }
+      case "map#takeSnapshot": {
+        if (googleMap != null) {
+          final MethodChannel.Result _result = result;
+          googleMap.snapshot(
+              new SnapshotReadyCallback() {
+                @Override
+                public void onSnapshotReady(Bitmap bitmap) {
+                  ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                  bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                  byte[] byteArray = stream.toByteArray();
+                  bitmap.recycle();
+                  _result.success(byteArray);
+                }
+              });
+        } else {
+          result.error("GoogleMap uninitialized", "takeSnapshot", null);
         }
-      case "map#takeSnapshot":
-        {
-          if (googleMap != null) {
-            final MethodChannel.Result _result = result;
-            googleMap.snapshot(
-                new SnapshotReadyCallback() {
-                  @Override
-                  public void onSnapshotReady(Bitmap bitmap) {
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                    byte[] byteArray = stream.toByteArray();
-                    bitmap.recycle();
-                    _result.success(byteArray);
-                  }
-                });
-          } else {
-            result.error("GoogleMap uninitialized", "takeSnapshot", null);
-          }
-          break;
-        }
-      case "camera#move":
-        {
-          final CameraUpdate cameraUpdate =
-              Convert.toCameraUpdate(call.argument("cameraUpdate"), density);
-          moveCamera(cameraUpdate);
-          result.success(null);
-          break;
-        }
-      case "camera#animate":
-        {
-          final CameraUpdate cameraUpdate =
-              Convert.toCameraUpdate(call.argument("cameraUpdate"), density);
-          animateCamera(cameraUpdate);
-          result.success(null);
-          break;
-        }
-      case "markers#update":
-        {
-          invalidateMapIfNeeded();
-          List<Object> markersToAdd = call.argument("markersToAdd");
-          markersController.addMarkers(markersToAdd);
-          List<Object> markersToChange = call.argument("markersToChange");
-          markersController.changeMarkers(markersToChange);
-          List<Object> markerIdsToRemove = call.argument("markerIdsToRemove");
-          markersController.removeMarkers(markerIdsToRemove);
-          result.success(null);
-          break;
-        }
-      case "markers#showInfoWindow":
-        {
-          Object markerId = call.argument("markerId");
-          markersController.showMarkerInfoWindow((String) markerId, result);
-          break;
-        }
-      case "markers#hideInfoWindow":
-        {
-          Object markerId = call.argument("markerId");
-          markersController.hideMarkerInfoWindow((String) markerId, result);
-          break;
-        }
-      case "markers#isInfoWindowShown":
-        {
-          Object markerId = call.argument("markerId");
-          markersController.isInfoWindowShown((String) markerId, result);
-          break;
-        }
-      case "polygons#update":
-        {
-          invalidateMapIfNeeded();
-          List<Object> polygonsToAdd = call.argument("polygonsToAdd");
-          polygonsController.addPolygons(polygonsToAdd);
-          List<Object> polygonsToChange = call.argument("polygonsToChange");
-          polygonsController.changePolygons(polygonsToChange);
-          List<Object> polygonIdsToRemove = call.argument("polygonIdsToRemove");
-          polygonsController.removePolygons(polygonIdsToRemove);
-          result.success(null);
-          break;
-        }
-      case "polylines#update":
-        {
-          invalidateMapIfNeeded();
-          List<Object> polylinesToAdd = call.argument("polylinesToAdd");
-          polylinesController.addPolylines(polylinesToAdd);
-          List<Object> polylinesToChange = call.argument("polylinesToChange");
-          polylinesController.changePolylines(polylinesToChange);
-          List<Object> polylineIdsToRemove = call.argument("polylineIdsToRemove");
-          polylinesController.removePolylines(polylineIdsToRemove);
-          result.success(null);
-          break;
-        }
-      case "circles#update":
-        {
-          invalidateMapIfNeeded();
-          List<Object> circlesToAdd = call.argument("circlesToAdd");
-          circlesController.addCircles(circlesToAdd);
-          List<Object> circlesToChange = call.argument("circlesToChange");
-          circlesController.changeCircles(circlesToChange);
-          List<Object> circleIdsToRemove = call.argument("circleIdsToRemove");
-          circlesController.removeCircles(circleIdsToRemove);
-          result.success(null);
-          break;
-        }
-      case "map#isCompassEnabled":
-        {
-          result.success(googleMap.getUiSettings().isCompassEnabled());
-          break;
-        }
-      case "map#isMapToolbarEnabled":
-        {
-          result.success(googleMap.getUiSettings().isMapToolbarEnabled());
-          break;
-        }
-      case "map#getMinMaxZoomLevels":
-        {
-          List<Float> zoomLevels = new ArrayList<>(2);
-          zoomLevels.add(googleMap.getMinZoomLevel());
-          zoomLevels.add(googleMap.getMaxZoomLevel());
-          result.success(zoomLevels);
-          break;
-        }
-      case "map#isZoomGesturesEnabled":
-        {
-          result.success(googleMap.getUiSettings().isZoomGesturesEnabled());
-          break;
-        }
-      case "map#isLiteModeEnabled":
-        {
-          result.success(options.getLiteMode());
-          break;
-        }
-      case "map#isZoomControlsEnabled":
-        {
-          result.success(googleMap.getUiSettings().isZoomControlsEnabled());
-          break;
-        }
-      case "map#isScrollGesturesEnabled":
-        {
-          result.success(googleMap.getUiSettings().isScrollGesturesEnabled());
-          break;
-        }
-      case "map#isTiltGesturesEnabled":
-        {
-          result.success(googleMap.getUiSettings().isTiltGesturesEnabled());
-          break;
-        }
-      case "map#isRotateGesturesEnabled":
-        {
-          result.success(googleMap.getUiSettings().isRotateGesturesEnabled());
-          break;
-        }
-      case "map#isMyLocationButtonEnabled":
-        {
-          result.success(googleMap.getUiSettings().isMyLocationButtonEnabled());
-          break;
-        }
-      case "map#isTrafficEnabled":
-        {
-          result.success(googleMap.isTrafficEnabled());
-          break;
-        }
-      case "map#isBuildingsEnabled":
-        {
-          result.success(googleMap.isBuildingsEnabled());
-          break;
-        }
-      case "map#getZoomLevel":
-        {
-          result.success(googleMap.getCameraPosition().zoom);
-          break;
-        }
-      case "map#setStyle":
-        {
-          invalidateMapIfNeeded();
-          boolean mapStyleSet;
-          if (call.arguments instanceof String) {
-            String mapStyle = (String) call.arguments;
-            if (mapStyle == null) {
-              mapStyleSet = googleMap.setMapStyle(null);
-            } else {
-              mapStyleSet = googleMap.setMapStyle(new MapStyleOptions(mapStyle));
-            }
-          } else {
+        break;
+      }
+      case "camera#move": {
+        final CameraUpdate cameraUpdate = Convert.toCameraUpdate(call.argument("cameraUpdate"), density);
+        moveCamera(cameraUpdate);
+        result.success(null);
+        break;
+      }
+      case "camera#animate": {
+        final CameraUpdate cameraUpdate = Convert.toCameraUpdate(call.argument("cameraUpdate"), density);
+        animateCamera(cameraUpdate);
+        result.success(null);
+        break;
+      }
+      case "markers#update": {
+        invalidateMapIfNeeded();
+        List<Object> markersToAdd = call.argument("markersToAdd");
+        markersController.addMarkers(markersToAdd);
+        List<Object> markersToChange = call.argument("markersToChange");
+        markersController.changeMarkers(markersToChange);
+        List<Object> markerIdsToRemove = call.argument("markerIdsToRemove");
+        markersController.removeMarkers(markerIdsToRemove);
+        result.success(null);
+        break;
+      }
+      case "markers#showInfoWindow": {
+        Object markerId = call.argument("markerId");
+        markersController.showMarkerInfoWindow((String) markerId, result);
+        break;
+      }
+      case "markers#hideInfoWindow": {
+        Object markerId = call.argument("markerId");
+        markersController.hideMarkerInfoWindow((String) markerId, result);
+        break;
+      }
+      case "markers#isInfoWindowShown": {
+        Object markerId = call.argument("markerId");
+        markersController.isInfoWindowShown((String) markerId, result);
+        break;
+      }
+      case "clusters#update": {
+        invalidateMapIfNeeded();
+        List<Object> clustersToAdd = call.argument("clustersToAdd");
+        clustersController.addClusters(clustersToAdd);
+        List<Object> clustersToChange = call.argument("clustersToChange");
+        clustersController.changeClusters(clustersToChange);
+        List<Object> clusterIdsToRemove = call.argument("clusterIdsToRemove");
+        clustersController.removeClusters(clusterIdsToRemove);
+        result.success(null);
+        break;
+      }
+      case "polygons#update": {
+        invalidateMapIfNeeded();
+        List<Object> polygonsToAdd = call.argument("polygonsToAdd");
+        polygonsController.addPolygons(polygonsToAdd);
+        List<Object> polygonsToChange = call.argument("polygonsToChange");
+        polygonsController.changePolygons(polygonsToChange);
+        List<Object> polygonIdsToRemove = call.argument("polygonIdsToRemove");
+        polygonsController.removePolygons(polygonIdsToRemove);
+        result.success(null);
+        break;
+      }
+      case "polylines#update": {
+        invalidateMapIfNeeded();
+        List<Object> polylinesToAdd = call.argument("polylinesToAdd");
+        polylinesController.addPolylines(polylinesToAdd);
+        List<Object> polylinesToChange = call.argument("polylinesToChange");
+        polylinesController.changePolylines(polylinesToChange);
+        List<Object> polylineIdsToRemove = call.argument("polylineIdsToRemove");
+        polylinesController.removePolylines(polylineIdsToRemove);
+        result.success(null);
+        break;
+      }
+      case "circles#update": {
+        invalidateMapIfNeeded();
+        List<Object> circlesToAdd = call.argument("circlesToAdd");
+        circlesController.addCircles(circlesToAdd);
+        List<Object> circlesToChange = call.argument("circlesToChange");
+        circlesController.changeCircles(circlesToChange);
+        List<Object> circleIdsToRemove = call.argument("circleIdsToRemove");
+        circlesController.removeCircles(circleIdsToRemove);
+        result.success(null);
+        break;
+      }
+      case "map#isCompassEnabled": {
+        result.success(googleMap.getUiSettings().isCompassEnabled());
+        break;
+      }
+      case "map#isMapToolbarEnabled": {
+        result.success(googleMap.getUiSettings().isMapToolbarEnabled());
+        break;
+      }
+      case "map#getMinMaxZoomLevels": {
+        List<Float> zoomLevels = new ArrayList<>(2);
+        zoomLevels.add(googleMap.getMinZoomLevel());
+        zoomLevels.add(googleMap.getMaxZoomLevel());
+        result.success(zoomLevels);
+        break;
+      }
+      case "map#isZoomGesturesEnabled": {
+        result.success(googleMap.getUiSettings().isZoomGesturesEnabled());
+        break;
+      }
+      case "map#isLiteModeEnabled": {
+        result.success(options.getLiteMode());
+        break;
+      }
+      case "map#isZoomControlsEnabled": {
+        result.success(googleMap.getUiSettings().isZoomControlsEnabled());
+        break;
+      }
+      case "map#isScrollGesturesEnabled": {
+        result.success(googleMap.getUiSettings().isScrollGesturesEnabled());
+        break;
+      }
+      case "map#isTiltGesturesEnabled": {
+        result.success(googleMap.getUiSettings().isTiltGesturesEnabled());
+        break;
+      }
+      case "map#isRotateGesturesEnabled": {
+        result.success(googleMap.getUiSettings().isRotateGesturesEnabled());
+        break;
+      }
+      case "map#isMyLocationButtonEnabled": {
+        result.success(googleMap.getUiSettings().isMyLocationButtonEnabled());
+        break;
+      }
+      case "map#isTrafficEnabled": {
+        result.success(googleMap.isTrafficEnabled());
+        break;
+      }
+      case "map#isBuildingsEnabled": {
+        result.success(googleMap.isBuildingsEnabled());
+        break;
+      }
+      case "map#getZoomLevel": {
+        result.success(googleMap.getCameraPosition().zoom);
+        break;
+      }
+      case "map#setStyle": {
+        invalidateMapIfNeeded();
+        boolean mapStyleSet;
+        if (call.arguments instanceof String) {
+          String mapStyle = (String) call.arguments;
+          if (mapStyle == null) {
             mapStyleSet = googleMap.setMapStyle(null);
+          } else {
+            mapStyleSet = googleMap.setMapStyle(new MapStyleOptions(mapStyle));
           }
-          ArrayList<Object> mapStyleResult = new ArrayList<>(2);
-          mapStyleResult.add(mapStyleSet);
-          if (!mapStyleSet) {
-            mapStyleResult.add(
-                "Unable to set the map style. Please check console logs for errors.");
-          }
-          result.success(mapStyleResult);
-          break;
+        } else {
+          mapStyleSet = googleMap.setMapStyle(null);
         }
-      case "tileOverlays#update":
-        {
-          invalidateMapIfNeeded();
-          List<Map<String, ?>> tileOverlaysToAdd = call.argument("tileOverlaysToAdd");
-          tileOverlaysController.addTileOverlays(tileOverlaysToAdd);
-          List<Map<String, ?>> tileOverlaysToChange = call.argument("tileOverlaysToChange");
-          tileOverlaysController.changeTileOverlays(tileOverlaysToChange);
-          List<String> tileOverlaysToRemove = call.argument("tileOverlayIdsToRemove");
-          tileOverlaysController.removeTileOverlays(tileOverlaysToRemove);
-          result.success(null);
-          break;
+        ArrayList<Object> mapStyleResult = new ArrayList<>(2);
+        mapStyleResult.add(mapStyleSet);
+        if (!mapStyleSet) {
+          mapStyleResult.add(
+              "Unable to set the map style. Please check console logs for errors.");
         }
-      case "tileOverlays#clearTileCache":
-        {
-          invalidateMapIfNeeded();
-          String tileOverlayId = call.argument("tileOverlayId");
-          tileOverlaysController.clearTileCache(tileOverlayId);
-          result.success(null);
-          break;
-        }
-      case "map#getTileOverlayInfo":
-        {
-          String tileOverlayId = call.argument("tileOverlayId");
-          result.success(tileOverlaysController.getTileOverlayInfo(tileOverlayId));
-          break;
-        }
+        result.success(mapStyleResult);
+        break;
+      }
+      case "tileOverlays#update": {
+        invalidateMapIfNeeded();
+        List<Map<String, ?>> tileOverlaysToAdd = call.argument("tileOverlaysToAdd");
+        tileOverlaysController.addTileOverlays(tileOverlaysToAdd);
+        List<Map<String, ?>> tileOverlaysToChange = call.argument("tileOverlaysToChange");
+        tileOverlaysController.changeTileOverlays(tileOverlaysToChange);
+        List<String> tileOverlaysToRemove = call.argument("tileOverlayIdsToRemove");
+        tileOverlaysController.removeTileOverlays(tileOverlaysToRemove);
+        result.success(null);
+        break;
+      }
+      case "tileOverlays#clearTileCache": {
+        invalidateMapIfNeeded();
+        String tileOverlayId = call.argument("tileOverlayId");
+        tileOverlaysController.clearTileCache(tileOverlayId);
+        result.success(null);
+        break;
+      }
+      case "map#getTileOverlayInfo": {
+        String tileOverlayId = call.argument("tileOverlayId");
+        result.success(tileOverlaysController.getTileOverlayInfo(tileOverlayId));
+        break;
+      }
       default:
         result.notImplemented();
     }
@@ -529,12 +535,13 @@ final class GoogleMapController
 
   @Override
   public void onCameraIdle() {
+    clustersController.onCameraIdle();
     methodChannel.invokeMethod("camera#onIdle", Collections.singletonMap("map", id));
   }
 
   @Override
   public boolean onMarkerClick(Marker marker) {
-    return markersController.onMarkerTap(marker.getId());
+    return markersController.onMapsMarkerTap(marker.getId());
   }
 
   @Override
@@ -575,6 +582,7 @@ final class GoogleMapController
     disposed = true;
     methodChannel.setMethodCallHandler(null);
     setGoogleMapListener(null);
+    setMarkerCollectionListener(null);
     destroyMapViewIfNecessary();
     Lifecycle lifecycle = lifecycleProvider.getLifecycle();
     if (lifecycle != null) {
@@ -590,8 +598,6 @@ final class GoogleMapController
     googleMap.setOnCameraMoveStartedListener(listener);
     googleMap.setOnCameraMoveListener(listener);
     googleMap.setOnCameraIdleListener(listener);
-    googleMap.setOnMarkerClickListener(listener);
-    googleMap.setOnMarkerDragListener(listener);
     googleMap.setOnPolygonClickListener(listener);
     googleMap.setOnPolylineClickListener(listener);
     googleMap.setOnCircleClickListener(listener);
@@ -599,18 +605,43 @@ final class GoogleMapController
     googleMap.setOnMapLongClickListener(listener);
   }
 
-  // @Override
-  // The minimum supported version of Flutter doesn't have this method on the PlatformView interface, but the maximum
-  // does. This will override it when available even with the annotation commented out.
-  public void onInputConnectionLocked() {
-    // TODO(mklim): Remove this empty override once https://github.com/flutter/flutter/issues/40126 is fixed in stable.
+  private void setMarkerCollectionListener(@Nullable GoogleMapListener listener) {
+    if (googleMap == null || markerCollection == null) {
+      Log.v(TAG, "Controller was disposed before GoogleMap was ready.");
+      return;
+    }
+
+    markerCollection.setOnMarkerClickListener(listener);
+    markerCollection.setOnMarkerDragListener(listener);
+  }
+
+  private void setClusterListener(@Nullable ClusterListener listener) {
+    if (googleMap == null || markerCollection == null) {
+      Log.v(TAG, "Controller was disposed before GoogleMap was ready.");
+      return;
+    }
+
+    clustersController.setListener(listener);
   }
 
   // @Override
-  // The minimum supported version of Flutter doesn't have this method on the PlatformView interface, but the maximum
-  // does. This will override it when available even with the annotation commented out.
+  // The minimum supported version of Flutter doesn't have this method on the
+  // PlatformView interface, but the maximum
+  // does. This will override it when available even with the annotation commented
+  // out.
+  public void onInputConnectionLocked() {
+    // TODO(mklim): Remove this empty override once
+    // https://github.com/flutter/flutter/issues/40126 is fixed in stable.
+  }
+
+  // @Override
+  // The minimum supported version of Flutter doesn't have this method on the
+  // PlatformView interface, but the maximum
+  // does. This will override it when available even with the annotation commented
+  // out.
   public void onInputConnectionUnlocked() {
-    // TODO(mklim): Remove this empty override once https://github.com/flutter/flutter/issues/40126 is fixed in stable.
+    // TODO(mklim): Remove this empty override once
+    // https://github.com/flutter/flutter/issues/40126 is fixed in stable.
   }
 
   // DefaultLifecycleObserver
@@ -802,6 +833,19 @@ final class GoogleMapController
   }
 
   @Override
+  public void setInitialClusters(Object initialClusters) {
+    ArrayList<?> clusters = (ArrayList<?>) initialClusters;
+    this.initialClusters = clusters != null ? new ArrayList<>(clusters) : null;
+    if (googleMap != null) {
+      updateInitialClusters();
+    }
+  }
+
+  private void updateInitialClusters() {
+    clustersController.addClusters(initialClusters);
+  }
+
+  @Override
   public void setInitialPolygons(Object initialPolygons) {
     ArrayList<?> polygons = (ArrayList<?>) initialPolygons;
     this.initialPolygons = polygons != null ? new ArrayList<>(polygons) : null;
@@ -855,11 +899,14 @@ final class GoogleMapController
   @SuppressLint("MissingPermission")
   private void updateMyLocationSettings() {
     if (hasLocationPermission()) {
-      // The plugin doesn't add the location permission by default so that apps that don't need
+      // The plugin doesn't add the location permission by default so that apps that
+      // don't need
       // the feature won't require the permission.
-      // Gradle is doing a static check for missing permission and in some configurations will
-      // fail the build if the permission is missing. The following disables the Gradle lint.
-      //noinspection ResourceType
+      // Gradle is doing a static check for missing permission and in some
+      // configurations will
+      // fail the build if the permission is missing. The following disables the
+      // Gradle lint.
+      // noinspection ResourceType
       googleMap.setMyLocationEnabled(myLocationEnabled);
       googleMap.getUiSettings().setMyLocationButtonEnabled(myLocationButtonEnabled);
     } else {
@@ -870,10 +917,8 @@ final class GoogleMapController
   }
 
   private boolean hasLocationPermission() {
-    return checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-            == PackageManager.PERMISSION_GRANTED
-        || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
-            == PackageManager.PERMISSION_GRANTED;
+    return checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
   }
 
   private int checkSelfPermission(String permission) {
@@ -906,5 +951,36 @@ final class GoogleMapController
 
   public void setBuildingsEnabled(boolean buildingsEnabled) {
     this.buildingsEnabled = buildingsEnabled;
+  }
+
+  @Override
+  public boolean onClusterClick(Cluster<MarkerBuilder> cluster) {
+    return false;
+  }
+
+  @Override
+  public void onClusterInfoWindowClick(Cluster<MarkerBuilder> cluster) {
+  }
+
+  @Override
+  public void onClusterInfoWindowLongClick(Cluster<MarkerBuilder> cluster) {
+  }
+
+  @Override
+  public boolean onClusterItemClick(MarkerBuilder item) {
+    return markersController.onMarkerTap(item.markerId());
+  }
+
+  @Override
+  public void onClusterItemInfoWindowClick(MarkerBuilder item) {
+  }
+
+  @Override
+  public void onClusterItemInfoWindowLongClick(MarkerBuilder item) {
+  }
+
+  @Override
+  public void onClusterMarker(MarkerBuilder markerBuilder, Marker marker) {
+    markersController.onClusterMarker(markerBuilder, marker);
   }
 }

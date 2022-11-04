@@ -176,6 +176,62 @@ class GoogleMapController {
       polylines: _polylines,
     );
 
+    final List<gmaps.Marker> clusterMarkers = <gmaps.Marker>[];
+
+    for (int i = 0; i < 100; i++) {
+      final Marker marker = Marker(
+          markerId: MarkerId('clusterMarker$i'),
+          position: LatLng(
+              52.4478 + i.toDouble() * 0.01, -3.5402 + i.toDouble() * 0.01));
+
+      final gmaps.MarkerOptions markerOptions =
+          _markerOptionsFromMarker(marker, null);
+      final gmaps.Marker gmapsmarker = gmaps.Marker(markerOptions)
+        ..map = _googleMap;
+
+      gmapsmarker.onClick
+          .listen((gmaps.MapMouseEvent event) => debugPrint('MARKER CLICKED'));
+
+      clusterMarkers.add(gmapsmarker);
+    }
+
+    final MarkerClustererOptions markerClustererOptions = createClusterOptions(
+        map,
+        markers: clusterMarkers, onClusterClickHandler:
+            (gmaps.MapMouseEvent event, Cluster cluster, gmaps.GMap marker) {
+      debugPrint('COUNT: ${cluster.count}');
+      debugPrint('Marker draggable: ${cluster.marker.draggable}');
+      debugPrint('Markers length: ${cluster.markers?.length}');
+      if (cluster.markers != null) {
+        cluster.markers!.removeLast();
+      }
+      debugPrint('CLUSTER CLICKER');
+    });
+
+    MarkerClusterer(markerClustererOptions);
+
+    final MarkerClustererOptions markerClustererOptions2 =
+        MarkerClustererOptions()..map = map;
+    final List<gmaps.Marker> clusterMarkers2 = <gmaps.Marker>[];
+
+    for (int i = 0; i < 100; i++) {
+      final Marker marker = Marker(
+          markerId: MarkerId('clusterMarker$i'),
+          position: LatLng(52.4478 + i.toDouble() * 0.01 + 0.2,
+              -3.5402 + i.toDouble() * 0.01));
+
+      final gmaps.MarkerOptions markerOptions =
+          _markerOptionsFromMarker(marker, null);
+      final gmaps.Marker gmapsmarker = gmaps.Marker(markerOptions)
+        ..map = _googleMap;
+
+      clusterMarkers2.add(gmapsmarker);
+    }
+
+    markerClustererOptions2.markers = clusterMarkers2;
+
+    MarkerClusterer(markerClustererOptions2);
+
     _setTrafficLayer(map, _lastMapConfiguration.trafficEnabled ?? false);
   }
 

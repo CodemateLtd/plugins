@@ -34,8 +34,10 @@ import java.util.Map;
 /** Conversions between JSON-like values and GoogleMaps data types. */
 class Convert {
 
-  // TODO(hamdikahloun): FlutterMain has been deprecated and should be replaced with FlutterLoader
-  //  when it's available in Stable channel: https://github.com/flutter/flutter/issues/70923.
+  // TODO(hamdikahloun): FlutterMain has been deprecated and should be replaced
+  // with FlutterLoader
+  // when it's available in Stable channel:
+  // https://github.com/flutter/flutter/issues/70923.
   @SuppressWarnings("deprecation")
   private static BitmapDescriptor toBitmapDescriptor(Object o) {
     final List<?> data = toList(o);
@@ -427,6 +429,7 @@ class Convert {
     if (zIndex != null) {
       sink.setZIndex(toFloat(zIndex));
     }
+
     final String markerId = (String) data.get("markerId");
     if (markerId == null) {
       throw new IllegalArgumentException("markerId was null");
