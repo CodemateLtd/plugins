@@ -73,9 +73,9 @@
   return self;
 }
 
-- (void)addMarkerClusters:(NSArray *)markerClustersToAdd {
-  for (NSDictionary *cluster in markerClustersToAdd) {
-    NSString *identifier = cluster[@"clusterId"];
+- (void)addMarkerClusters:(NSArray *)markerClusterManagersToAdd {
+  for (NSDictionary *cluster in markerClusterManagersToAdd) {
+    NSString *identifier = cluster[@"clusterManagerId"];
     FLTGoogleMapMarkerClusterController *controller =
         [[FLTGoogleMapMarkerClusterController alloc] initMarkerClusterWithMarkers:cluster[@"markers"]
                                                           identifier:identifier

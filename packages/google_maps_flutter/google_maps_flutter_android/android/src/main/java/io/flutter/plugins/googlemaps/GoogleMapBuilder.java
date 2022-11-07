@@ -22,7 +22,7 @@ class GoogleMapBuilder implements GoogleMapOptionsSink {
   private boolean trafficEnabled = false;
   private boolean buildingsEnabled = true;
   private Object initialMarkers;
-  private Object initialClusters;
+  private Object initialClusterManagers;
   private Object initialPolygons;
   private Object initialPolylines;
   private Object initialCircles;
@@ -34,8 +34,8 @@ class GoogleMapBuilder implements GoogleMapOptionsSink {
       Context context,
       BinaryMessenger binaryMessenger,
       LifecycleProvider lifecycleProvider) {
-    final GoogleMapController controller =
-        new GoogleMapController(id, context, binaryMessenger, lifecycleProvider, options);
+    final GoogleMapController controller = new GoogleMapController(id, context, binaryMessenger, lifecycleProvider,
+        options);
     controller.init();
     controller.setMyLocationEnabled(myLocationEnabled);
     controller.setMyLocationButtonEnabled(myLocationButtonEnabled);
@@ -43,7 +43,7 @@ class GoogleMapBuilder implements GoogleMapOptionsSink {
     controller.setTrafficEnabled(trafficEnabled);
     controller.setBuildingsEnabled(buildingsEnabled);
     controller.setTrackCameraPosition(trackCameraPosition);
-    controller.setInitialClusters(initialClusters);
+    controller.setInitialClusterManagers(initialClusterManagers);
     controller.setInitialMarkers(initialMarkers);
     controller.setInitialPolygons(initialPolygons);
     controller.setInitialPolylines(initialPolylines);
@@ -158,8 +158,8 @@ class GoogleMapBuilder implements GoogleMapOptionsSink {
   }
 
   @Override
-  public void setInitialClusters(Object initialClusters) {
-    this.initialClusters = initialClusters;
+  public void setInitialClusterManagers(Object initialClusterManagers) {
+    this.initialClusterManagers = initialClusterManagers;
   }
 
   @Override

@@ -38,23 +38,10 @@ class PlaceMarkerBodyState extends State<PlaceMarkerBody> {
   static const LatLng center = LatLng(-33.86711, 151.1947171);
 
   GoogleMapController? controller;
-  Map<ClusterId, Cluster> clusters = <ClusterId, Cluster>{};
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
   MarkerId? selectedMarker;
   int _markerIdCounter = 1;
   LatLng? markerPosition;
-  final ClusterId clusterId = ClusterId('cluster_id_1');
-
-  @override
-  void initState() {
-    super.initState();
-    final Cluster cluster = Cluster(
-      clusterId: clusterId,
-      infoWindow: InfoWindow(title: clusterId.value, snippet: '*'),
-      onTap: () => debugPrint(clusterId.value),
-    );
-    clusters[clusterId] = cluster;
-  }
 
   // ignore: use_setters_to_change_properties
   void _onMapCreated(GoogleMapController controller) {
@@ -145,7 +132,6 @@ class PlaceMarkerBodyState extends State<PlaceMarkerBody> {
       onTap: () => _onMarkerTapped(markerId),
       onDragEnd: (LatLng position) => _onMarkerDragEnd(markerId, position),
       onDrag: (LatLng position) => _onMarkerDrag(markerId, position),
-      clusterId: clusterId,
     );
 
     debugPrint(marker.toString());
@@ -320,7 +306,6 @@ class PlaceMarkerBodyState extends State<PlaceMarkerBody> {
                 zoom: 11.0,
               ),
               markers: Set<Marker>.of(markers.values),
-              clusters: Set<Cluster>.of(clusters.values),
             ),
           ),
           Row(

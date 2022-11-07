@@ -105,16 +105,17 @@ class GoogleMapController {
         .updateMarkers(markerUpdates, mapId: mapId);
   }
 
-  /// Updates cluster configuration.
+  /// Updates cluster manager configuration.
   ///
   /// Change listeners are notified once the update has been made on the
   /// platform side.
   ///
   /// The returned [Future] completes after listeners have been notified.
-  Future<void> _updateClusters(ClusterUpdates clusterUpdates) {
-    assert(clusterUpdates != null);
+  Future<void> _updateClusterManagers(
+      ClusterManagerUpdates clusterManagerUpdates) {
+    assert(clusterManagerUpdates != null);
     return GoogleMapsFlutterPlatform.instance
-        .updateClusters(clusterUpdates, mapId: mapId);
+        .updateClusterManagers(clusterManagerUpdates, mapId: mapId);
   }
 
   /// Updates polygon configuration.

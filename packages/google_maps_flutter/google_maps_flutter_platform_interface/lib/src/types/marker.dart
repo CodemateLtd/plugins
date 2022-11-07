@@ -57,7 +57,7 @@ class Marker implements MapsObject<Marker> {
     this.rotation = 0.0,
     this.visible = true,
     this.zIndex = 0.0,
-    this.clusterId,
+    this.clusterManagerId,
     this.onTap,
     this.onDrag,
     this.onDragStart,
@@ -70,8 +70,8 @@ class Marker implements MapsObject<Marker> {
   @override
   MarkerId get mapsId => markerId;
 
-  /// Marker belongs to cluster with [clusterId]
-  final ClusterId? clusterId;
+  /// Marker clustering is managed by [ClusterManager] with [clusterManagerId]
+  final ClusterManagerId? clusterManagerId;
 
   /// The opacity of the marker, between 0.0 and 1.0 inclusive.
   ///
@@ -151,7 +151,7 @@ class Marker implements MapsObject<Marker> {
     ValueChanged<LatLng>? onDragStartParam,
     ValueChanged<LatLng>? onDragParam,
     ValueChanged<LatLng>? onDragEndParam,
-    ClusterId? clusterIdParam,
+    ClusterManagerId? clusterManagerIdParam,
   }) {
     return Marker(
       markerId: markerId,
@@ -170,7 +170,7 @@ class Marker implements MapsObject<Marker> {
       onDragStart: onDragStartParam ?? onDragStart,
       onDrag: onDragParam ?? onDrag,
       onDragEnd: onDragEndParam ?? onDragEnd,
-      clusterId: clusterIdParam ?? clusterId,
+      clusterManagerId: clusterManagerIdParam ?? clusterManagerId,
     );
   }
 
@@ -201,7 +201,7 @@ class Marker implements MapsObject<Marker> {
     addIfPresent('rotation', rotation);
     addIfPresent('visible', visible);
     addIfPresent('zIndex', zIndex);
-    addIfPresent('clusterId', clusterId?.value);
+    addIfPresent('clusterManagerId', clusterManagerId?.value);
     return json;
   }
 
@@ -226,7 +226,7 @@ class Marker implements MapsObject<Marker> {
         rotation == other.rotation &&
         visible == other.visible &&
         zIndex == other.zIndex &&
-        clusterId == other.clusterId;
+        clusterManagerId == other.clusterManagerId;
   }
 
   @override
@@ -238,6 +238,6 @@ class Marker implements MapsObject<Marker> {
         'consumeTapEvents: $consumeTapEvents, draggable: $draggable, flat: $flat, '
         'icon: $icon, infoWindow: $infoWindow, position: $position, rotation: $rotation, '
         'visible: $visible, zIndex: $zIndex, onTap: $onTap, onDragStart: $onDragStart, '
-        'onDrag: $onDrag, onDragEnd: $onDragEnd, clusterId: $clusterId}';
+        'onDrag: $onDrag, onDragEnd: $onDragEnd, clusterManagerId: $clusterManagerId}';
   }
 }

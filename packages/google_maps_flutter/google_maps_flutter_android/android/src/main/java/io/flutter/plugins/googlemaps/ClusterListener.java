@@ -7,10 +7,11 @@ package io.flutter.plugins.googlemaps;
 import com.google.maps.android.clustering.ClusterManager;
 
 interface ClusterListener
-    extends ClusterManager.OnClusterClickListener<MarkerBuilder>,
+        extends ClusterManager.OnClusterClickListener<MarkerBuilder>,
         ClusterManager.OnClusterInfoWindowClickListener<MarkerBuilder>,
         ClusterManager.OnClusterInfoWindowLongClickListener<MarkerBuilder>,
         ClusterManager.OnClusterItemClickListener<MarkerBuilder>,
         ClusterManager.OnClusterItemInfoWindowClickListener<MarkerBuilder>,
         ClusterManager.OnClusterItemInfoWindowLongClickListener<MarkerBuilder>,
-        ClustersController.OnClusterMarker<MarkerBuilder> {}
+        ClusterManagersController.OnClusterMarker<MarkerBuilder> {
+}

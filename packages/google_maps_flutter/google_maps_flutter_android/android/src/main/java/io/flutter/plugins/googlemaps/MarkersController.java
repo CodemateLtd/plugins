@@ -23,14 +23,14 @@ class MarkersController {
   private final HashMap<String, String> googleMapsMarkerIdToDartMarkerId;
   private final MethodChannel methodChannel;
   private MarkerManager.Collection markerCollection;
-  private final ClustersController clustersController;
+  private final ClusterManagersController clusterManagersController;
 
-  MarkersController(MethodChannel methodChannel, ClustersController clustersController) {
+  MarkersController(MethodChannel methodChannel, ClusterManagersController clusterManagersController) {
     this.markerIdToMarkerBuilder = new HashMap<>();
     this.markerIdToController = new HashMap<>();
     this.googleMapsMarkerIdToDartMarkerId = new HashMap<>();
     this.methodChannel = methodChannel;
-    this.clustersController = clustersController;
+    this.clusterManagersController = clusterManagersController;
   }
 
   void setCollection(MarkerManager.Collection markerCollection) {
@@ -40,6 +40,7 @@ class MarkersController {
   void addMarkers(List<Object> markersToAdd) {
     if (markersToAdd != null) {
       for (Object markerToAdd : markersToAdd) {
+        Log.e(TAG, "addMarkers 1");
         addMarker(markerToAdd);
       }
     }
@@ -72,9 +73,9 @@ class MarkersController {
       return;
     }
     final MarkerController markerController = markerIdToController.remove(markerId);
-    final String clusterId = markerBuilder.clusterId();
-    if (clusterId != null) {
-      clustersController.removeItem(markerBuilder);
+    final String clusterManagerId = markerBuilder.clusterManagerId();
+    if (clusterManagerId != null) {
+      clusterManagersController.removeItem(markerBuilder);
     } else if (markerController != null && this.markerCollection != null) {
       // Remove marker from map and markerCollection
       markerController.removeFromCollection(markerCollection);
@@ -185,24 +186,23 @@ class MarkersController {
   // Creates markerController for marker for realtime marker updates.
   public void onClusterMarker(MarkerBuilder markerBuilder, Marker marker) {
     String markerId = markerBuilder.markerId();
+    Log.e(TAG, "onClusterMarker 1 - markerId:" + markerId);
     if (markerIdToMarkerBuilder.get(markerId) == markerBuilder) {
+      Log.e(TAG, "onClusterMarker 2 - markerId:" + markerId);
       createControllerForMarker(markerBuilder.markerId(), marker, markerBuilder.consumeTapEvents());
     }
   }
 
   private void addMarker(Object marker) {
-    Log.e(TAG, "Adding marker 1");
     if (marker == null) {
       return;
     }
     String markerId = getMarkerId(marker);
-    Log.e(TAG, "Adding marker 2 - markerId:" + markerId);
     if (markerId == null) {
       throw new IllegalArgumentException("markerId was null");
     }
-    String clusterId = getClusterId(marker);
-    Log.e(TAG, "Adding marker 3 - clusterId:" + clusterId);
-    MarkerBuilder markerBuilder = new MarkerBuilder(markerId, clusterId);
+    String clusterManagerId = getClusterManagerId(marker);
+    MarkerBuilder markerBuilder = new MarkerBuilder(markerId, clusterManagerId);
     Convert.interpretMarkerOptions(marker, markerBuilder);
     addMarker(markerBuilder);
   }
@@ -216,9 +216,10 @@ class MarkersController {
     // Store marker builder for future marker rebuilds when used under clusters.
     markerIdToMarkerBuilder.put(markerId, markerBuilder);
 
-    if (markerBuilder.clusterId() == null) {
+    if (markerBuilder.clusterManagerId() == null) {
       addMarkerToCollection(markerId, markerBuilder);
     } else {
+      Log.e(TAG, "addMarkers 2:" + markerBuilder.clusterManagerId());
       addMarkerBuilderForCluster(markerBuilder);
     }
   }
@@ -230,7 +231,7 @@ class MarkersController {
   }
 
   private void addMarkerBuilderForCluster(MarkerBuilder markerBuilder) {
-    clustersController.addItem(markerBuilder);
+    clusterManagersController.addItem(markerBuilder);
   }
 
   private void createControllerForMarker(String markerId, Marker marker, boolean consumeTapEvents) {
@@ -244,21 +245,25 @@ class MarkersController {
       return;
     }
     String markerId = getMarkerId(marker);
-    String clusterId = getClusterId(marker);
+    String clusterManagerId = getClusterManagerId(marker);
 
     MarkerBuilder markerBuilder = markerIdToMarkerBuilder.get(markerId);
     if (markerBuilder == null) {
       return;
     }
-    String oldClusterId = markerBuilder.clusterId();
+    String oldClusterManagerId = markerBuilder.clusterManagerId();
 
     // Cluster id on updated marker has changed.
     // Marker need to be removed and added again.
-    if (clusterId != oldClusterId) {
+    if (!clusterManagerId.equals(oldClusterManagerId)) {
+      Log.e(TAG, "Change marker cluster id changed - clusterManagerId:" + clusterManagerId + ", oldClusterManagerId:"
+          + oldClusterManagerId);
       removeMarker(markerId);
+      // Update marker builder
       Convert.interpretMarkerOptions(marker, markerBuilder);
       addMarker(markerBuilder);
     } else {
+      // Update marker builder
       Convert.interpretMarkerOptions(marker, markerBuilder);
     }
 
@@ -276,8 +281,8 @@ class MarkersController {
   }
 
   @SuppressWarnings("unchecked")
-  private static String getClusterId(Object marker) {
+  private static String getClusterManagerId(Object marker) {
     Map<String, Object> markerMap = (Map<String, Object>) marker;
-    return (String) markerMap.get("clusterId");
+    return (String) markerMap.get("clusterManagerId");
   }
 }

@@ -130,9 +130,9 @@
       [_markersController addMarkers:markersToAdd];
     }
 
-    id markerClustersToAdd = args[@"markerClustersToAdd"];
-    if ([markerClustersToAdd isKindOfClass:[NSArray class]]) {
-      [_markerClustersController addMarkerClusters:markerClustersToAdd];
+    id markerClusterManagersToAdd = args[@"markerClusterManagersToAdd"];
+    if ([markerClusterManagersToAdd isKindOfClass:[NSArray class]]) {
+      [_markerClustersController addMarkerClusters:markerClusterManagersToAdd];
     }
 
     id polygonsToAdd = args[@"polygonsToAdd"];

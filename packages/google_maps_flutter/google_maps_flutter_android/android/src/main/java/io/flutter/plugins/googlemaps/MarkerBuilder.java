@@ -25,12 +25,12 @@ class MarkerBuilder implements MarkerOptionsSink, ClusterItem {
   private float rotation;
   private boolean visible;
   private float zIndex;
-  private String clusterId;
+  private String clusterManagerId;
   private String markerId;
 
-  MarkerBuilder(String markerId, String clusterId) {
+  MarkerBuilder(String markerId, String clusterManagerId) {
     this.markerId = markerId;
-    this.clusterId = clusterId;
+    this.clusterManagerId = clusterManagerId;
   }
 
   MarkerOptions build() {
@@ -58,8 +58,8 @@ class MarkerBuilder implements MarkerOptionsSink, ClusterItem {
     return consumeTapEvents;
   }
 
-  String clusterId() {
-    return clusterId;
+  String clusterManagerId() {
+    return clusterManagerId;
   }
 
   String markerId() {

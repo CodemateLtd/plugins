@@ -347,14 +347,14 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
   }
 
   @override
-  Future<void> updateClusters(
-    ClusterUpdates clusterUpdates, {
+  Future<void> updateClusterManagers(
+    ClusterManagerUpdates clusterManagerUpdates, {
     required int mapId,
   }) {
-    assert(clusterUpdates != null);
+    assert(clusterManagerUpdates != null);
     return _channel(mapId).invokeMethod<void>(
-      'clusters#update',
-      clusterUpdates.toJson(),
+      'clusterManagers#update',
+      clusterManagerUpdates.toJson(),
     );
   }
 
@@ -508,8 +508,10 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
       'polylinesToAdd': serializePolylineSet(mapObjects.polylines),
       'circlesToAdd': serializeCircleSet(mapObjects.circles),
       'tileOverlaysToAdd': serializeTileOverlaySet(mapObjects.tileOverlays),
-      'clustersToAdd': serializeClusterSet(mapObjects.clusters),
+      'clusterManagersToAdd': serializeClusterSet(mapObjects.clusterManagers),
     };
+
+    debugPrint(serializeClusterSet(mapObjects.clusterManagers).toString());
 
     const String viewType = 'plugins.flutter.dev/google_maps_android';
     if (useAndroidViewSurface) {
@@ -585,7 +587,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     Set<Polyline> polylines = const <Polyline>{},
     Set<Circle> circles = const <Circle>{},
     Set<TileOverlay> tileOverlays = const <TileOverlay>{},
-    Set<Cluster> clusters = const <Cluster>{},
+    Set<ClusterManager> clusterManagers = const <ClusterManager>{},
     Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers,
     Map<String, dynamic> mapOptions = const <String, dynamic>{},
   }) {
@@ -600,7 +602,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
           polygons: polygons,
           polylines: polylines,
           circles: circles,
-          clusters: clusters,
+          clusterManagers: clusterManagers,
           tileOverlays: tileOverlays),
       mapOptions: mapOptions,
     );
@@ -616,7 +618,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     Set<Polyline> polylines = const <Polyline>{},
     Set<Circle> circles = const <Circle>{},
     Set<TileOverlay> tileOverlays = const <TileOverlay>{},
-    Set<Cluster> clusters = const <Cluster>{},
+    Set<ClusterManager> clusterManagers = const <ClusterManager>{},
     Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers,
     Map<String, dynamic> mapOptions = const <String, dynamic>{},
   }) {
@@ -630,7 +632,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
       polylines: polylines,
       circles: circles,
       tileOverlays: tileOverlays,
-      clusters: clusters,
+      clusterManagers: clusterManagers,
       gestureRecognizers: gestureRecognizers,
       mapOptions: mapOptions,
     );

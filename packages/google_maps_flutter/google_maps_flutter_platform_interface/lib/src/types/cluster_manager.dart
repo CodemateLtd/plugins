@@ -5,18 +5,18 @@
 import 'package:flutter/foundation.dart' show immutable, VoidCallback;
 import 'types.dart';
 
-/// Uniquely identifies a [Cluster] among [GoogleMap] clusters.
+/// Uniquely identifies a [ClusterManager] among [GoogleMap] clusters.
 ///
 /// This does not have to be globally unique, only unique among the list.
 @immutable
-class ClusterId extends MapsObjectId<Cluster> {
-  /// Creates an immutable identifier for a [Cluster].
-  const ClusterId(String value) : super(value);
+class ClusterManagerId extends MapsObjectId<ClusterManager> {
+  /// Creates an immutable identifier for a [ClusterManager].
+  const ClusterManagerId(String value) : super(value);
 }
 
 /// TBD
 @immutable
-class Cluster implements MapsObject<Cluster> {
+class ClusterManager implements MapsObject<ClusterManager> {
   /// Creates a set of cluster configuration options.
   ///
   /// Default cluster options.
@@ -24,56 +24,56 @@ class Cluster implements MapsObject<Cluster> {
   /// Specifies a cluster that
   /// * TBD
   /// * reports [onTap] events
-  const Cluster({
-    required this.clusterId,
+  const ClusterManager({
+    required this.clusterManagerId,
     this.consumeTapEvents = false,
     this.infoWindow = InfoWindow.noText,
-    this.visible = true,
+    this.icon = BitmapDescriptor.defaultMarker,
     this.onTap,
   });
 
-  /// Uniquely identifies a [Cluster].
-  final ClusterId clusterId;
+  /// Uniquely identifies a [ClusterManager].
+  final ClusterManagerId clusterManagerId;
 
   @override
-  ClusterId get mapsId => clusterId;
+  ClusterManagerId get mapsId => clusterManagerId;
 
   /// True if the cluster icon consumes tap events. If not, the map will perform
   /// default tap handling by centering the map on the cluster and displaying its
   /// info window.
   final bool consumeTapEvents;
 
+  /// A description of the bitmap used to draw the marker icon.
+  final BitmapDescriptor icon;
+
   /// A Google Maps InfoWindow.
   ///
   /// The window is displayed when the cluster is tapped.
   final InfoWindow infoWindow;
 
-  /// True if the cluster icon is visible.
-  final bool visible;
-
   /// Callbacks to receive tap events for cluster icons placed on this map.
   final VoidCallback? onTap;
 
-  /// Creates a new [Cluster] object whose values are the same as this instance,
+  /// Creates a new [ClusterManager] object whose values are the same as this instance,
   /// unless overwritten by the specified parameters.
-  Cluster copyWith({
+  ClusterManager copyWith({
     bool? consumeTapEventsParam,
     InfoWindow? infoWindowParam,
-    bool? visibleParam,
+    BitmapDescriptor? iconParam,
     VoidCallback? onTapParam,
   }) {
-    return Cluster(
-      clusterId: clusterId,
+    return ClusterManager(
+      clusterManagerId: clusterManagerId,
       consumeTapEvents: consumeTapEventsParam ?? consumeTapEvents,
+      icon: iconParam ?? icon,
       infoWindow: infoWindowParam ?? infoWindow,
-      visible: visibleParam ?? visible,
       onTap: onTapParam ?? onTap,
     );
   }
 
-  /// Creates a new [Cluster] object whose values are the same as this instance.
+  /// Creates a new [ClusterManager] object whose values are the same as this instance.
   @override
-  Cluster clone() => copyWith();
+  ClusterManager clone() => copyWith();
 
   /// Converts this object to something serializable in JSON.
   @override
@@ -86,10 +86,10 @@ class Cluster implements MapsObject<Cluster> {
       }
     }
 
-    addIfPresent('clusterId', clusterId.value);
+    addIfPresent('clusterManagerId', clusterManagerId.value);
     addIfPresent('consumeTapEvents', consumeTapEvents);
+    addIfPresent('icon', icon.toJson());
     addIfPresent('infoWindow', infoWindow.toJson());
-    addIfPresent('visible', visible);
     return json;
   }
 
@@ -101,19 +101,19 @@ class Cluster implements MapsObject<Cluster> {
     if (other.runtimeType != runtimeType) {
       return false;
     }
-    return other is Cluster &&
-        clusterId == other.clusterId &&
+    return other is ClusterManager &&
+        clusterManagerId == other.clusterManagerId &&
         consumeTapEvents == other.consumeTapEvents &&
-        infoWindow == other.infoWindow &&
-        visible == other.visible;
+        icon == other.icon &&
+        infoWindow == other.infoWindow;
   }
 
   @override
-  int get hashCode => clusterId.hashCode;
+  int get hashCode => clusterManagerId.hashCode;
 
   @override
   String toString() {
-    return 'Cluster{clusterId: $clusterId, consumeTapEvents: $consumeTapEvents, '
-        'infoWindow: $infoWindow, visible: $visible, onTap: $onTap}';
+    return 'Cluster{clusterManagerId: $clusterManagerId, consumeTapEvents: $consumeTapEvents, '
+        'icon: $icon, infoWindow: $infoWindow, onTap: $onTap}';
   }
 }
