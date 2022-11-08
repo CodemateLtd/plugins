@@ -4,9 +4,11 @@
 
 package io.flutter.plugins.googlemaps;
 
+import com.google.android.gms.maps.model.BitmapDescriptor;
+
 /** Receiver of Marker configuration options. */
-interface ClusterOptionsSink {
-  void setVisible(boolean visible);
+interface ClusterMarkerOptionsSink {
+  void setIcon(BitmapDescriptor bitmapDescriptor);
 
   void setConsumeTapEvents(boolean consumeTapEvents);
 }

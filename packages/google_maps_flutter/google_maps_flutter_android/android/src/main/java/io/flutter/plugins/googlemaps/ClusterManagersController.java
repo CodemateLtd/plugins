@@ -68,11 +68,8 @@ class ClusterManagersController implements GoogleMap.OnCameraIdleListener {
   }
 
   void addClusterManagers(List<Object> clusterManagersToAdd) {
-    Log.e(TAG, "Add cluster managers 1");
     if (clusterManagersToAdd != null) {
-      Log.e(TAG, "Add cluster managers 2");
       for (Object clusterToAdd : clusterManagersToAdd) {
-        Log.e(TAG, "Add cluster managers 3");
         addClusterManager(clusterToAdd);
       }
     }
@@ -80,7 +77,6 @@ class ClusterManagersController implements GoogleMap.OnCameraIdleListener {
 
   void addClusterManager(Object clusterManagerData) {
     String clusterManagerId = getClusterManagerId(clusterManagerData);
-    Log.e(TAG, "Adding cluster manager 1 - clusterManagerId:" + clusterManagerId);
     if (clusterManagerId == null) {
       throw new IllegalArgumentException("clusterManagerId was null");
     }
@@ -151,8 +147,8 @@ class ClusterManagersController implements GoogleMap.OnCameraIdleListener {
   }
 
   @SuppressWarnings("unchecked")
-  private static String getClusterManagerId(Object cluster) {
-    Map<String, Object> clusterMap = (Map<String, Object>) cluster;
+  private static String getClusterManagerId(Object clusterManagerData) {
+    Map<String, Object> clusterMap = (Map<String, Object>) clusterManagerData;
     return (String) clusterMap.get("clusterManagerId");
   }
 
