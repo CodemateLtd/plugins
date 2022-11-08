@@ -102,6 +102,7 @@ class ClusteringBodyState extends State<ClusteringBody> {
     setState(() {
       clusterManagers[clusterManagerId] = clusterManager;
     });
+    _addMarkersToCluster(clusterManager);
   }
 
   void _removeClusterManager(ClusterManager clusterManager) {

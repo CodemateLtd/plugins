@@ -22,5 +22,5 @@ class ClusterManagerUpdates extends MapsObjectUpdates<ClusterManager> {
       objectIdsToRemove.cast<ClusterManagerId>();
 
   /// Set of Clusters to be changed in this update.
-  Set<ClusterManager> get clustersToChange => objectsToChange;
+  Set<ClusterManager> get clusterManagersToChange => objectsToChange;
 }

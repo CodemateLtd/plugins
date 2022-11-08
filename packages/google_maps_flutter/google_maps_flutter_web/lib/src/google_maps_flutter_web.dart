@@ -99,6 +99,15 @@ class GoogleMapsPlugin extends GoogleMapsFlutterPlatform {
   }
 
   @override
+  Future<void> updateClusterManagers(
+    ClusterManagerUpdates clusterManagerUpdates, {
+    required int mapId,
+  }) async {
+    assert(clusterManagerUpdates != null);
+    _map(mapId).updateClusterManagers(clusterManagerUpdates);
+  }
+
+  @override
   Future<void> clearTileCache(
     TileOverlayId tileOverlayId, {
     required int mapId,

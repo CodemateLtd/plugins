@@ -80,8 +80,10 @@ class ClusterManagersController implements GoogleMap.OnCameraIdleListener {
     if (clusterManagerId == null) {
       throw new IllegalArgumentException("clusterManagerId was null");
     }
+    Float clusterManagerHue = getClusterManagerHue(clusterManagerData);
     ClusterManager clusterManager = new ClusterManager<MarkerBuilder>(context, googleMap, markerManager);
-    ClusterRenderer clusterRenderer = new ClusterRenderer(context, googleMap, clusterManager, clusterManagerId, this);
+    ClusterRenderer clusterRenderer = new ClusterRenderer(context, googleMap, clusterManager, clusterManagerId,
+        clusterManagerHue, this);
     clusterManager.setRenderer(clusterRenderer);
     initListenersForClusterManager(clusterManager, clusterListener);
     clusterManagerIdToManager.put(clusterManagerId, clusterManager);
@@ -152,6 +154,24 @@ class ClusterManagersController implements GoogleMap.OnCameraIdleListener {
     return (String) clusterMap.get("clusterManagerId");
   }
 
+  @SuppressWarnings("unchecked")
+  private static Float getClusterManagerHue(Object clusterManagerData) {
+    Map<String, Object> clusterMap = (Map<String, Object>) clusterManagerData;
+    final Object icon = clusterMap.get("icon");
+    if (icon != null) {
+      final List<?> data = (List<?>) icon;
+      switch ((String) data.get(0)) {
+        case "defaultMarker":
+          if (data.size() == 2) {
+            return ((Number) data.get(1)).floatValue();
+          }
+        default:
+          return null;
+      }
+    }
+    return null;
+  }
+
   @Override
   public void onCameraIdle() {
     Log.e(TAG, "Camera idle");
@@ -164,15 +184,18 @@ class ClusterManagersController implements GoogleMap.OnCameraIdleListener {
   private class ClusterRenderer extends DefaultClusterRenderer<MarkerBuilder> {
     private final ClusterManagersController clusterManagersController;
     private final String clusterManagerId;
+    private Float hue;
 
     public ClusterRenderer(
         Context context,
         GoogleMap map,
         ClusterManager<MarkerBuilder> clusterManager,
         String clusterManagerId,
+        Float hue,
         ClusterManagersController clusterManagersController) {
       super(context, map, clusterManager);
       this.clusterManagersController = clusterManagersController;
+      this.hue = hue;
       this.clusterManagerId = clusterManagerId;
     }
 
@@ -221,7 +244,10 @@ class ClusterManagersController implements GoogleMap.OnCameraIdleListener {
 
     @Override
     protected int getColor(int clusterSize) {
-      return Color.argb(255, 50, 128, 128);
+      if (hue == null) {
+        return super.getColor(clusterSize);
+      }
+      return Color.HSVToColor(new float[] { hue, 1f, .6f });
     }
   }
 
