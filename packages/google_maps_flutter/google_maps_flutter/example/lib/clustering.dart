@@ -11,27 +11,27 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'page.dart';
 
-class ClusterPage extends GoogleMapExampleAppPage {
-  const ClusterPage({Key? key})
+class ClusteringPage extends GoogleMapExampleAppPage {
+  const ClusteringPage({Key? key})
       : super(const Icon(Icons.place), 'Manage clustering', key: key);
 
   @override
   Widget build(BuildContext context) {
-    return const PlaceMarkerBody();
+    return const ClusteringBody();
   }
 }
 
-class PlaceMarkerBody extends StatefulWidget {
-  const PlaceMarkerBody({Key? key}) : super(key: key);
+class ClusteringBody extends StatefulWidget {
+  const ClusteringBody({Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => PlaceMarkerBodyState();
+  State<StatefulWidget> createState() => ClusteringBodyState();
 }
 
 typedef MarkerUpdateAction = Marker Function(Marker marker);
 
-class PlaceMarkerBodyState extends State<PlaceMarkerBody> {
-  PlaceMarkerBodyState();
+class ClusteringBodyState extends State<ClusteringBody> {
+  ClusteringBodyState();
   static const LatLng center = LatLng(-33.86711, 151.1547171);
   static const double _scaleFactor = 0.05;
 
@@ -97,7 +97,7 @@ class PlaceMarkerBodyState extends State<PlaceMarkerBody> {
             InfoWindow(title: clusterManagerIdVal, snippet: 'Cluster snippet'),
         onTap: () => debugPrint(clusterManagerId.value),
         icon: BitmapDescriptor.defaultMarkerWithHue(
-            Random().nextDouble() * 360.0));
+            _clusterManagerIdCounter * 60 % 360));
 
     setState(() {
       clusterManagers[clusterManagerId] = clusterManager;

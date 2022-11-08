@@ -14,7 +14,7 @@ import 'map_ui.dart';
 import 'marker_icons.dart';
 import 'move_camera.dart';
 import 'padding.dart';
-import 'cluster.dart';
+import 'clustering.dart';
 import 'page.dart';
 import 'place_circle.dart';
 import 'place_marker.dart';
@@ -31,7 +31,7 @@ final List<GoogleMapExampleAppPage> _allPages = <GoogleMapExampleAppPage>[
   const AnimateCameraPage(),
   const MoveCameraPage(),
   const PlaceMarkerPage(),
-  const ClusterPage(),
+  const ClusteringPage(),
   const MarkerIconsPage(),
   const ScrollingMapPage(),
   const PlacePolylinePage(),
