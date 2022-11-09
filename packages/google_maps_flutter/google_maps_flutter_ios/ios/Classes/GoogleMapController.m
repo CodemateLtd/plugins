@@ -62,7 +62,7 @@
 @property(nonatomic, strong) FlutterMethodChannel *channel;
 @property(nonatomic, assign) BOOL trackCameraPosition;
 @property(nonatomic, weak) NSObject<FlutterPluginRegistrar> *registrar;
-@property(nonatomic, strong) FLTMarkerClustersController *markerClustersController;
+@property(nonatomic, strong) FLTClusterManagersController *clusterManagersController;
 @property(nonatomic, strong) FLTMarkersController *markersController;
 @property(nonatomic, strong) FLTPolygonsController *polygonsController;
 @property(nonatomic, strong) FLTPolylinesController *polylinesController;
@@ -107,10 +107,9 @@
     _mapView.delegate = weakSelf;
     _mapView.paddingAdjustmentBehavior = kGMSMapViewPaddingAdjustmentBehaviorNever;
     _registrar = registrar;
-    _markerClustersController = [[FLTMarkerClustersController alloc] initWithMethodChannel:_channel
-                                                                     mapView:_mapView
-                                                                   registrar:registrar];
-    _markersController = [[FLTMarkersController alloc] initWithMethodChannel:_channel
+    _clusterManagersController = [[FLTClusterManagersController alloc] initWithMapView:_mapView];
+    _markersController = [[FLTMarkersController alloc] initWithClusterManagersController:_clusterManagersController
+                                                                     channel:_channel
                                                                      mapView:_mapView
                                                                    registrar:registrar];
     _polygonsController = [[FLTPolygonsController alloc] init:_channel
@@ -130,10 +129,10 @@
       [_markersController addMarkers:markersToAdd];
     }
 
-    id markerClusterManagersToAdd = args[@"markerClusterManagersToAdd"];
-    if ([markerClusterManagersToAdd isKindOfClass:[NSArray class]]) {
-      [_markerClustersController addMarkerClusters:markerClusterManagersToAdd];
-    }
+    // id markerClusterManagersToAdd = args[@"markerClusterManagersToAdd"];
+    // if ([markerClusterManagersToAdd isKindOfClass:[NSArray class]]) {
+    //   [_markerClustersController addMarkerClusters:markerClusterManagersToAdd];
+    // }
 
     id polygonsToAdd = args[@"polygonsToAdd"];
     if ([polygonsToAdd isKindOfClass:[NSArray class]]) {
@@ -297,6 +296,21 @@
                                  message:@"isInfoWindowShown called with invalid markerId"
                                  details:nil]);
     }
+    
+  } else if ([call.method isEqualToString:@"clusterManagers#update"]) {
+    id clusterManagersToAdd = call.arguments[@"clusterManagersToAdd"];
+    if ([clusterManagersToAdd isKindOfClass:[NSArray class]]) {
+      [self.clusterManagersController addClusterManagers:clusterManagersToAdd];
+    }
+    id clusterManagersToChange = call.arguments[@"clusterManagersToChange"];
+    if ([clusterManagersToChange isKindOfClass:[NSArray class]]) {
+      [self.clusterManagersController changeClusters:clusterManagersToChange];
+    }
+    id clusterManagerIdsToRemove = call.arguments[@"clusterManagerIdsToRemove"];
+    if ([clusterManagerIdsToRemove isKindOfClass:[NSArray class]]) {
+      [self.clusterManagersController removeClusterManagers:clusterManagerIdsToRemove];
+    }
+    result(nil);
   } else if ([call.method isEqualToString:@"polygons#update"]) {
     id polygonsToAdd = call.arguments[@"polygonsToAdd"];
     if ([polygonsToAdd isKindOfClass:[NSArray class]]) {

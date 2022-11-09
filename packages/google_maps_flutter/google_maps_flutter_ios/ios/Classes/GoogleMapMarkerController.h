@@ -4,8 +4,8 @@
 
 #import <Flutter/Flutter.h>
 #import <GoogleMaps/GoogleMaps.h>
-#import <Google-Maps-iOS-Utils/GMUClusterManager.h>
 #import "GoogleMapController.h"
+#import "FLTClusterManagersController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -24,6 +24,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FLTMarkersController : NSObject
 @property(weak, nonatomic) GMUClusterManager *clusterManager;
+- (instancetype)initWithClusterManagersController:(FLTClusterManagersController *)clusterManagers
+                                          channel:(FlutterMethodChannel *)channel
+                                          mapView:(GMSMapView *)mapView
+                                        registrar:(NSObject<FlutterPluginRegistrar> *)registrar;
 - (instancetype)initWithMethodChannel:(FlutterMethodChannel *)methodChannel
                               mapView:(GMSMapView *)mapView
                             registrar:(NSObject<FlutterPluginRegistrar> *)registrar;
