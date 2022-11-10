@@ -90,6 +90,9 @@ class ExampleGoogleMapController {
         .listen((MapTapEvent e) => _googleMapState.onTap(e.position));
     GoogleMapsFlutterPlatform.instance.onLongPress(mapId: mapId).listen(
         (MapLongPressEvent e) => _googleMapState.onLongPress(e.position));
+    GoogleMapsFlutterPlatform.instance
+        .onClusterTap(mapId: mapId)
+        .listen((ClusterTapEvent e) => _googleMapState.onClusterTap(e.value));
   }
 
   /// Updates configuration options of the map user interface.
@@ -104,6 +107,7 @@ class ExampleGoogleMapController {
         .updateMarkers(markerUpdates, mapId: mapId);
   }
 
+<<<<<<< HEAD
 
   /// Updates cluster manager configuration.
   ///
@@ -114,6 +118,11 @@ class ExampleGoogleMapController {
   Future<void> _updateClusterManagers(
       ClusterManagerUpdates clusterManagerUpdates) {
     assert(clusterManagerUpdates != null);
+=======
+  /// Updates cluster manager configuration.
+  Future<void> _updateClusterManagers(
+      ClusterManagerUpdates clusterManagerUpdates) {
+>>>>>>> 62becdeb049e5b8525c3e813e2c97ad4a4f42eee
     return GoogleMapsFlutterPlatform.instance
         .updateClusterManagers(clusterManagerUpdates, mapId: mapId);
   }
@@ -566,6 +575,7 @@ class _ExampleGoogleMapState extends State<ExampleGoogleMap> {
     widget.onLongPress?.call(position);
   }
 
+<<<<<<< HEAD
   void onClusterTap(ClusterManagerId clusterManagerId) {
     assert(clusterManagerId != null);
     final ClusterManager? clusterManager = _clusterManagers[clusterManagerId];
@@ -590,6 +600,12 @@ class _ExampleGoogleMapState extends State<ExampleGoogleMap> {
     if (onTap != null) {
       onTap();
     }
+=======
+  void onClusterTap(Cluster cluster) {
+    final ClusterManager? clusterManager =
+        _clusterManagers[cluster.clusterManagerId];
+    clusterManager?.onClusterTap?.call(cluster);
+>>>>>>> 62becdeb049e5b8525c3e813e2c97ad4a4f42eee
   }
 }
 

@@ -24,6 +24,7 @@ import com.google.android.gms.maps.model.PatternItem;
 import com.google.android.gms.maps.model.RoundCap;
 import com.google.android.gms.maps.model.SquareCap;
 import com.google.android.gms.maps.model.Tile;
+import com.google.maps.android.clustering.Cluster;
 import io.flutter.view.FlutterMain;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -161,7 +162,7 @@ class Convert {
     return data;
   }
 
-  static Object latlngBoundsToJson(LatLngBounds latLngBounds) {
+  static Object latLngBoundsToJson(LatLngBounds latLngBounds) {
     final Map<String, Object> arguments = new HashMap<>(2);
     arguments.put("southwest", latLngToJson(latLngBounds.southwest));
     arguments.put("northeast", latLngToJson(latLngBounds.northeast));
@@ -220,6 +221,32 @@ class Convert {
 
   static Object latLngToJson(LatLng latLng) {
     return Arrays.asList(latLng.latitude, latLng.longitude);
+  }
+
+  static Object clusterToJson(String clusterManagerId, Cluster<MarkerBuilder> cluster) {
+    int clusterSize = cluster.getSize();
+    LatLngBounds.Builder latLngBoundsBuilder = LatLngBounds.builder();
+
+    String[] markerIds = new String[clusterSize];
+    MarkerBuilder[] markerBuilders = cluster.getItems().toArray(new MarkerBuilder[clusterSize]);
+
+    // Loops though cluster items and reads markers position for the LatLngBounds builder
+    // and also builds list of marker ids on the cluster.
+    for (int i = 0; i < clusterSize; i++) {
+      MarkerBuilder markerBuilder = markerBuilders[i];
+      latLngBoundsBuilder.include(markerBuilder.getPosition());
+      markerIds[i] = markerBuilder.markerId();
+    }
+
+    Object position = latLngToJson(cluster.getPosition());
+    Object bounds = latLngBoundsToJson(latLngBoundsBuilder.build());
+
+    final Map<String, Object> data = new HashMap<>(4);
+    data.put("clusterManagerId", clusterManagerId);
+    data.put("position", position);
+    data.put("bounds", bounds);
+    data.put("markerIds", Arrays.asList(markerIds));
+    return data;
   }
 
   static LatLng toLatLng(Object o) {

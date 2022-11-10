@@ -43,6 +43,8 @@ class ClusteringBodyState extends State<ClusteringBody> {
   int _clusterManagerIdCounter = 1;
   int _markerIdCounter = 1;
 
+  Cluster? lastCluster;
+
   @override
   void initState() {
     super.initState();
@@ -92,12 +94,11 @@ class ClusteringBodyState extends State<ClusteringBody> {
     final clusterManagerId = ClusterManagerId(clusterManagerIdVal);
 
     final ClusterManager clusterManager = ClusterManager(
-        clusterManagerId: clusterManagerId,
-        infoWindow:
-            InfoWindow(title: clusterManagerIdVal, snippet: 'Cluster snippet'),
-        onTap: () => debugPrint(clusterManagerId.value),
-        icon: BitmapDescriptor.defaultMarkerWithHue(
-            _clusterManagerIdCounter * 60 % 360));
+      clusterManagerId: clusterManagerId,
+      onClusterTap: (Cluster cluster) => setState(() {
+        lastCluster = cluster;
+      }),
+    );
 
     setState(() {
       clusterManagers[clusterManagerId] = clusterManager;
@@ -116,7 +117,7 @@ class ClusteringBodyState extends State<ClusteringBody> {
   }
 
   void _addMarkersToCluster(ClusterManager clusterManager) {
-    for (var i = 0; i < 5; i++) {
+    for (var i = 0; i < 15; i++) {
       final String markerIdVal =
           '${clusterManager.clusterManagerId.value}_marker_id_$_markerIdCounter';
       _markerIdCounter++;
@@ -170,7 +171,7 @@ class ClusteringBodyState extends State<ClusteringBody> {
     return Stack(children: <Widget>[
       Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           Expanded(
             child: GoogleMap(
@@ -222,6 +223,9 @@ class ClusteringBodyState extends State<ClusteringBody> {
               ),
             ],
           ),
+          if (lastCluster != null)
+            Text(
+                "Cluster with ${lastCluster!.count} markers clicked at ${lastCluster!.position}"),
         ],
       ),
     ]);

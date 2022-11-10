@@ -23,12 +23,16 @@ void main() {
   group('MarkersController', () {
     late StreamController<MapEvent<Object?>> events;
     late MarkersController controller;
+    late ClusterManagersController clusterManagersController;
     late gmaps.GMap map;
 
     setUp(() {
       events = StreamController<MapEvent<Object?>>();
-      controller = MarkersController(stream: events);
+      clusterManagersController = ClusterManagersController();
+      controller = MarkersController(
+          stream: events, clusterManagersController: clusterManagersController);
       map = gmaps.GMap(html.DivElement());
+      clusterManagersController.bindToMap(123, map);
       controller.bindToMap(123, map);
     });
 
