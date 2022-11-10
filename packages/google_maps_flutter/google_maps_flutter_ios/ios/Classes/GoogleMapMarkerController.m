@@ -234,9 +234,9 @@
 @implementation FLTMarkersController
 
 - (instancetype)initWithClusterManagersController:(FLTClusterManagersController *)clusterManagers
-                              channel:(FlutterMethodChannel *)channel
-                              mapView:(GMSMapView *)mapView
-                            registrar:(NSObject<FlutterPluginRegistrar> *)registrar {
+                                          channel:(FlutterMethodChannel *)channel
+                                          mapView:(GMSMapView *)mapView
+                                        registrar:(NSObject<FlutterPluginRegistrar> *)registrar {
   _clusterManagersController = clusterManagers;
   return [self initWithMethodChannel:channel mapView:mapView registrar:registrar];
 }

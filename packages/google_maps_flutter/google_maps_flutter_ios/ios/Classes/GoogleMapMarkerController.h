@@ -23,14 +23,13 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface FLTMarkersController : NSObject
-@property(weak, nonatomic) GMUClusterManager *clusterManager;
 - (instancetype)initWithClusterManagersController:(FLTClusterManagersController *)clusterManagers
                                           channel:(FlutterMethodChannel *)channel
                                           mapView:(GMSMapView *)mapView
                                         registrar:(NSObject<FlutterPluginRegistrar> *)registrar;
-- (instancetype)initWithMethodChannel:(FlutterMethodChannel *)methodChannel
-                              mapView:(GMSMapView *)mapView
-                            registrar:(NSObject<FlutterPluginRegistrar> *)registrar;
+// - (instancetype)initWithMethodChannel:(FlutterMethodChannel *)methodChannel
+//                               mapView:(GMSMapView *)mapView
+//                             registrar:(NSObject<FlutterPluginRegistrar> *)registrar;
 - (void)addMarkers:(NSArray *)markersToAdd;
 - (void)changeMarkers:(NSArray *)markersToChange;
 - (void)removeMarkersWithIdentifiers:(NSArray *)identifiers;

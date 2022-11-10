@@ -41,7 +41,7 @@
   }
 }
 
-- (void)changeClusters:(NSArray *)clusterManagersToChange {
+- (void)changeClusterManagers:(NSArray *)clusterManagersToChange {
   for (NSDictionary *clusterManager in clusterManagersToChange) {
     NSString *identifier = clusterManager[@"clusterManagerId"];
     GMUClusterManager *clusterManager = self.clusterManagerIdToManager[identifier];
@@ -66,7 +66,7 @@
 - (void)addItemWithPosition:(CLLocationCoordinate2D)position
            clusterManagerId:(NSString*)clusterManagerId {
   GMUClusterManager *clusterManager = self.clusterManagerIdToManager[clusterManagerId];
-  if (clusterManager) {
+  if (clusterManager != (id)[NSNull null]) {
     GMSMarker *marker = [GMSMarker markerWithPosition:position];
     [clusterManager addItem:marker];
     [clusterManager cluster];

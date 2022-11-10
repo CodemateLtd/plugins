@@ -108,10 +108,11 @@
     _mapView.paddingAdjustmentBehavior = kGMSMapViewPaddingAdjustmentBehaviorNever;
     _registrar = registrar;
     _clusterManagersController = [[FLTClusterManagersController alloc] initWithMapView:_mapView];
-    _markersController = [[FLTMarkersController alloc] initWithClusterManagersController:_clusterManagersController
-                                                                     channel:_channel
-                                                                     mapView:_mapView
-                                                                   registrar:registrar];
+    _markersController =
+      [[FLTMarkersController alloc] initWithClusterManagersController:_clusterManagersController
+                                                              channel:_channel
+                                                              mapView:_mapView
+                                                            registrar:registrar];
     _polygonsController = [[FLTPolygonsController alloc] init:_channel
                                                       mapView:_mapView
                                                     registrar:registrar];
@@ -304,7 +305,7 @@
     }
     id clusterManagersToChange = call.arguments[@"clusterManagersToChange"];
     if ([clusterManagersToChange isKindOfClass:[NSArray class]]) {
-      [self.clusterManagersController changeClusters:clusterManagersToChange];
+      [self.clusterManagersController changeClusterManagers:clusterManagersToChange];
     }
     id clusterManagerIdsToRemove = call.arguments[@"clusterManagerIdsToRemove"];
     if ([clusterManagerIdsToRemove isKindOfClass:[NSArray class]]) {
