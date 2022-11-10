@@ -125,16 +125,20 @@
     _tileOverlaysController = [[FLTTileOverlaysController alloc] init:_channel
                                                               mapView:_mapView
                                                             registrar:registrar];
+
+    id clusterManagersToAdd = args[@"clusterManagersToAdd"];
+    if ([clusterManagersToAdd isKindOfClass:[NSArray class]]) {
+      NSLog(@"**** clusterManagersToAdd ***** ");
+      [_clusterManagersController addClusterManagers:clusterManagersToAdd];
+    }
+    // hardcoded cluster1
+    [_clusterManagersController addClusterManagers:@[@{@"clusterManagerId":@"cluster1"}]];
+
     id markersToAdd = args[@"markersToAdd"];
     if ([markersToAdd isKindOfClass:[NSArray class]]) {
+        NSLog(@"**** markersToAdd ***** ");
       [_markersController addMarkers:markersToAdd];
     }
-
-    // id markerClusterManagersToAdd = args[@"markerClusterManagersToAdd"];
-    // if ([markerClusterManagersToAdd isKindOfClass:[NSArray class]]) {
-    //   [_markerClustersController addMarkerClusters:markerClusterManagersToAdd];
-    // }
-
     id polygonsToAdd = args[@"polygonsToAdd"];
     if ([polygonsToAdd isKindOfClass:[NSArray class]]) {
       [_polygonsController addPolygons:polygonsToAdd];

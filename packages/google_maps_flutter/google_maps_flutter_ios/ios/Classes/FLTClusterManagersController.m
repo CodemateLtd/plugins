@@ -8,7 +8,7 @@
 @interface FLTClusterManagersController ()
 
 @property(strong, nonatomic) NSMutableDictionary *clusterManagerIdToManager;
-@property(weak, nonatomic) GMSMapView *mapView;
+@property(strong, nonatomic) GMSMapView *mapView;
 
 @end
 
@@ -26,6 +26,8 @@
 - (void)addClusterManagers:(NSArray *)clusterManagersToAdd {
   for (NSDictionary *clusterManager in clusterManagersToAdd) {
     NSString *identifier = clusterManager[@"clusterManagerId"];
+    NSLog(@"FLTClusterManagersController addClusterManagers clusterManagerId = %@",
+      identifier);
     id<GMUClusterAlgorithm> algorithm =
         [[GMUNonHierarchicalDistanceBasedAlgorithm alloc] init];
     id<GMUClusterIconGenerator> iconGenerator =
@@ -65,11 +67,15 @@
 
 - (void)addItemWithPosition:(CLLocationCoordinate2D)position
            clusterManagerId:(NSString*)clusterManagerId {
+  NSLog(@"FLTClusterManagersController addItemWithPosition clusterManagerId = %@",
+    clusterManagerId);
   GMUClusterManager *clusterManager = self.clusterManagerIdToManager[clusterManagerId];
   if (clusterManager != (id)[NSNull null]) {
     GMSMarker *marker = [GMSMarker markerWithPosition:position];
     [clusterManager addItem:marker];
     [clusterManager cluster];
+  } else {
+    NSLog(@"MISSING ClusterManager");
   }
 }
 
