@@ -546,29 +546,17 @@ class _GoogleMapState extends State<GoogleMap> {
     }
   }
 
-  void onClusterTap(ClusterManagerId clusterManagerId) {
-    assert(clusterManagerId != null);
-    final ClusterManager? clusterManager = _clusterManagers[clusterManagerId];
+  void onClusterTap(Cluster cluster) {
+    assert(cluster != null);
+    final ClusterManager? clusterManager =
+        _clusterManagers[cluster.clusterManagerId];
     if (clusterManager == null) {
       throw UnknownMapObjectIdError(
-          'clusterManager', clusterManagerId, 'onClusterTap');
+          'clusterManager', cluster.clusterManagerId, 'onClusterTap');
     }
-    final VoidCallback? onTap = clusterManager.onTap;
-    if (onTap != null) {
-      onTap();
-    }
-  }
-
-  void onClusterInfoWindowTap(ClusterManagerId clusterManagerId) {
-    assert(clusterManagerId != null);
-    final ClusterManager? clusterManager = _clusterManagers[clusterManagerId];
-    if (clusterManager == null) {
-      throw UnknownMapObjectIdError(
-          'clusterManager', clusterManagerId, 'onClusterInfoWindowTap');
-    }
-    final VoidCallback? onTap = clusterManager.infoWindow.onTap;
-    if (onTap != null) {
-      onTap();
+    final ArgumentCallback<Cluster>? onClusterTap = clusterManager.onClusterTap;
+    if (onClusterTap != null) {
+      onClusterTap(cluster);
     }
   }
 }

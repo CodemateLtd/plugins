@@ -7,10 +7,7 @@ package io.flutter.plugins.googlemaps;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.collections.MarkerManager;
-
-import io.flutter.Log;
 import io.flutter.plugin.common.MethodChannel;
 import java.util.HashMap;
 import java.util.List;
@@ -25,7 +22,8 @@ class MarkersController {
   private MarkerManager.Collection markerCollection;
   private final ClusterManagersController clusterManagersController;
 
-  MarkersController(MethodChannel methodChannel, ClusterManagersController clusterManagersController) {
+  MarkersController(
+      MethodChannel methodChannel, ClusterManagersController clusterManagersController) {
     this.markerIdToMarkerBuilder = new HashMap<>();
     this.markerIdToController = new HashMap<>();
     this.googleMapsMarkerIdToDartMarkerId = new HashMap<>();
@@ -40,7 +38,6 @@ class MarkersController {
   void addMarkers(List<Object> markersToAdd) {
     if (markersToAdd != null) {
       for (Object markerToAdd : markersToAdd) {
-        Log.e(TAG, "addMarkers 1");
         addMarker(markerToAdd);
       }
     }
@@ -186,9 +183,7 @@ class MarkersController {
   // Creates markerController for marker for realtime marker updates.
   public void onClusterMarker(MarkerBuilder markerBuilder, Marker marker) {
     String markerId = markerBuilder.markerId();
-    Log.e(TAG, "onClusterMarker 1 - markerId:" + markerId);
     if (markerIdToMarkerBuilder.get(markerId) == markerBuilder) {
-      Log.e(TAG, "onClusterMarker 2 - markerId:" + markerId);
       createControllerForMarker(markerBuilder.markerId(), marker, markerBuilder.consumeTapEvents());
     }
   }
@@ -219,7 +214,6 @@ class MarkersController {
     if (markerBuilder.clusterManagerId() == null) {
       addMarkerToCollection(markerId, markerBuilder);
     } else {
-      Log.e(TAG, "addMarkers 2:" + markerBuilder.clusterManagerId());
       addMarkerBuilderForCluster(markerBuilder);
     }
   }
@@ -245,19 +239,18 @@ class MarkersController {
       return;
     }
     String markerId = getMarkerId(marker);
-    String clusterManagerId = getClusterManagerId(marker);
 
     MarkerBuilder markerBuilder = markerIdToMarkerBuilder.get(markerId);
     if (markerBuilder == null) {
       return;
     }
+
+    String clusterManagerId = getClusterManagerId(marker);
     String oldClusterManagerId = markerBuilder.clusterManagerId();
 
     // Cluster id on updated marker has changed.
     // Marker need to be removed and added again.
     if (!clusterManagerId.equals(oldClusterManagerId)) {
-      Log.e(TAG, "Change marker cluster id changed - clusterManagerId:" + clusterManagerId + ", oldClusterManagerId:"
-          + oldClusterManagerId);
       removeMarker(markerId);
       // Update marker builder
       Convert.interpretMarkerOptions(marker, markerBuilder);

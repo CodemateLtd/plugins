@@ -288,6 +288,11 @@ class GoogleMapsPlugin extends GoogleMapsFlutterPlatform {
     return _events(mapId).whereType<MapLongPressEvent>();
   }
 
+  @override
+  Stream<ClusterTapEvent> onClusterTap({required int mapId}) {
+    return _events(mapId).whereType<ClusterTapEvent>();
+  }
+
   /// Disposes of the current map. It can't be used afterwards!
   @override
   void dispose({required int mapId}) {

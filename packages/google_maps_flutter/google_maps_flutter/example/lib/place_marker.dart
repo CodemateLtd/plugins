@@ -134,8 +134,6 @@ class PlaceMarkerBodyState extends State<PlaceMarkerBody> {
       onDrag: (LatLng position) => _onMarkerDrag(markerId, position),
     );
 
-    debugPrint(marker.toString());
-
     setState(() {
       markers[markerId] = marker;
     });

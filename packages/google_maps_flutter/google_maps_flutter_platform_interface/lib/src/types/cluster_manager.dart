@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/foundation.dart' show immutable, VoidCallback;
+import 'package:flutter/foundation.dart' show immutable;
 import 'types.dart';
 
 /// Uniquely identifies a [ClusterManager] among [GoogleMap] clusters.
@@ -27,9 +27,7 @@ class ClusterManager implements MapsObject<ClusterManager> {
   const ClusterManager({
     required this.clusterManagerId,
     this.consumeTapEvents = false,
-    this.infoWindow = InfoWindow.noText,
-    this.icon = BitmapDescriptor.defaultMarker,
-    this.onTap,
+    this.onClusterTap,
   });
 
   /// Uniquely identifies a [ClusterManager].
@@ -43,31 +41,19 @@ class ClusterManager implements MapsObject<ClusterManager> {
   /// info window.
   final bool consumeTapEvents;
 
-  /// A description of the bitmap used to draw the marker icon.
-  final BitmapDescriptor icon;
-
-  /// A Google Maps InfoWindow.
-  ///
-  /// The window is displayed when the cluster is tapped.
-  final InfoWindow infoWindow;
-
   /// Callbacks to receive tap events for cluster icons placed on this map.
-  final VoidCallback? onTap;
+  final ArgumentCallback<Cluster>? onClusterTap;
 
   /// Creates a new [ClusterManager] object whose values are the same as this instance,
   /// unless overwritten by the specified parameters.
   ClusterManager copyWith({
     bool? consumeTapEventsParam,
-    InfoWindow? infoWindowParam,
-    BitmapDescriptor? iconParam,
-    VoidCallback? onTapParam,
+    ArgumentCallback<Cluster>? onClusterTapParam,
   }) {
     return ClusterManager(
       clusterManagerId: clusterManagerId,
       consumeTapEvents: consumeTapEventsParam ?? consumeTapEvents,
-      icon: iconParam ?? icon,
-      infoWindow: infoWindowParam ?? infoWindow,
-      onTap: onTapParam ?? onTap,
+      onClusterTap: onClusterTapParam ?? onClusterTap,
     );
   }
 
@@ -88,8 +74,6 @@ class ClusterManager implements MapsObject<ClusterManager> {
 
     addIfPresent('clusterManagerId', clusterManagerId.value);
     addIfPresent('consumeTapEvents', consumeTapEvents);
-    addIfPresent('icon', icon.toJson());
-    addIfPresent('infoWindow', infoWindow.toJson());
     return json;
   }
 
@@ -103,9 +87,7 @@ class ClusterManager implements MapsObject<ClusterManager> {
     }
     return other is ClusterManager &&
         clusterManagerId == other.clusterManagerId &&
-        consumeTapEvents == other.consumeTapEvents &&
-        icon == other.icon &&
-        infoWindow == other.infoWindow;
+        consumeTapEvents == other.consumeTapEvents;
   }
 
   @override
@@ -114,6 +96,6 @@ class ClusterManager implements MapsObject<ClusterManager> {
   @override
   String toString() {
     return 'Cluster{clusterManagerId: $clusterManagerId, consumeTapEvents: $consumeTapEvents, '
-        'icon: $icon, infoWindow: $infoWindow, onTap: $onTap}';
+        'onClusterTap: $onClusterTap}';
   }
 }

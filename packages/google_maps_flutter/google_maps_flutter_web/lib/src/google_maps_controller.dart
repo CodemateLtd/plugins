@@ -30,7 +30,8 @@ class GoogleMapController {
     _circlesController = CirclesController(stream: _streamController);
     _polygonsController = PolygonsController(stream: _streamController);
     _polylinesController = PolylinesController(stream: _streamController);
-    _clusterManagersController = ClusterManagersController();
+    _clusterManagersController =
+        ClusterManagersController(stream: _streamController);
     _markersController = MarkersController(
         stream: _streamController,
         clusterManagersController: _clusterManagersController!);
@@ -416,8 +417,6 @@ class GoogleMapController {
         'Cannot update markers after dispose().');
     _clusterManagersController
         ?.addClusterManagers(updates.clusterManagersToAdd);
-    _clusterManagersController
-        ?.changeClusterManagers(updates.clusterManagersToChange);
     _clusterManagersController
         ?.removeClusterManagers(updates.clusterManagerIdsToRemove);
   }

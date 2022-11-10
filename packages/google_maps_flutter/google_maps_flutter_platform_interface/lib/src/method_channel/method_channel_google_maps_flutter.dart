@@ -169,6 +169,11 @@ class MethodChannelGoogleMapsFlutter extends GoogleMapsFlutterPlatform {
     return _events(mapId).whereType<MapLongPressEvent>();
   }
 
+  @override
+  Stream<ClusterTapEvent> onClusterTap({required int mapId}) {
+    return _events(mapId).whereType<ClusterTapEvent>();
+  }
+
   Future<dynamic> _handleMethodCall(MethodCall call, int mapId) async {
     switch (call.method) {
       case 'camera#onMoveStarted':
@@ -262,6 +267,31 @@ class MethodChannelGoogleMapsFlutter extends GoogleMapsFlutterPlatform {
           call.arguments['zoom'] as int?,
         );
         return tile.toJson();
+      case 'cluster#onTap':
+        final ClusterManagerId clusterManagerId =
+            ClusterManagerId(call.arguments['clusterManagerId'] as String);
+        final LatLng position = LatLng.fromJson(call.arguments['position'])!;
+
+        final Map<String, List<dynamic>> latLngData =
+            (call.arguments['bounds']! as Map<dynamic, dynamic>).map(
+                (dynamic key, dynamic object) =>
+                    MapEntry<String, List<dynamic>>(
+                        key as String, object as List<dynamic>));
+
+        final LatLngBounds bounds = LatLngBounds(
+            northeast: LatLng.fromJson(latLngData['northeast'])!,
+            southwest: LatLng.fromJson(latLngData['southwest'])!);
+
+        final List<MarkerId> markerIds =
+            (call.arguments['markerIds']! as List<dynamic>)
+                .map((dynamic markerId) => MarkerId(markerId as String))
+                .toList();
+
+        _mapEventStreamController.add(ClusterTapEvent(
+          mapId,
+          Cluster(clusterManagerId, position, bounds, markerIds),
+        ));
+        break;
       default:
         throw MissingPluginException();
     }

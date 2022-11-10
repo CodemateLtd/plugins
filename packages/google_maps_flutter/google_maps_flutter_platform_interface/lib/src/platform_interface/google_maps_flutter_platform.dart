@@ -375,8 +375,7 @@ abstract class GoogleMapsFlutterPlatform extends PlatformInterface {
   }
 
   /// A marker icon managed by [ClusterManager] has been tapped.
-  Stream<MarkerTapEvent> onClusterTap(
-      {required int mapId, required int clusterManagerId}) {
+  Stream<ClusterTapEvent> onClusterTap({required int mapId}) {
     throw UnimplementedError('onClusterTap() has not been implemented.');
   }
 

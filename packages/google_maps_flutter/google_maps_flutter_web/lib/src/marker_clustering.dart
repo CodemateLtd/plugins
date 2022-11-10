@@ -2,12 +2,17 @@
 part of google_maps_flutter_web;
 
 typedef ClusterClickHandler = void Function(
-    gmaps.MapMouseEvent, Cluster, gmaps.GMap);
+    gmaps.MapMouseEvent, MarkerClustererCluster, gmaps.GMap);
 
 class ClusterManagersController extends GeometryController {
-  ClusterManagersController()
-      : _clusterManagerIdToMarkerClusterer =
+  ClusterManagersController(
+      {required StreamController<MapEvent<Object?>> stream})
+      : _streamController = stream,
+        _clusterManagerIdToMarkerClusterer =
             <ClusterManagerId, MarkerClusterer>{};
+
+  // The stream over which cluster managers broadcast their events
+  final StreamController<MapEvent<Object?>> _streamController;
 
   // A cache of [MarkerClusterer]s indexed by their [ClusterManagerId].
   final Map<ClusterManagerId, MarkerClusterer>
@@ -22,10 +27,14 @@ class ClusterManagersController extends GeometryController {
     if (clusterManager == null) {
       return;
     }
-    final MarkerClustererOptions markerClustererOptions =
-        createClusterOptions(googleMap, markers: <gmaps.Marker>[]);
-    final MarkerClusterer markerClusterer =
-        MarkerClusterer(markerClustererOptions);
+
+    final MarkerClusterer markerClusterer = createMarkerClusterer(
+        googleMap,
+        (gmaps.MapMouseEvent event, MarkerClustererCluster cluster,
+                gmaps.GMap map) =>
+            clusterClicked(
+                clusterManager.clusterManagerId, event, cluster, map));
+
     _clusterManagerIdToMarkerClusterer[clusterManager.clusterManagerId] =
         markerClusterer;
     markerClusterer.onAdd();
@@ -46,13 +55,6 @@ class ClusterManagersController extends GeometryController {
     _clusterManagerIdToMarkerClusterer.remove(clusterManagerId);
   }
 
-  /// Updates a set of [ClusterManager] objects with new options.
-  void changeClusterManagers(Set<ClusterManager> clusterManagersToChange) {
-    clusterManagersToChange.forEach(_changeClusterManager);
-  }
-
-  void _changeClusterManager(ClusterManager clusterManager) {}
-
   void addItem(ClusterManagerId clusterManagerId, gmaps.Marker marker) {
     final MarkerClusterer? markerClusterer =
         _clusterManagerIdToMarkerClusterer[clusterManagerId];
@@ -68,6 +70,31 @@ class ClusterManagersController extends GeometryController {
       if (markerClusterer != null) {
         markerClusterer.removeMarker(marker, false);
       }
+    }
+  }
+
+  void clusterClicked(
+      ClusterManagerId clusterManagerId,
+      gmaps.MapMouseEvent event,
+      MarkerClustererCluster markerClustererCluster,
+      gmaps.GMap map) {
+    if (markerClustererCluster.count > 0 &&
+        markerClustererCluster.bounds != null &&
+        markerClustererCluster.markers != null) {
+      final LatLng position =
+          _gmLatLngToLatLng(markerClustererCluster.position);
+      final LatLngBounds bounds =
+          _gmLatLngBoundsTolatLngBounds(markerClustererCluster.bounds!);
+
+      final List<MarkerId> markerIds = markerClustererCluster.markers!
+          .map<MarkerId>((gmaps.Marker marker) =>
+              MarkerId(marker.get('markerId')! as String))
+          .toList();
+
+      final Cluster cluster =
+          Cluster(clusterManagerId, position, bounds, markerIds);
+
+      _streamController.add(ClusterTapEvent(mapId, cluster));
     }
   }
 }
@@ -94,7 +121,7 @@ class MarkerClustererOptions {
 }
 
 @JS('markerClusterer.Cluster')
-class Cluster {
+class MarkerClustererCluster {
   external gmaps.Marker get marker;
   external List<gmaps.Marker>? markers;
 
@@ -124,21 +151,16 @@ class MarkerClusterer {
   external void render();
 }
 
-MarkerClusterer createMarkerClusterer(gmaps.GMap map,
-    {List<gmaps.Marker>? markers, ClusterClickHandler? onClusterClickHandler}) {
-  return MarkerClusterer(createClusterOptions(map,
-      markers: markers, onClusterClickHandler: onClusterClickHandler));
+MarkerClusterer createMarkerClusterer(
+    gmaps.GMap map, ClusterClickHandler onClusterClickHandler) {
+  return MarkerClusterer(createClusterOptions(map, onClusterClickHandler));
 }
 
-MarkerClustererOptions createClusterOptions(gmaps.GMap map,
-    {List<gmaps.Marker>? markers, ClusterClickHandler? onClusterClickHandler}) {
+MarkerClustererOptions createClusterOptions(
+    gmaps.GMap map, ClusterClickHandler onClusterClickHandler) {
   final MarkerClustererOptions options = MarkerClustererOptions()
     ..map = map
-    ..markers = markers;
-
-  if (onClusterClickHandler != null) {
-    options.onClusterClick = allowInterop(onClusterClickHandler);
-  }
+    ..onClusterClick = allowInterop(onClusterClickHandler);
 
   return options;
 }

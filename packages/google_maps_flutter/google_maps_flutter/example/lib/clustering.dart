@@ -92,12 +92,10 @@ class ClusteringBodyState extends State<ClusteringBody> {
     final clusterManagerId = ClusterManagerId(clusterManagerIdVal);
 
     final ClusterManager clusterManager = ClusterManager(
-        clusterManagerId: clusterManagerId,
-        infoWindow:
-            InfoWindow(title: clusterManagerIdVal, snippet: 'Cluster snippet'),
-        onTap: () => debugPrint(clusterManagerId.value),
-        icon: BitmapDescriptor.defaultMarkerWithHue(
-            _clusterManagerIdCounter * 60 % 360));
+      clusterManagerId: clusterManagerId,
+      onClusterTap: (Cluster cluster) => debugPrint(
+          '${cluster.clusterManagerId.value} Clicked! MarkerIds: ${cluster.markerIds.join(", ")}, BoundingBox: ${cluster.bounds}'),
+    );
 
     setState(() {
       clusterManagers[clusterManagerId] = clusterManager;
@@ -116,7 +114,7 @@ class ClusteringBodyState extends State<ClusteringBody> {
   }
 
   void _addMarkersToCluster(ClusterManager clusterManager) {
-    for (var i = 0; i < 5; i++) {
+    for (var i = 0; i < 15; i++) {
       final String markerIdVal =
           '${clusterManager.clusterManagerId.value}_marker_id_$_markerIdCounter';
       _markerIdCounter++;

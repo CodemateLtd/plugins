@@ -9,6 +9,7 @@ export 'camera.dart';
 export 'cap.dart';
 export 'circle.dart';
 export 'circle_updates.dart';
+export 'cluster.dart';
 export 'cluster_manager.dart';
 export 'cluster_manager_updates.dart';
 export 'info_window.dart';
