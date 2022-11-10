@@ -43,6 +43,8 @@ class ClusteringBodyState extends State<ClusteringBody> {
   int _clusterManagerIdCounter = 1;
   int _markerIdCounter = 1;
 
+  Cluster? lastCluster;
+
   @override
   void initState() {
     super.initState();
@@ -93,8 +95,9 @@ class ClusteringBodyState extends State<ClusteringBody> {
 
     final ClusterManager clusterManager = ClusterManager(
       clusterManagerId: clusterManagerId,
-      onClusterTap: (Cluster cluster) => debugPrint(
-          '${cluster.clusterManagerId.value} Clicked! MarkerIds: ${cluster.markerIds.join(", ")}, BoundingBox: ${cluster.bounds}'),
+      onClusterTap: (Cluster cluster) => setState(() {
+        lastCluster = cluster;
+      }),
     );
 
     setState(() {
@@ -168,7 +171,7 @@ class ClusteringBodyState extends State<ClusteringBody> {
     return Stack(children: <Widget>[
       Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           Expanded(
             child: GoogleMap(
@@ -220,6 +223,9 @@ class ClusteringBodyState extends State<ClusteringBody> {
               ),
             ],
           ),
+          if (lastCluster != null)
+            Text(
+                "Cluster with ${lastCluster!.count} markers clicked at ${lastCluster!.position}"),
         ],
       ),
     ]);
