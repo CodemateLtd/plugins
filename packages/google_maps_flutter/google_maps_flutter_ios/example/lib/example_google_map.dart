@@ -90,9 +90,9 @@ class ExampleGoogleMapController {
         .listen((MapTapEvent e) => _googleMapState.onTap(e.position));
     GoogleMapsFlutterPlatform.instance.onLongPress(mapId: mapId).listen(
         (MapLongPressEvent e) => _googleMapState.onLongPress(e.position));
-    GoogleMapsFlutterPlatform.instance
-        .onClusterTap(mapId: mapId)
-        .listen((ClusterTapEvent e) => _googleMapState.onClusterTap(e.value));
+    // GoogleMapsFlutterPlatform.instance
+    //     .onClusterTap(mapId: mapId)
+    //     .listen((ClusterTapEvent e) => _googleMapState.onClusterTap(e.value));
   }
 
   /// Updates configuration options of the map user interface.
@@ -576,10 +576,10 @@ class _ExampleGoogleMapState extends State<ExampleGoogleMap> {
       throw UnknownMapObjectIdError(
           'clusterManager', clusterManagerId, 'onClusterTap');
     }
-    final VoidCallback? onTap = clusterManager.onTap;
-    if (onTap != null) {
-      onTap();
-    }
+    // final VoidCallback? onTap = clusterManager.onTap;
+    // if (onTap != null) {
+    //   onTap();
+    // }
   }
 
   void onClusterInfoWindowTap(ClusterManagerId clusterManagerId) {
@@ -589,10 +589,10 @@ class _ExampleGoogleMapState extends State<ExampleGoogleMap> {
       throw UnknownMapObjectIdError(
           'clusterManager', clusterManagerId, 'onClusterInfoWindowTap');
     }
-    final VoidCallback? onTap = clusterManager.infoWindow.onTap;
-    if (onTap != null) {
-      onTap();
-    }
+    // final VoidCallback? onTap = clusterManager.infoWindow.onTap;
+    // if (onTap != null) {
+    //   onTap();
+    // }
   }
 }
 

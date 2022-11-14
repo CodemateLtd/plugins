@@ -22,8 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)changeClusterManagers:(NSArray *)clusterManagersToChange;
 - (void)removeClusterManagers:(NSArray *)identifiers;
 - (void)addItem:(GMSMarker *)marker clusterManagerId:(NSString *)clusterManagerId;
-- (void)changeItem:(NSDictionary *)marker;
-- (void)removeItemById:(NSString *)markerIdentifier;
+- (void)removeItem:(NSString *)marker clusterManagerId:(NSArray *)clusterManagerId;
 @end
 
 NS_ASSUME_NONNULL_END

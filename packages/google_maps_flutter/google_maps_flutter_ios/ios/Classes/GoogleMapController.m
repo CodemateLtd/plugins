@@ -128,11 +128,12 @@
 
     id clusterManagersToAdd = args[@"clusterManagersToAdd"];
     if ([clusterManagersToAdd isKindOfClass:[NSArray class]]) {
-      NSLog(@"**** clusterManagersToAdd ***** ");
+      NSLog(@"**** clusterManagersToAdd init ***** ");
       [_clusterManagersController addClusterManagers:clusterManagersToAdd];
     }
     // hardcoded cluster1
-    [_clusterManagersController addClusterManagers:@[ @{@"clusterManagerId" : @"cluster1"} ]];
+    // [_clusterManagersController addClusterManagers:@[ @{@"clusterManagerId" :
+    // @"cluster_manager_id_2"} ]];
 
     id markersToAdd = args[@"markersToAdd"];
     if ([markersToAdd isKindOfClass:[NSArray class]]) {

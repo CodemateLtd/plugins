@@ -11,6 +11,7 @@
 @property(weak, nonatomic) GMSMapView *mapView;
 @property(weak, nonatomic) FLTClusterManagersController *clusterManagersController;
 @property(assign, nonatomic, readwrite) BOOL consumeTapEvents;
+@property(strong, nonatomic) NSString *clusterManagerId;
 
 @end
 
@@ -57,8 +58,8 @@
 }
 
 - (void)addToCluster:(NSString *)clusterManagerId {
+  _clusterManagerId = clusterManagerId;
   [_clusterManagersController addItem:self.marker clusterManagerId:clusterManagerId];
-  self.marker.map = nil;
 }
 
 - (void)setDraggable:(BOOL)draggable {
@@ -282,11 +283,14 @@
 
 - (void)changeMarkers:(NSArray *)markersToChange {
   for (NSDictionary *marker in markersToChange) {
-    // [_clusterManagersController changeItem:marker];
     NSString *identifier = marker[@"markerId"];
     FLTGoogleMapMarkerController *controller = self.markerIdentifierToController[identifier];
     if (!controller) {
       continue;
+    }
+    NSString *clusterManagerId = [controller clusterManagerId];
+    if (clusterManagerId) {
+      [_clusterManagersController removeItem:controller.marker clusterManagerId:clusterManagerId];
     }
     [controller interpretMarkerOptions:marker registrar:self.registrar];
   }

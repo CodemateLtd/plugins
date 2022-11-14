@@ -41,6 +41,8 @@
 
 - (void)changeClusterManagers:(NSArray *)clusterManagersToChange {
   for (NSDictionary *clusterManager in clusterManagersToChange) {
+    NSLog(@"FLTClusterManagersController changeClusterManagers clusterManagerId = %@",
+          clusterManager);
     NSString *identifier = clusterManager[@"clusterManagerId"];
     GMUClusterManager *clusterManager = self.clusterManagerIdToManager[identifier];
     if (!clusterManager) {
@@ -52,6 +54,7 @@
 
 - (void)removeClusterManagers:(NSArray *)identifiers {
   for (NSString *identifier in identifiers) {
+    NSLog(@"FLTClusterManagersController removeClusterManagers clusterManagerId = %@", identifier);
     GMUClusterManager *clusterManager = self.clusterManagerIdToManager[identifier];
     if (!clusterManager) {
       continue;
@@ -65,7 +68,8 @@
   NSLog(@"FLTClusterManagersController addItemWithPosition clusterManagerId = %@",
         clusterManagerId);
   GMUClusterManager *clusterManager = self.clusterManagerIdToManager[clusterManagerId];
-  if (clusterManager != (id)[NSNull null]) {
+  if (marker && clusterManager != (id)[NSNull null]) {
+    NSLog(@"addItem to ClusterManager");
     [clusterManager addItem:marker];
     [clusterManager cluster];
   } else {
@@ -73,9 +77,14 @@
   }
 }
 
-- (void)changeItem:(NSDictionary *)marker {
-}
-
-- (void)removeItemById:(NSString *)markerIdentifier {
+- (void)removeItem:(GMSMarker *)marker clusterManagerId:(NSArray *)clusterManagerId {
+  GMUClusterManager *clusterManager = self.clusterManagerIdToManager[clusterManagerId];
+  if (marker && clusterManager != (id)[NSNull null]) {
+    NSLog(@"remove marker ClusterManager");
+    [clusterManager removeItem:marker];
+    [clusterManager cluster];
+  } else {
+    NSLog(@"MISSING ClusterManager");
+  }
 }
 @end

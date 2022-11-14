@@ -321,6 +321,18 @@ class GoogleMapsFlutterIOS extends GoogleMapsFlutterPlatform {
   }
 
   @override
+  Future<void> updateClusterManagers(
+    ClusterManagerUpdates clusterManagerUpdates, {
+    required int mapId,
+  }) {
+    assert(clusterManagerUpdates != null);
+    return _channel(mapId).invokeMethod<void>(
+      'clusterManagers#update',
+      clusterManagerUpdates.toJson(),
+    );
+  }
+
+  @override
   Future<void> updatePolygons(
     PolygonUpdates polygonUpdates, {
     required int mapId,
@@ -512,6 +524,7 @@ class GoogleMapsFlutterIOS extends GoogleMapsFlutterPlatform {
           widgetConfiguration.initialCameraPosition.toMap(),
       'options': mapOptions,
       'markersToAdd': serializeMarkerSet(mapObjects.markers),
+      'clusterManagersToAdd': serializeClusterSet(mapObjects.clusterManagers),
       'polygonsToAdd': serializePolygonSet(mapObjects.polygons),
       'polylinesToAdd': serializePolylineSet(mapObjects.polylines),
       'circlesToAdd': serializeCircleSet(mapObjects.circles),

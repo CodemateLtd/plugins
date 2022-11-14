@@ -6,12 +6,10 @@
 // ignore_for_file: unawaited_futures
 
 import 'package:flutter/material.dart';
-
-
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
+
 import 'example_google_map.dart';
 import 'page.dart';
-
 
 class ClusterMarkersPage extends GoogleMapExampleAppPage {
   const ClusterMarkersPage({Key? key})
@@ -52,6 +50,10 @@ Set<Marker> markers = {
       clusterManagerId: ClusterManagerId("cluster1"),
       markerId: MarkerId("marker4"),
       position: LatLng(52.8478, -3.5802),
+    ),
+    Marker(
+      markerId: MarkerId("marker5"),
+      position: LatLng(52.9478, -3.6802),
     ),
 };
 
