@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import <Flutter/Flutter.h>
-#import <GoogleMaps/GoogleMaps.h>
 #import <Google-Maps-iOS-Utils/GMUClusterAlgorithm.h>
 #import <Google-Maps-iOS-Utils/GMUClusterIconGenerator.h>
 #import <Google-Maps-iOS-Utils/GMUClusterManager.h>
@@ -13,6 +12,7 @@
 #import <Google-Maps-iOS-Utils/GMUGridBasedClusterAlgorithm.h>
 #import <Google-Maps-iOS-Utils/GMUNonHierarchicalDistanceBasedAlgorithm.h>
 #import <Google-Maps-iOS-Utils/GMUSimpleClusterAlgorithm.h>
+#import <GoogleMaps/GoogleMaps.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -21,10 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addClusterManagers:(NSArray *)clusterManagersToAdd;
 - (void)changeClusterManagers:(NSArray *)clusterManagersToChange;
 - (void)removeClusterManagers:(NSArray *)identifiers;
-- (void)addItemWithPosition:(CLLocationCoordinate2D)position
-           clusterManagerId:(NSString*)clusterManagerId;
-- (void)changeItem:(NSDictionary*)marker;
-- (void)removeItemById:(NSString*)markerIdentifier;
+- (void)addItem:(GMSMarker *)marker clusterManagerId:(NSString *)clusterManagerId;
+- (void)changeItem:(NSDictionary *)marker;
+- (void)removeItemById:(NSString *)markerIdentifier;
 @end
 
 NS_ASSUME_NONNULL_END

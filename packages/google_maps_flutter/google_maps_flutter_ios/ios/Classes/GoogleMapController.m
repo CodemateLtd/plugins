@@ -109,10 +109,10 @@
     _registrar = registrar;
     _clusterManagersController = [[FLTClusterManagersController alloc] initWithMapView:_mapView];
     _markersController =
-      [[FLTMarkersController alloc] initWithClusterManagersController:_clusterManagersController
-                                                              channel:_channel
-                                                              mapView:_mapView
-                                                            registrar:registrar];
+        [[FLTMarkersController alloc] initWithClusterManagersController:_clusterManagersController
+                                                                channel:_channel
+                                                                mapView:_mapView
+                                                              registrar:registrar];
     _polygonsController = [[FLTPolygonsController alloc] init:_channel
                                                       mapView:_mapView
                                                     registrar:registrar];
@@ -132,11 +132,11 @@
       [_clusterManagersController addClusterManagers:clusterManagersToAdd];
     }
     // hardcoded cluster1
-    [_clusterManagersController addClusterManagers:@[@{@"clusterManagerId":@"cluster1"}]];
+    [_clusterManagersController addClusterManagers:@[ @{@"clusterManagerId" : @"cluster1"} ]];
 
     id markersToAdd = args[@"markersToAdd"];
     if ([markersToAdd isKindOfClass:[NSArray class]]) {
-        NSLog(@"**** markersToAdd ***** ");
+      NSLog(@"**** markersToAdd ***** ");
       [_markersController addMarkers:markersToAdd];
     }
     id polygonsToAdd = args[@"polygonsToAdd"];
@@ -301,7 +301,7 @@
                                  message:@"isInfoWindowShown called with invalid markerId"
                                  details:nil]);
     }
-    
+
   } else if ([call.method isEqualToString:@"clusterManagers#update"]) {
     id clusterManagersToAdd = call.arguments[@"clusterManagersToAdd"];
     if ([clusterManagersToAdd isKindOfClass:[NSArray class]]) {

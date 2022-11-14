@@ -26,19 +26,15 @@
 - (void)addClusterManagers:(NSArray *)clusterManagersToAdd {
   for (NSDictionary *clusterManager in clusterManagersToAdd) {
     NSString *identifier = clusterManager[@"clusterManagerId"];
-    NSLog(@"FLTClusterManagersController addClusterManagers clusterManagerId = %@",
-      identifier);
-    id<GMUClusterAlgorithm> algorithm =
-        [[GMUNonHierarchicalDistanceBasedAlgorithm alloc] init];
-    id<GMUClusterIconGenerator> iconGenerator =
-        [[GMUDefaultClusterIconGenerator alloc] init];
+    NSLog(@"FLTClusterManagersController addClusterManagers clusterManagerId = %@", identifier);
+    id<GMUClusterAlgorithm> algorithm = [[GMUNonHierarchicalDistanceBasedAlgorithm alloc] init];
+    id<GMUClusterIconGenerator> iconGenerator = [[GMUDefaultClusterIconGenerator alloc] init];
     id<GMUClusterRenderer> renderer =
         [[GMUDefaultClusterRenderer alloc] initWithMapView:_mapView
                                       clusterIconGenerator:iconGenerator];
-    GMUClusterManager *clusterManager =
-      [[GMUClusterManager alloc] initWithMap:_mapView
-                                   algorithm:algorithm
-                                    renderer:renderer];
+    GMUClusterManager *clusterManager = [[GMUClusterManager alloc] initWithMap:_mapView
+                                                                     algorithm:algorithm
+                                                                      renderer:renderer];
     self.clusterManagerIdToManager[identifier] = clusterManager;
   }
 }
@@ -50,7 +46,7 @@
     if (!clusterManager) {
       continue;
     }
-    // TODO: change the cluster 
+    // TODO: change the cluster
   }
 }
 
@@ -65,13 +61,12 @@
   }
 }
 
-- (void)addItemWithPosition:(CLLocationCoordinate2D)position
-           clusterManagerId:(NSString*)clusterManagerId {
+- (void)addItem:(GMSMarker *)marker
+           clusterManagerId:(NSString *)clusterManagerId {
   NSLog(@"FLTClusterManagersController addItemWithPosition clusterManagerId = %@",
-    clusterManagerId);
+        clusterManagerId);
   GMUClusterManager *clusterManager = self.clusterManagerIdToManager[clusterManagerId];
   if (clusterManager != (id)[NSNull null]) {
-    GMSMarker *marker = [GMSMarker markerWithPosition:position];
     [clusterManager addItem:marker];
     [clusterManager cluster];
   } else {
@@ -79,9 +74,9 @@
   }
 }
 
-- (void)changeItem:(NSDictionary*)marker {
+- (void)changeItem:(NSDictionary *)marker {
 }
 
-- (void)removeItemById:(NSString*)markerIdentifier {
+- (void)removeItemById:(NSString *)markerIdentifier {
 }
 @end
