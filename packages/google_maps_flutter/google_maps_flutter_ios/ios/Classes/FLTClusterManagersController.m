@@ -61,8 +61,7 @@
   }
 }
 
-- (void)addItem:(GMSMarker *)marker
-           clusterManagerId:(NSString *)clusterManagerId {
+- (void)addItem:(GMSMarker *)marker clusterManagerId:(NSString *)clusterManagerId {
   NSLog(@"FLTClusterManagersController addItemWithPosition clusterManagerId = %@",
         clusterManagerId);
   GMUClusterManager *clusterManager = self.clusterManagerIdToManager[clusterManagerId];
