@@ -68,7 +68,7 @@ class AutoCompletePlace {
 
   static AutoCompletePlace fromJson(Map<String, dynamic> map) =>
       AutoCompletePlace(
-        distanceMeters: map['distanceMeters'] as int,
+        distanceMeters: map['distanceMeters'] as int?,
         placeId: map['placeId'] as String,
         primaryText: map['primaryText'] as String,
         secondaryText: map['secondaryText'] as String,

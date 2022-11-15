@@ -1,3 +1,7 @@
+// Copyright 2013 The Flutter Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #import "GoogleMapsPlacesIosPlugin.h"
 #if __has_include(<google_maps_places_ios/google_maps_places_ios-Swift.h>)
 #import <google_maps_places_ios/google_maps_places_ios-Swift.h>
