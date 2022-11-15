@@ -12,17 +12,20 @@
 #import <Google-Maps-iOS-Utils/GMUGridBasedClusterAlgorithm.h>
 #import <Google-Maps-iOS-Utils/GMUNonHierarchicalDistanceBasedAlgorithm.h>
 #import <Google-Maps-iOS-Utils/GMUSimpleClusterAlgorithm.h>
+#import <Google-Maps-iOS-Utils/GMUStaticCluster.h>
 #import <GoogleMaps/GoogleMaps.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FLTClusterManagersController : NSObject
-- (instancetype)initWithMapView:(GMSMapView *)mapView;
+- (instancetype)init:(FlutterMethodChannel *)methodChannel
+             mapView:(GMSMapView *)mapView;
 - (void)addClusterManagers:(NSArray *)clusterManagersToAdd;
 - (void)changeClusterManagers:(NSArray *)clusterManagersToChange;
 - (void)removeClusterManagers:(NSArray *)identifiers;
 - (void)addItem:(GMSMarker *)marker clusterManagerId:(NSString *)clusterManagerId;
 - (void)removeItem:(NSString *)marker clusterManagerId:(NSArray *)clusterManagerId;
+- (bool)didTapCluster:(GMUStaticCluster *)cluster;
 @end
 
 NS_ASSUME_NONNULL_END

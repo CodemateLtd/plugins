@@ -5,6 +5,7 @@
 #import "GoogleMapController.h"
 #import "FLTGoogleMapJSONConversions.h"
 #import "FLTGoogleMapTileOverlayController.h"
+#import <Google-Maps-iOS-Utils/GMUStaticCluster.h>
 
 #pragma mark - Conversion of JSON-like values sent via platform channels. Forward declarations.
 
@@ -107,7 +108,8 @@
     _mapView.delegate = weakSelf;
     _mapView.paddingAdjustmentBehavior = kGMSMapViewPaddingAdjustmentBehaviorNever;
     _registrar = registrar;
-    _clusterManagersController = [[FLTClusterManagersController alloc] initWithMapView:_mapView];
+    _clusterManagersController = [[FLTClusterManagersController alloc] init:_channel
+                                                                    mapView:_mapView];
     _markersController =
         [[FLTMarkersController alloc] initWithClusterManagersController:_clusterManagersController
                                                                 channel:_channel
@@ -131,10 +133,6 @@
       NSLog(@"**** clusterManagersToAdd init ***** ");
       [_clusterManagersController addClusterManagers:clusterManagersToAdd];
     }
-    // hardcoded cluster1
-    // [_clusterManagersController addClusterManagers:@[ @{@"clusterManagerId" :
-    // @"cluster_manager_id_2"} ]];
-
     id markersToAdd = args[@"markersToAdd"];
     if ([markersToAdd isKindOfClass:[NSArray class]]) {
       NSLog(@"**** markersToAdd ***** ");
@@ -553,10 +551,11 @@
 }
 
 - (BOOL)mapView:(GMSMapView *)mapView didTapMarker:(GMSMarker *)marker {
+  if ([marker.userData conformsToProtocol:@protocol(GMUCluster)]) {
+      GMUStaticCluster *cluster = marker.userData;
+    return [self.clusterManagersController didTapCluster: cluster];
+  }
   NSString *markerId = marker.userData[0];
-  // if ([marker.userData conformsToProtocol:@protocol(GMUCluster)]) {
-  //   return [self.markerClustersController didTapMarkerWithIdentifier:markerId];
-  // }
   return [self.markersController didTapMarkerWithIdentifier:markerId];
 }
 

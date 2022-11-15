@@ -99,6 +99,15 @@
   self.marker.zIndex = zIndex;
 }
 
+- (void)updateMarkerUserData {
+  NSString *markerId = self.marker.userData[0];
+  if (self.clusterManagerId != (id)[NSNull null]){
+    self.marker.userData = @[ markerId, self.clusterManagerId ];
+  } else {
+    self.marker.userData = @[ markerId ];
+  }
+}
+
 - (void)interpretMarkerOptions:(NSDictionary *)data
                      registrar:(NSObject<FlutterPluginRegistrar> *)registrar {
   NSNumber *alpha = data[@"alpha"];
@@ -147,6 +156,8 @@
   if (zIndex && zIndex != (id)[NSNull null]) {
     [self setZIndex:[zIndex intValue]];
   }
+
+  [self updateMarkerUserData];
 }
 
 - (void)interpretInfoWindow:(NSDictionary *)data {

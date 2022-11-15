@@ -8,15 +8,18 @@
 @interface FLTClusterManagersController ()
 
 @property(strong, nonatomic) NSMutableDictionary *clusterManagerIdToManager;
-@property(strong, nonatomic) GMSMapView *mapView;
+@property(strong, nonatomic) FlutterMethodChannel *methodChannel;
+@property(weak, nonatomic) GMSMapView *mapView;
 
 @end
 
 @implementation FLTClusterManagersController
 
-- (instancetype)initWithMapView:(GMSMapView *)mapView {
+- (instancetype)init:(FlutterMethodChannel *)methodChannel
+             mapView:(GMSMapView *)mapView {
   self = [super init];
   if (self) {
+    _methodChannel = methodChannel;
     _mapView = mapView;
     _clusterManagerIdToManager = [[NSMutableDictionary alloc] init];
   }
@@ -86,5 +89,40 @@
   } else {
     NSLog(@"MISSING ClusterManager");
   }
+}
+
+- (bool)didTapCluster:(GMUStaticCluster *)cluster {
+  if ([cluster.items count] == 0){
+    return NO;
+  }
+
+  GMSMarker *firstMarker = cluster.items[0];
+  NSArray *firstMarkerUserData = firstMarker.userData;
+  if ([firstMarkerUserData count] != 2){
+    return NO;
+  }
+
+  NSString *clusterManagerId = firstMarker.userData[1];
+  if (clusterManagerId == [NSNull null]){
+    return NO;
+  }
+    
+  NSMutableArray *markerIds = [[NSMutableArray alloc] init];
+  GMSCoordinateBounds *bounds = [[GMSCoordinateBounds alloc] init];
+
+  for (GMSMarker *marker in cluster.items) {
+      NSString *markerId = marker.userData[0];
+      [markerIds addObject:markerId];
+      bounds = [bounds includingCoordinate:marker.position];
+  }
+
+  [self.methodChannel invokeMethod:@"cluster#onTap"
+                      arguments:@{
+                        @"clusterManagerId": clusterManagerId,
+                        @"position" : [FLTGoogleMapJSONConversions arrayFromLocation:cluster.position],
+                        @"bounds" :  [FLTGoogleMapJSONConversions dictionaryFromCoordinateBounds:bounds],
+                        @"markerIds" : markerIds
+                      }];
+  return NO;
 }
 @end
