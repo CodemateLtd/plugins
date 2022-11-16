@@ -51,6 +51,11 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        multiDexEnabled true
+    }
+
+    defaultConfig {
+        manifestPlaceholders = [mapsApiKey: "$System.env.MAPS_API_KEY"]
     }
 
     buildTypes {

@@ -3,6 +3,7 @@ version '1.0-SNAPSHOT'
 
 buildscript {
     ext.kotlin_version = '1.6.10'
+    ext.google_places_version = '2.7.0'
     repositories {
         google()
         mavenCentral()
@@ -46,5 +47,5 @@ android {
 }
 
 dependencies {
-    implementation "com.google.android.libraries.places:places:2.7.0"
+    implementation "com.google.android.libraries.places:places:$google_places_version"
 }
