@@ -355,6 +355,13 @@ final class GoogleMapController
           result.success(null);
           break;
         }
+      case "clusterManager#getClusters":
+        {
+          Object clusterManagerId = call.argument("clusterManagerId");
+          clusterManagersController.getClustersWithClusterManagerId(
+              (String) clusterManagerId, result);
+          break;
+        }
       case "polygons#update":
         {
           invalidateMapIfNeeded();

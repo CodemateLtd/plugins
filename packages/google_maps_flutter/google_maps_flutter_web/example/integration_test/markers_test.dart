@@ -28,7 +28,7 @@ void main() {
 
     setUp(() {
       events = StreamController<MapEvent<Object?>>();
-      clusterManagersController = ClusterManagersController();
+      clusterManagersController = ClusterManagersController(stream: events);
       controller = MarkersController(
           stream: events, clusterManagersController: clusterManagersController);
       map = gmaps.GMap(html.DivElement());

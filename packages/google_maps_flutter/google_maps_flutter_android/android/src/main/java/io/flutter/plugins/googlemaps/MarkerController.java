@@ -18,7 +18,7 @@ class MarkerController implements MarkerOptionsSink {
   private boolean consumeTapEvents;
 
   MarkerController(Marker marker, boolean consumeTapEvents) {
-    this.weakMarker = new WeakReference<Marker>(marker);
+    this.weakMarker = new WeakReference<>(marker);
     this.consumeTapEvents = consumeTapEvents;
     this.googleMapsMarkerId = marker.getId();
   }

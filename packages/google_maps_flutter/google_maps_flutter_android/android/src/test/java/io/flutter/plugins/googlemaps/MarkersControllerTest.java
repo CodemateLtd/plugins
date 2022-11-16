@@ -9,10 +9,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import android.content.Context;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.collections.MarkerManager;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodCodec;
@@ -25,13 +27,27 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 public class MarkersControllerTest {
+  private Context context;
+
+  @Before
+  public void setUp() {
+    context = ApplicationProvider.getApplicationContext();
+  }
 
   @Test
   public void controller_OnMarkerDragStart() {
     final MethodChannel methodChannel =
         spy(new MethodChannel(mock(BinaryMessenger.class), "no-name", mock(MethodCodec.class)));
-    final MarkersController controller = new MarkersController(methodChannel);
+    final ClusterManagersController clusterManagersController =
+        new ClusterManagersController(methodChannel, context);
+    final MarkersController controller =
+        new MarkersController(methodChannel, clusterManagersController);
     final GoogleMap googleMap = mock(GoogleMap.class);
+
+    final MarkerManager markerManager = new MarkerManager(googleMap);
+    final MarkerManager.Collection markerCollection = markerManager.newCollection();
+    controller.setCollection(markerCollection);
+    clusterManagersController.init(googleMap, markerManager);
     controller.setGoogleMap(googleMap);
 
     final Marker marker = mock(Marker.class);
@@ -63,8 +79,16 @@ public class MarkersControllerTest {
   public void controller_OnMarkerDragEnd() {
     final MethodChannel methodChannel =
         spy(new MethodChannel(mock(BinaryMessenger.class), "no-name", mock(MethodCodec.class)));
-    final MarkersController controller = new MarkersController(methodChannel);
+    final ClusterManagersController clusterManagersController =
+        new ClusterManagersController(methodChannel, context);
+    final MarkersController controller =
+        new MarkersController(methodChannel, clusterManagersController);
     final GoogleMap googleMap = mock(GoogleMap.class);
+
+    final MarkerManager markerManager = new MarkerManager(googleMap);
+    final MarkerManager.Collection markerCollection = markerManager.newCollection();
+    controller.setCollection(markerCollection);
+    clusterManagersController.init(googleMap, markerManager);
     controller.setGoogleMap(googleMap);
 
     final Marker marker = mock(Marker.class);
@@ -96,8 +120,16 @@ public class MarkersControllerTest {
   public void controller_OnMarkerDrag() {
     final MethodChannel methodChannel =
         spy(new MethodChannel(mock(BinaryMessenger.class), "no-name", mock(MethodCodec.class)));
-    final MarkersController controller = new MarkersController(methodChannel);
+    final ClusterManagersController clusterManagersController =
+        new ClusterManagersController(methodChannel, context);
+    final MarkersController controller =
+        new MarkersController(methodChannel, clusterManagersController);
     final GoogleMap googleMap = mock(GoogleMap.class);
+
+    final MarkerManager markerManager = new MarkerManager(googleMap);
+    final MarkerManager.Collection markerCollection = markerManager.newCollection();
+    controller.setCollection(markerCollection);
+    clusterManagersController.init(googleMap, markerManager);
     controller.setGoogleMap(googleMap);
 
     final Marker marker = mock(Marker.class);

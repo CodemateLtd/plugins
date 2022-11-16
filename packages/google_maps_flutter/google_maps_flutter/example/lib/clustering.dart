@@ -91,7 +91,8 @@ class ClusteringBodyState extends State<ClusteringBody> {
     final String clusterManagerIdVal =
         'cluster_manager_id_$_clusterManagerIdCounter';
     _clusterManagerIdCounter++;
-    final clusterManagerId = ClusterManagerId(clusterManagerIdVal);
+    final ClusterManagerId clusterManagerId =
+        ClusterManagerId(clusterManagerIdVal);
 
     final ClusterManager clusterManager = ClusterManager(
       clusterManagerId: clusterManagerId,
@@ -109,7 +110,7 @@ class ClusteringBodyState extends State<ClusteringBody> {
   void _removeClusterManager(ClusterManager clusterManager) {
     setState(() {
       // Remove markers managed by cluster manager to be removed.
-      markers.removeWhere((key, marker) =>
+      markers.removeWhere((MarkerId key, Marker marker) =>
           marker.clusterManagerId == clusterManager.clusterManagerId);
       // Remove cluster manager.
       clusterManagers.remove(clusterManager.clusterManagerId);
@@ -117,13 +118,13 @@ class ClusteringBodyState extends State<ClusteringBody> {
   }
 
   void _addMarkersToCluster(ClusterManager clusterManager) {
-    for (var i = 0; i < 15; i++) {
+    for (int i = 0; i < 15; i++) {
       final String markerIdVal =
           '${clusterManager.clusterManagerId.value}_marker_id_$_markerIdCounter';
       _markerIdCounter++;
       final MarkerId markerId = MarkerId(markerIdVal);
 
-      final clusterManagerIndex =
+      final int clusterManagerIndex =
           clusterManagers.values.toList().indexOf(clusterManager);
       final Marker marker = Marker(
         clusterManagerId: clusterManager.clusterManagerId,
@@ -155,7 +156,7 @@ class ClusteringBodyState extends State<ClusteringBody> {
   }
 
   void _changeMarkersRotation() {
-    for (final markerId in markers.keys) {
+    for (final MarkerId markerId in markers.keys) {
       final Marker marker = markers[markerId]!;
       final double current = marker.rotation;
       markers[markerId] = marker.copyWith(
@@ -171,7 +172,6 @@ class ClusteringBodyState extends State<ClusteringBody> {
     return Stack(children: <Widget>[
       Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           Expanded(
             child: GoogleMap(
@@ -202,10 +202,11 @@ class ClusteringBodyState extends State<ClusteringBody> {
           Wrap(
             alignment: WrapAlignment.spaceEvenly,
             children: <Widget>[
-              for (final cluster_entry in clusterManagers.entries)
+              for (final MapEntry<ClusterManagerId, ClusterManager> clusterEntry
+                  in clusterManagers.entries)
                 TextButton(
-                  onPressed: () => _addMarkersToCluster(cluster_entry.value),
-                  child: Text('Add markers to ${cluster_entry.key.value}'),
+                  onPressed: () => _addMarkersToCluster(clusterEntry.value),
+                  child: Text('Add markers to ${clusterEntry.key.value}'),
                 ),
             ],
           ),
@@ -221,11 +222,20 @@ class ClusteringBodyState extends State<ClusteringBody> {
                 onPressed: () => _changeMarkersRotation(),
                 child: const Text('Change all markers rotation'),
               ),
+              TextButton(
+                onPressed: () async => debugPrint(
+                    (await controller?.getClusters(
+                            clusterManagerId:
+                                clusterManagers.values.first.clusterManagerId))
+                        ?.length
+                        .toString()),
+                child: const Text('Print count (DEBUG)'),
+              ),
             ],
           ),
           if (lastCluster != null)
             Text(
-                "Cluster with ${lastCluster!.count} markers clicked at ${lastCluster!.position}"),
+                'Cluster with ${lastCluster!.count} markers clicked at ${lastCluster!.position}'),
         ],
       ),
     ]);

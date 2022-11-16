@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /** Conversions between JSON-like values and GoogleMaps data types. */
 class Convert {
@@ -223,6 +224,15 @@ class Convert {
     return Arrays.asList(latLng.latitude, latLng.longitude);
   }
 
+  static Object clustersToJson(
+      String clusterManagerId, Set<? extends Cluster<MarkerBuilder>> clusters) {
+    List<Object> data = new ArrayList<>(clusters.size());
+    for (Cluster<MarkerBuilder> cluster : clusters) {
+      data.add(clusterToJson(clusterManagerId, cluster));
+    }
+    return data;
+  }
+
   static Object clusterToJson(String clusterManagerId, Cluster<MarkerBuilder> cluster) {
     int clusterSize = cluster.getSize();
     LatLngBounds.Builder latLngBoundsBuilder = LatLngBounds.builder();
@@ -408,7 +418,7 @@ class Convert {
   }
 
   /** Returns the dartMarkerId of the interpreted marker. */
-  static String interpretMarkerOptions(Object o, MarkerOptionsSink sink) {
+  static void interpretMarkerOptions(Object o, MarkerOptionsSink sink) {
     final Map<?, ?> data = toMap(o);
     final Object alpha = data.get("alpha");
     if (alpha != null) {
@@ -460,8 +470,6 @@ class Convert {
     final String markerId = (String) data.get("markerId");
     if (markerId == null) {
       throw new IllegalArgumentException("markerId was null");
-    } else {
-      return markerId;
     }
   }
 

@@ -16,15 +16,14 @@ import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import com.google.maps.android.collections.MarkerManager;
 import io.flutter.plugin.common.MethodChannel;
-import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 class ClusterManagersController implements GoogleMap.OnCameraIdleListener, ClusterListener {
   private final Context context;
-  private final HashMap<String, ClusterManager> clusterManagerIdToManager;
-  private final HashMap<String, WeakReference<MarkerController>> clusterManagerIdToController;
+  private final HashMap<String, ClusterManager<MarkerBuilder>> clusterManagerIdToManager;
   private final MethodChannel methodChannel;
   private MarkerManager markerManager;
   private GoogleMap googleMap;
@@ -32,7 +31,6 @@ class ClusterManagersController implements GoogleMap.OnCameraIdleListener, Clust
 
   ClusterManagersController(MethodChannel methodChannel, Context context) {
     this.clusterManagerIdToManager = new HashMap<>();
-    this.clusterManagerIdToController = new HashMap<>();
     this.context = context;
     this.methodChannel = methodChannel;
   }
@@ -50,13 +48,14 @@ class ClusterManagersController implements GoogleMap.OnCameraIdleListener, Clust
   private void initListenersForClusterManagers(
       @Nullable ClusterListener clusterListener,
       @Nullable ClusterMarkerListener clusterMarkerListener) {
-    for (Map.Entry<String, ClusterManager> entry : clusterManagerIdToManager.entrySet()) {
+    for (Map.Entry<String, ClusterManager<MarkerBuilder>> entry :
+        clusterManagerIdToManager.entrySet()) {
       initListenersForClusterManager(entry.getValue(), clusterListener, clusterMarkerListener);
     }
   }
 
   private void initListenersForClusterManager(
-      ClusterManager clusterManager,
+      ClusterManager<MarkerBuilder> clusterManager,
       @Nullable ClusterListener clusterListener,
       @Nullable ClusterMarkerListener clusterMarkerListener) {
     clusterManager.setOnClusterInfoWindowClickListener(clusterListener);
@@ -78,8 +77,8 @@ class ClusterManagersController implements GoogleMap.OnCameraIdleListener, Clust
     if (clusterManagerId == null) {
       throw new IllegalArgumentException("clusterManagerId was null");
     }
-    ClusterManager clusterManager =
-        new ClusterManager<MarkerBuilder>(context, googleMap, markerManager);
+    ClusterManager<MarkerBuilder> clusterManager =
+        new ClusterManager<>(context, googleMap, markerManager);
     ClusterRenderer clusterRenderer = new ClusterRenderer(context, googleMap, clusterManager, this);
     clusterManager.setRenderer(clusterRenderer);
     initListenersForClusterManager(clusterManager, this, clusterMarkerListener);
@@ -100,7 +99,8 @@ class ClusterManagersController implements GoogleMap.OnCameraIdleListener, Clust
   }
 
   private void removeClusterManager(Object clusterManagerId) {
-    final ClusterManager clusterManager = clusterManagerIdToManager.remove(clusterManagerId);
+    final ClusterManager<MarkerBuilder> clusterManager =
+        clusterManagerIdToManager.remove(clusterManagerId);
     if (clusterManager == null) {
       return;
     }
@@ -110,7 +110,8 @@ class ClusterManagersController implements GoogleMap.OnCameraIdleListener, Clust
   }
 
   public void addItem(MarkerBuilder item) {
-    ClusterManager clusterManager = clusterManagerIdToManager.get(item.clusterManagerId());
+    ClusterManager<MarkerBuilder> clusterManager =
+        clusterManagerIdToManager.get(item.clusterManagerId());
     if (clusterManager != null) {
       clusterManager.addItem(item);
       clusterManager.cluster();
@@ -118,7 +119,8 @@ class ClusterManagersController implements GoogleMap.OnCameraIdleListener, Clust
   }
 
   public void removeItem(MarkerBuilder item) {
-    ClusterManager clusterManager = clusterManagerIdToManager.get(item.clusterManagerId());
+    ClusterManager<MarkerBuilder> clusterManager =
+        clusterManagerIdToManager.get(item.clusterManagerId());
     if (clusterManager != null) {
       clusterManager.removeItem(item);
       clusterManager.cluster();
@@ -137,9 +139,24 @@ class ClusterManagersController implements GoogleMap.OnCameraIdleListener, Clust
     return (String) clusterMap.get("clusterManagerId");
   }
 
+  public void getClustersWithClusterManagerId(
+      String clusterManagerId, MethodChannel.Result result) {
+    ClusterManager<MarkerBuilder> clusterManager = clusterManagerIdToManager.get(clusterManagerId);
+    if (clusterManager == null) {
+      result.error(
+          "Invalid clusterManagerId", "getClusters called with invalid clusterManagerId", null);
+      return;
+    }
+
+    final Set<? extends Cluster<MarkerBuilder>> clusters =
+        clusterManager.getAlgorithm().getClusters(googleMap.getCameraPosition().zoom);
+    result.success(Convert.clustersToJson(clusterManagerId, clusters));
+  }
+
   @Override
   public void onCameraIdle() {
-    for (Map.Entry<String, ClusterManager> entry : clusterManagerIdToManager.entrySet()) {
+    for (Map.Entry<String, ClusterManager<MarkerBuilder>> entry :
+        clusterManagerIdToManager.entrySet()) {
       entry.getValue().onCameraIdle();
     }
   }
@@ -164,7 +181,7 @@ class ClusterManagersController implements GoogleMap.OnCameraIdleListener, Clust
     return item.clusterManagerId();
   }
 
-  private class ClusterRenderer extends DefaultClusterRenderer<MarkerBuilder> {
+  private static class ClusterRenderer extends DefaultClusterRenderer<MarkerBuilder> {
     private final ClusterManagersController clusterManagersController;
 
     public ClusterRenderer(
@@ -192,6 +209,6 @@ class ClusterManagersController implements GoogleMap.OnCameraIdleListener, Clust
   }
 
   public interface OnClusterMarker<T extends ClusterItem> {
-    void onClusterMarker(MarkerBuilder markerBuilder, Marker marker);
+    void onClusterMarker(T item, Marker marker);
   }
 }

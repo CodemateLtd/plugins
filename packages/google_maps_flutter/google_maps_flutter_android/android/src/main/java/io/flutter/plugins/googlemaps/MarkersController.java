@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 class MarkersController {
-  private static final String TAG = "MarkersController";
   private final HashMap<String, MarkerBuilder> markerIdToMarkerBuilder;
   private final HashMap<String, MarkerController> markerIdToController;
   private final HashMap<String, String> googleMapsMarkerIdToDartMarkerId;
