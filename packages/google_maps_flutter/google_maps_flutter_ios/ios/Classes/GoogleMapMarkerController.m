@@ -12,6 +12,7 @@
 @property(weak, nonatomic) FLTClusterManagersController *clusterManagersController;
 @property(assign, nonatomic, readwrite) BOOL consumeTapEvents;
 @property(strong, nonatomic) NSString *clusterManagerId;
+@property(strong, nonatomic) NSString *markerId;
 
 @end
 
@@ -24,9 +25,11 @@
   self = [super init];
   if (self) {
     _marker = [GMSMarker markerWithPosition:position];
+    _markerId = identifier;
     _clusterManagersController = clusterManagers;
     _mapView = mapView;
-    _marker.userData = @[ identifier ];
+    _clusterManagerId = (id)[NSNull null];
+    [self updateMarkerUserData];
   }
   return self;
 }
@@ -100,12 +103,7 @@
 }
 
 - (void)updateMarkerUserData {
-  NSString *markerId = self.marker.userData[0];
-  if (self.clusterManagerId != (id)[NSNull null]){
-    self.marker.userData = @[ markerId, self.clusterManagerId ];
-  } else {
-    self.marker.userData = @[ markerId ];
-  }
+  _marker.userData = @[ _markerId, _clusterManagerId ];
 }
 
 - (void)interpretMarkerOptions:(NSDictionary *)data
