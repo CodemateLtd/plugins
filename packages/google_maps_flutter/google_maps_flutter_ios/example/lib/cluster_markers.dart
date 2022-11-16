@@ -31,41 +31,42 @@ class ClusterMarkersBody extends StatefulWidget {
 const LatLng _kMapCenter = LatLng(52.4278, -3.5202);
 
 Set<Marker> markers = {
-    Marker(
-      clusterManagerId: ClusterManagerId("cluster1"),
-      markerId: MarkerId("marker1"),
-      position: LatLng(52.0078, -3.5802),
-    ),
-    Marker(
-      clusterManagerId: ClusterManagerId("cluster1"),
-      markerId: MarkerId("marker2"),
-      position: LatLng(52.8478, -3.0002),
-    ),
-    Marker(
-      clusterManagerId: ClusterManagerId("cluster1"),
-      markerId: MarkerId("marker3"),
-      position: LatLng(52.0078, -3.0002),
-    ),
-    Marker(
-      clusterManagerId: ClusterManagerId("cluster1"),
-      markerId: MarkerId("marker4"),
-      position: LatLng(52.8478, -3.5802),
-    ),
-    Marker(
-      markerId: MarkerId("marker5"),
-      position: LatLng(52.9478, -3.6802),
-    ),
+  const Marker(
+    clusterManagerId: ClusterManagerId('cluster1'),
+    markerId: MarkerId('marker1'),
+    position: LatLng(52.0078, -3.5802),
+  ),
+  const Marker(
+    clusterManagerId: ClusterManagerId('cluster1'),
+    markerId: MarkerId('marker2'),
+    position: LatLng(52.8478, -3.0002),
+  ),
+  const Marker(
+    clusterManagerId: ClusterManagerId('cluster1'),
+    markerId: MarkerId('marker3'),
+    position: LatLng(52.0078, -3.0002),
+  ),
+  const Marker(
+    clusterManagerId: ClusterManagerId('cluster1'),
+    markerId: MarkerId('marker4'),
+    position: LatLng(52.8478, -3.5802),
+  ),
+  const Marker(
+    markerId: MarkerId('marker5'),
+    position: LatLng(52.9478, -3.6802),
+  ),
 };
 
 const clusterIcon = Icon(Icons.adjust);
 Set<ClusterManager> clusterManagers = {
-    ClusterManager(clusterManagerId: ClusterManagerId("cluster1"),),
+  const ClusterManager(
+    clusterManagerId: ClusterManagerId('cluster1'),
+  ),
 };
 
 class ClusterMarkersBodyState extends State<ClusterMarkersBody> {
   ExampleGoogleMapController? controller;
   BitmapDescriptor? _markerIcon;
-
 
   @override
   Widget build(BuildContext context) {
@@ -91,21 +92,6 @@ class ClusterMarkersBodyState extends State<ClusterMarkersBody> {
         )
       ],
     );
-  }
-
-  Marker _createMarker() {
-    if (_markerIcon != null) {
-      return Marker(
-        markerId: const MarkerId('marker_1'),
-        position: _kMapCenter,
-        icon: _markerIcon!,
-      );
-    } else {
-      return const Marker(
-        markerId: MarkerId('marker_1'),
-        position: _kMapCenter,
-      );
-    }
   }
 
   Future<void> _createMarkerImageFromAsset(BuildContext context) async {

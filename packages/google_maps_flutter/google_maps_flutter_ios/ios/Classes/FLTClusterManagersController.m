@@ -15,8 +15,7 @@
 
 @implementation FLTClusterManagersController
 
-- (instancetype)init:(FlutterMethodChannel *)methodChannel
-             mapView:(GMSMapView *)mapView {
+- (instancetype)init:(FlutterMethodChannel *)methodChannel mapView:(GMSMapView *)mapView {
   self = [super init];
   if (self) {
     _methodChannel = methodChannel;
@@ -73,7 +72,7 @@
   GMUClusterManager *clusterManager = self.clusterManagerIdToManager[clusterManagerId];
   if (marker && clusterManager != (id)[NSNull null]) {
     NSLog(@"addItem to ClusterManager");
-    [clusterManager addItem:marker];
+    [clusterManager addItem:(id<GMUClusterItem>)marker];
     [clusterManager cluster];
   } else {
     NSLog(@"MISSING ClusterManager");
@@ -84,45 +83,93 @@
   GMUClusterManager *clusterManager = self.clusterManagerIdToManager[clusterManagerId];
   if (marker && clusterManager != (id)[NSNull null]) {
     NSLog(@"remove marker ClusterManager");
-    [clusterManager removeItem:marker];
+    [clusterManager removeItem:(id<GMUClusterItem>)marker];
     [clusterManager cluster];
   } else {
     NSLog(@"MISSING ClusterManager");
   }
 }
 
+- (void)getClustersWithIdentifier:(NSString *)identifier result:(FlutterResult)result {
+  GMUClusterManager *clusterManager = self.clusterManagerIdToManager[identifier];
+  if (clusterManager) {
+    NSMutableArray *response = [[NSMutableArray alloc] init];
+
+    NSUInteger integralZoom = (NSUInteger)floorf(_mapView.camera.zoom + 0.5f);
+    NSArray<id<GMUCluster>> *clusters = [clusterManager.algorithm clustersAtZoom:integralZoom];
+    for (id<GMUCluster> cluster in clusters) {
+      if ([cluster.items count] == 0) {
+        continue;
+      }
+
+      GMSMarker *firstMarker = (GMSMarker *)cluster.items[0];
+      NSArray *firstMarkerUserData = firstMarker.userData;
+      if ([firstMarkerUserData count] != 2) {
+        continue;
+      }
+
+      NSString *clusterManagerId = firstMarker.userData[1];
+      if (clusterManagerId == (id)[NSNull null]) {
+        continue;
+      }
+
+      NSMutableArray *markerIds = [[NSMutableArray alloc] init];
+      GMSCoordinateBounds *bounds = [[GMSCoordinateBounds alloc] init];
+
+      for (GMSMarker *marker in cluster.items) {
+        NSString *markerId = marker.userData[0];
+        [markerIds addObject:markerId];
+        bounds = [bounds includingCoordinate:marker.position];
+      }
+
+      [response addObject:@{
+        @"clusterManagerId" : clusterManagerId,
+        @"position" : [FLTGoogleMapJSONConversions arrayFromLocation:cluster.position],
+        @"bounds" : [FLTGoogleMapJSONConversions dictionaryFromCoordinateBounds:bounds],
+        @"markerIds" : markerIds
+      }];
+    }
+    result(response);
+  } else {
+    result([FlutterError errorWithCode:@"Invalid clusterManagerId"
+                               message:@"getClusters called with invalid clusterManagerId"
+                               details:nil]);
+  }
+}
+
 - (bool)didTapCluster:(GMUStaticCluster *)cluster {
-  if ([cluster.items count] == 0){
+  if ([cluster.items count] == 0) {
     return NO;
   }
 
-  GMSMarker *firstMarker = cluster.items[0];
+  GMSMarker *firstMarker = (GMSMarker *)cluster.items[0];
   NSArray *firstMarkerUserData = firstMarker.userData;
-  if ([firstMarkerUserData count] != 2){
+  if ([firstMarkerUserData count] != 2) {
     return NO;
   }
 
   NSString *clusterManagerId = firstMarker.userData[1];
-  if (clusterManagerId == [NSNull null]){
+  if (clusterManagerId == (id)[NSNull null]) {
     return NO;
   }
-    
+
   NSMutableArray *markerIds = [[NSMutableArray alloc] init];
   GMSCoordinateBounds *bounds = [[GMSCoordinateBounds alloc] init];
 
   for (GMSMarker *marker in cluster.items) {
-      NSString *markerId = marker.userData[0];
-      [markerIds addObject:markerId];
-      bounds = [bounds includingCoordinate:marker.position];
+    NSString *markerId = marker.userData[0];
+    [markerIds addObject:markerId];
+    bounds = [bounds includingCoordinate:marker.position];
   }
 
-  [self.methodChannel invokeMethod:@"cluster#onTap"
-                      arguments:@{
-                        @"clusterManagerId": clusterManagerId,
-                        @"position" : [FLTGoogleMapJSONConversions arrayFromLocation:cluster.position],
-                        @"bounds" :  [FLTGoogleMapJSONConversions dictionaryFromCoordinateBounds:bounds],
-                        @"markerIds" : markerIds
-                      }];
+  [self.methodChannel
+      invokeMethod:@"cluster#onTap"
+         arguments:@{
+           @"clusterManagerId" : clusterManagerId,
+           @"position" : [FLTGoogleMapJSONConversions arrayFromLocation:cluster.position],
+           @"bounds" : [FLTGoogleMapJSONConversions dictionaryFromCoordinateBounds:bounds],
+           @"markerIds" : markerIds
+         }];
   return NO;
 }
 @end

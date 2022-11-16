@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #import "GoogleMapController.h"
+#import <Google-Maps-iOS-Utils/GMUStaticCluster.h>
 #import "FLTGoogleMapJSONConversions.h"
 #import "FLTGoogleMapTileOverlayController.h"
-#import <Google-Maps-iOS-Utils/GMUStaticCluster.h>
 
 #pragma mark - Conversion of JSON-like values sent via platform channels. Forward declarations.
 
@@ -300,7 +300,6 @@
                                  message:@"isInfoWindowShown called with invalid markerId"
                                  details:nil]);
     }
-
   } else if ([call.method isEqualToString:@"clusterManagers#update"]) {
     id clusterManagersToAdd = call.arguments[@"clusterManagersToAdd"];
     if ([clusterManagersToAdd isKindOfClass:[NSArray class]]) {
@@ -315,6 +314,9 @@
       [self.clusterManagersController removeClusterManagers:clusterManagerIdsToRemove];
     }
     result(nil);
+  } else if ([call.method isEqualToString:@"clusterManager#getClusters"]) {
+    id clusterManagerId = call.arguments[@"clusterManagerId"];
+    [self.clusterManagersController getClustersWithIdentifier:clusterManagerId result:result];
   } else if ([call.method isEqualToString:@"polygons#update"]) {
     id polygonsToAdd = call.arguments[@"polygonsToAdd"];
     if ([polygonsToAdd isKindOfClass:[NSArray class]]) {
@@ -552,8 +554,8 @@
 
 - (BOOL)mapView:(GMSMapView *)mapView didTapMarker:(GMSMarker *)marker {
   if ([marker.userData conformsToProtocol:@protocol(GMUCluster)]) {
-      GMUStaticCluster *cluster = marker.userData;
-    return [self.clusterManagersController didTapCluster: cluster];
+    GMUStaticCluster *cluster = marker.userData;
+    return [self.clusterManagersController didTapCluster:cluster];
   }
   NSString *markerId = marker.userData[0];
   return [self.markersController didTapMarkerWithIdentifier:markerId];

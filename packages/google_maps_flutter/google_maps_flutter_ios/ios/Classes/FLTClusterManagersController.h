@@ -18,13 +18,13 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FLTClusterManagersController : NSObject
-- (instancetype)init:(FlutterMethodChannel *)methodChannel
-             mapView:(GMSMapView *)mapView;
+- (instancetype)init:(FlutterMethodChannel *)methodChannel mapView:(GMSMapView *)mapView;
 - (void)addClusterManagers:(NSArray *)clusterManagersToAdd;
 - (void)changeClusterManagers:(NSArray *)clusterManagersToChange;
 - (void)removeClusterManagers:(NSArray *)identifiers;
 - (void)addItem:(GMSMarker *)marker clusterManagerId:(NSString *)clusterManagerId;
 - (void)removeItem:(NSString *)marker clusterManagerId:(NSArray *)clusterManagerId;
+- (void)getClustersWithIdentifier:(NSString *)identifier result:(FlutterResult)result;
 - (bool)didTapCluster:(GMUStaticCluster *)cluster;
 @end
 
