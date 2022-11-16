@@ -95,7 +95,13 @@
 }
 
 - (void)setVisible:(BOOL)visible {
-  self.marker.map = visible ? self.mapView : nil;
+  // If marker belongs the cluster manager, visibility need to be controlled with the opacity
+  // as the cluster manager controls when marker is on the map and when not.
+  if (self.clusterManagerId != (id)[NSNull null]) {
+    self.marker.opacity = visible ? self.marker.opacity : 0.0f;
+  } else {
+    self.marker.map = visible ? self.mapView : nil;
+  }
 }
 
 - (void)setZIndex:(int)zIndex {

@@ -107,7 +107,6 @@ class ExampleGoogleMapController {
         .updateMarkers(markerUpdates, mapId: mapId);
   }
 
-
   /// Updates cluster manager configuration.
   ///
   /// Change listeners are notified once the update has been made on the

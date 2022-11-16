@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)changeClusterManagers:(NSArray *)clusterManagersToChange;
 - (void)removeClusterManagers:(NSArray *)identifiers;
 - (void)addItem:(GMSMarker *)marker clusterManagerId:(NSString *)clusterManagerId;
-- (void)removeItem:(NSString *)marker clusterManagerId:(NSArray *)clusterManagerId;
+- (void)removeItem:(GMSMarker *)marker clusterManagerId:(NSString *)clusterManagerId;
 - (void)getClustersWithIdentifier:(NSString *)identifier result:(FlutterResult)result;
 - (bool)didTapCluster:(GMUStaticCluster *)cluster;
 @end

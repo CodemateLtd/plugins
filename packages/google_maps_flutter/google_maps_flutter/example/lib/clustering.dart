@@ -166,6 +166,17 @@ class ClusteringBodyState extends State<ClusteringBody> {
     setState(() {});
   }
 
+  void _toggleMarkersVisibility() {
+    for (final MarkerId markerId in markers.keys) {
+      final Marker marker = markers[markerId]!;
+      final bool current = marker.visible;
+      markers[markerId] = marker.copyWith(
+        visibleParam: !current,
+      );
+    }
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final MarkerId? selectedId = selectedMarker;
@@ -221,6 +232,10 @@ class ClusteringBodyState extends State<ClusteringBody> {
               TextButton(
                 onPressed: () => _changeMarkersRotation(),
                 child: const Text('Change all markers rotation'),
+              ),
+              TextButton(
+                onPressed: () => _toggleMarkersVisibility(),
+                child: const Text('Change all markers visibility'),
               ),
               TextButton(
                 onPressed: () async => debugPrint(
