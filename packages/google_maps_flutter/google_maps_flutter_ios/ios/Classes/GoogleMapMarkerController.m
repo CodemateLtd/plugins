@@ -330,14 +330,22 @@
 
 - (void)removeMarkersWithIdentifiers:(NSArray *)identifiers {
   for (NSString *identifier in identifiers) {
-    // [_clusterManagersController removeItemById:identifier];
-    FLTGoogleMapMarkerController *controller = self.markerIdentifierToController[identifier];
-    if (!controller) {
-      continue;
-    }
-    [controller removeMarker];
-    [self.markerIdentifierToController removeObjectForKey:identifier];
+    [self removeMarker:identifier];
   }
+}
+
+- (void)removeMarker:(NSString *)identifier {
+  FLTGoogleMapMarkerController *controller = self.markerIdentifierToController[identifier];
+  if (!controller) {
+    continue;
+  }
+  NSString *clusterManagerId = [controller clusterManagerId];
+  if (clusterManagerId && clusterManagerId != (id)[NSNull null]) {
+    [_clusterManagersController removeItem:controller.marker];
+  } else {
+    [controller removeMarker];
+  }
+  [self.markerIdentifierToController removeObjectForKey:identifier];
 }
 
 - (BOOL)didTapMarkerWithIdentifier:(NSString *)identifier {

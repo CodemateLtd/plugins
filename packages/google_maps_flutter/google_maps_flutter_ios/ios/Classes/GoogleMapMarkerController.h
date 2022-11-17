@@ -32,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)changeMarkers:(NSArray *)markersToChange;
 - (void)changeMarker:(NSDictionary *)markerToChange;
 - (void)removeMarkersWithIdentifiers:(NSArray *)identifiers;
+- (void)removeMarker:(NSString *)identifier;
 - (BOOL)didTapMarkerWithIdentifier:(NSString *)identifier;
 - (void)didStartDraggingMarkerWithIdentifier:(NSString *)identifier
                                     location:(CLLocationCoordinate2D)coordinate;
