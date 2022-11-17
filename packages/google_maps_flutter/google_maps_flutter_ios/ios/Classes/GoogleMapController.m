@@ -130,12 +130,10 @@
 
     id clusterManagersToAdd = args[@"clusterManagersToAdd"];
     if ([clusterManagersToAdd isKindOfClass:[NSArray class]]) {
-      NSLog(@"**** clusterManagersToAdd init ***** ");
       [_clusterManagersController addClusterManagers:clusterManagersToAdd];
     }
     id markersToAdd = args[@"markersToAdd"];
     if ([markersToAdd isKindOfClass:[NSArray class]]) {
-      NSLog(@"**** markersToAdd ***** ");
       [_markersController addMarkers:markersToAdd];
     }
     id polygonsToAdd = args[@"polygonsToAdd"];

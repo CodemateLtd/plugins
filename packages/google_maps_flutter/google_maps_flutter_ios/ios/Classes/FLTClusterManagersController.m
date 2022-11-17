@@ -28,7 +28,6 @@
 - (void)addClusterManagers:(NSArray *)clusterManagersToAdd {
   for (NSDictionary *clusterManager in clusterManagersToAdd) {
     NSString *identifier = clusterManager[@"clusterManagerId"];
-    NSLog(@"FLTClusterManagersController addClusterManagers clusterManagerId = %@", identifier);
     id<GMUClusterAlgorithm> algorithm = [[GMUNonHierarchicalDistanceBasedAlgorithm alloc] init];
     id<GMUClusterIconGenerator> iconGenerator = [[GMUDefaultClusterIconGenerator alloc] init];
     id<GMUClusterRenderer> renderer =
@@ -43,8 +42,6 @@
 
 - (void)changeClusterManagers:(NSArray *)clusterManagersToChange {
   for (NSDictionary *clusterManager in clusterManagersToChange) {
-    NSLog(@"FLTClusterManagersController changeClusterManagers clusterManagerId = %@",
-          clusterManager);
     NSString *identifier = clusterManager[@"clusterManagerId"];
     GMUClusterManager *clusterManager = self.clusterManagerIdToManager[identifier];
     if (!clusterManager) {
@@ -56,7 +53,6 @@
 
 - (void)removeClusterManagers:(NSArray *)identifiers {
   for (NSString *identifier in identifiers) {
-    NSLog(@"FLTClusterManagersController removeClusterManagers clusterManagerId = %@", identifier);
     GMUClusterManager *clusterManager = self.clusterManagerIdToManager[identifier];
     if (!clusterManager) {
       continue;
@@ -67,26 +63,18 @@
 }
 
 - (void)addItem:(GMSMarker *)marker clusterManagerId:(NSString *)clusterManagerId {
-  NSLog(@"FLTClusterManagersController addItemWithPosition clusterManagerId = %@",
-        clusterManagerId);
   GMUClusterManager *clusterManager = self.clusterManagerIdToManager[clusterManagerId];
   if (marker && clusterManager != (id)[NSNull null]) {
-    NSLog(@"addItem to ClusterManager");
     [clusterManager addItem:(id<GMUClusterItem>)marker];
     [clusterManager cluster];
-  } else {
-    NSLog(@"MISSING ClusterManager");
   }
 }
 
 - (void)removeItem:(GMSMarker *)marker clusterManagerId:(NSArray *)clusterManagerId {
   GMUClusterManager *clusterManager = self.clusterManagerIdToManager[clusterManagerId];
   if (marker && clusterManager != (id)[NSNull null]) {
-    NSLog(@"remove marker ClusterManager");
     [clusterManager removeItem:(id<GMUClusterItem>)marker];
     [clusterManager cluster];
-  } else {
-    NSLog(@"MISSING ClusterManager");
   }
 }
 
