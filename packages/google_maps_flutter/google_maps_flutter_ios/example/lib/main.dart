@@ -5,7 +5,6 @@
 import 'package:flutter/material.dart';
 
 import 'animate_camera.dart';
-import 'cluster_markers.dart';
 import 'clustering.dart';
 import 'lite_mode.dart';
 import 'map_click.dart';
@@ -28,10 +27,8 @@ final List<GoogleMapExampleAppPage> _allPages = <GoogleMapExampleAppPage>[
   const MapCoordinatesPage(),
   const MapClickPage(),
   const AnimateCameraPage(),
-  const ClusterMarkersPage(),
   const MoveCameraPage(),
   const PlaceMarkerPage(),
-  const ClusteringPage(),
   const MarkerIconsPage(),
   const ScrollingMapPage(),
   const PlacePolylinePage(),
@@ -41,6 +38,7 @@ final List<GoogleMapExampleAppPage> _allPages = <GoogleMapExampleAppPage>[
   const SnapshotPage(),
   const LiteModePage(),
   const TileOverlayPage(),
+  const ClusteringPage(),
 ];
 
 /// MapsDemo is the Main Application.

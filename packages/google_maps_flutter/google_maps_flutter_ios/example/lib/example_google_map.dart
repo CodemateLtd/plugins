@@ -90,9 +90,9 @@ class ExampleGoogleMapController {
         .listen((MapTapEvent e) => _googleMapState.onTap(e.position));
     GoogleMapsFlutterPlatform.instance.onLongPress(mapId: mapId).listen(
         (MapLongPressEvent e) => _googleMapState.onLongPress(e.position));
-    // GoogleMapsFlutterPlatform.instance
-    //     .onClusterTap(mapId: mapId)
-    //     .listen((ClusterTapEvent e) => _googleMapState.onClusterTap(e.value));
+    GoogleMapsFlutterPlatform.instance
+        .onClusterTap(mapId: mapId)
+        .listen((ClusterTapEvent e) => _googleMapState.onClusterTap(e.value));
   }
 
   /// Updates configuration options of the map user interface.
@@ -108,14 +108,8 @@ class ExampleGoogleMapController {
   }
 
   /// Updates cluster manager configuration.
-  ///
-  /// Change listeners are notified once the update has been made on the
-  /// platform side.
-  ///
-  /// The returned [Future] completes after listeners have been notified.
   Future<void> _updateClusterManagers(
       ClusterManagerUpdates clusterManagerUpdates) {
-    assert(clusterManagerUpdates != null);
     return GoogleMapsFlutterPlatform.instance
         .updateClusterManagers(clusterManagerUpdates, mapId: mapId);
   }
@@ -214,6 +208,13 @@ class ExampleGoogleMapController {
     return GoogleMapsFlutterPlatform.instance.takeSnapshot(mapId: mapId);
   }
 
+  /// Returns current clusters from [ClusterManager]
+  Future<List<Cluster>> getClusters(
+      {required ClusterManagerId clusterManagerId}) {
+    return GoogleMapsFlutterPlatform.instance
+        .getClusters(mapId: mapId, clusterManagerId: clusterManagerId);
+  }
+
   /// Disposes of the platform resources
   void dispose() {
     GoogleMapsFlutterPlatform.instance.dispose(mapId: mapId);
@@ -222,29 +223,6 @@ class ExampleGoogleMapController {
 
 // The next map ID to create.
 int _nextMapCreationId = 0;
-
-/// Error thrown when an unknown map object ID is provided to a method.
-class UnknownMapObjectIdError extends Error {
-  /// Creates an assertion error with the provided [message].
-  UnknownMapObjectIdError(this.objectType, this.objectId, [this.context]);
-
-  /// The name of the map object whose ID is unknown.
-  final String objectType;
-
-  /// The unknown maps object ID.
-  final MapsObjectId<Object> objectId;
-
-  /// The context where the error occurred.
-  final String? context;
-
-  @override
-  String toString() {
-    if (context != null) {
-      return 'Unknown $objectType ID "${objectId.value}" in $context';
-    }
-    return 'Unknown $objectType ID "${objectId.value}"';
-  }
-}
 
 /// A widget which displays a map with data obtained from the Google Maps service.
 class ExampleGoogleMap extends StatefulWidget {
@@ -568,30 +546,10 @@ class _ExampleGoogleMapState extends State<ExampleGoogleMap> {
     widget.onLongPress?.call(position);
   }
 
-  void onClusterTap(ClusterManagerId clusterManagerId) {
-    assert(clusterManagerId != null);
-    final ClusterManager? clusterManager = _clusterManagers[clusterManagerId];
-    if (clusterManager == null) {
-      throw UnknownMapObjectIdError(
-          'clusterManager', clusterManagerId, 'onClusterTap');
-    }
-    // final VoidCallback? onTap = clusterManager.onTap;
-    // if (onTap != null) {
-    //   onTap();
-    // }
-  }
-
-  void onClusterInfoWindowTap(ClusterManagerId clusterManagerId) {
-    assert(clusterManagerId != null);
-    final ClusterManager? clusterManager = _clusterManagers[clusterManagerId];
-    if (clusterManager == null) {
-      throw UnknownMapObjectIdError(
-          'clusterManager', clusterManagerId, 'onClusterInfoWindowTap');
-    }
-    // final VoidCallback? onTap = clusterManager.infoWindow.onTap;
-    // if (onTap != null) {
-    //   onTap();
-    // }
+  void onClusterTap(Cluster cluster) {
+    final ClusterManager? clusterManager =
+        _clusterManagers[cluster.clusterManagerId];
+    clusterManager?.onClusterTap?.call(cluster);
   }
 }
 

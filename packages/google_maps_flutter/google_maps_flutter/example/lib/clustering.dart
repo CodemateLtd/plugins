@@ -42,13 +42,7 @@ class ClusteringBodyState extends State<ClusteringBody> {
   MarkerId? selectedMarker;
   int _clusterManagerIdCounter = 1;
   int _markerIdCounter = 1;
-
   Cluster? lastCluster;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   // ignore: use_setters_to_change_properties
   void _onMapCreated(GoogleMapController controller) {
@@ -130,9 +124,9 @@ class ClusteringBodyState extends State<ClusteringBody> {
         clusterManagerId: clusterManager.clusterManagerId,
         markerId: markerId,
         position: LatLng(
-          center.latitude + getRandomOffset(),
+          center.latitude + _getRandomOffset(),
           center.longitude +
-              getRandomOffset() +
+              _getRandomOffset() +
               clusterManagerIndex * _scaleFactor * 2,
         ),
         infoWindow: InfoWindow(title: markerIdVal, snippet: '*'),
@@ -143,7 +137,7 @@ class ClusteringBodyState extends State<ClusteringBody> {
     setState(() {});
   }
 
-  double getRandomOffset() {
+  double _getRandomOffset() {
     return (Random().nextDouble() - 0.5) * _scaleFactor;
   }
 
@@ -161,17 +155,6 @@ class ClusteringBodyState extends State<ClusteringBody> {
       final double current = marker.rotation;
       markers[markerId] = marker.copyWith(
         rotationParam: current == 315.0 ? 0.0 : current + 45.0,
-      );
-    }
-    setState(() {});
-  }
-
-  void _toggleMarkersVisibility() {
-    for (final MarkerId markerId in markers.keys) {
-      final Marker marker = markers[markerId]!;
-      final bool current = marker.visible;
-      markers[markerId] = marker.copyWith(
-        visibleParam: !current,
       );
     }
     setState(() {});
@@ -225,32 +208,28 @@ class ClusteringBodyState extends State<ClusteringBody> {
             alignment: WrapAlignment.spaceEvenly,
             children: <Widget>[
               TextButton(
-                onPressed:
-                    selectedId == null ? null : () => _remove(selectedId),
+                onPressed: selectedId == null
+                    ? null
+                    : () {
+                        _remove(selectedId);
+                        setState(() {
+                          selectedMarker = null;
+                        });
+                      },
                 child: const Text('Remove selected marker'),
               ),
               TextButton(
-                onPressed: () => _changeMarkersRotation(),
+                onPressed:
+                    markers.isEmpty ? null : () => _changeMarkersRotation(),
                 child: const Text('Change all markers rotation'),
-              ),
-              TextButton(
-                onPressed: () => _toggleMarkersVisibility(),
-                child: const Text('Change all markers visibility'),
-              ),
-              TextButton(
-                onPressed: () async => debugPrint(
-                    (await controller?.getClusters(
-                            clusterManagerId:
-                                clusterManagers.values.first.clusterManagerId))
-                        ?.length
-                        .toString()),
-                child: const Text('Print count (DEBUG)'),
               ),
             ],
           ),
           if (lastCluster != null)
-            Text(
-                'Cluster with ${lastCluster!.count} markers clicked at ${lastCluster!.position}'),
+            Padding(
+                padding: const EdgeInsets.all(10),
+                child: Text(
+                    'Cluster with ${lastCluster!.count} markers clicked at ${lastCluster!.position}')),
         ],
       ),
     ]);

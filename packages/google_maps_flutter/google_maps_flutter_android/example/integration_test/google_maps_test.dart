@@ -1178,6 +1178,58 @@ void main() {
       expect(tileOverlayInfo1, isNull);
     },
   );
+
+  testWidgets('marker clustering', (WidgetTester tester) async {
+    const int clusterManagersAmount = 2;
+    const int markersPerClusterManager = 25;
+    final Set<Marker> markers = <Marker>{};
+    final Set<ClusterManager> clusterManagers = <ClusterManager>{};
+
+    for (int i = 0; i < clusterManagersAmount; i++) {
+      const ClusterManagerId clusterManagerId = ClusterManagerId('cluster');
+      const ClusterManager clusterManager =
+          ClusterManager(clusterManagerId: clusterManagerId);
+      clusterManagers.add(clusterManager);
+    }
+
+    for (final ClusterManager cm in clusterManagers) {
+      for (int i = 0; i < markersPerClusterManager; i++) {
+        final Marker marker = Marker(
+            markerId: MarkerId('${cm.clusterManagerId.value}_marker_$i'),
+            clusterManagerId: cm.clusterManagerId,
+            position: LatLng(
+                _kInitialMapCenter.latitude + i, _kInitialMapCenter.longitude));
+        markers.add(marker);
+      }
+    }
+
+    final Completer<ExampleGoogleMapController> controllerCompleter =
+        Completer<ExampleGoogleMapController>();
+
+    await tester.pumpWidget(Directionality(
+      textDirection: TextDirection.ltr,
+      child: ExampleGoogleMap(
+        initialCameraPosition: _kInitialCameraPosition,
+        clusterManagers: clusterManagers,
+        markers: markers,
+        onMapCreated: (ExampleGoogleMapController googleMapController) {
+          controllerCompleter.complete(googleMapController);
+        },
+      ),
+    ));
+
+    final ExampleGoogleMapController controller =
+        await controllerCompleter.future;
+
+    for (final ClusterManager cm in clusterManagers) {
+      final List<Cluster> clusters =
+          await controller.getClusters(clusterManagerId: cm.clusterManagerId);
+      final int markersAmountForClusterManager = clusters
+          .map<int>((Cluster cluster) => cluster.count)
+          .reduce((int value, int element) => value + element);
+      expect(markersAmountForClusterManager, markersPerClusterManager);
+    }
+  });
 }
 
 class _DebugTileProvider implements TileProvider {
