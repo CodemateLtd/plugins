@@ -337,11 +337,12 @@
 - (void)removeMarker:(NSString *)identifier {
   FLTGoogleMapMarkerController *controller = self.markerIdentifierToController[identifier];
   if (!controller) {
-    continue;
+    return;
   }
   NSString *clusterManagerId = [controller clusterManagerId];
   if (clusterManagerId && clusterManagerId != (id)[NSNull null]) {
-    [_clusterManagersController removeItem:controller.marker];
+    [_clusterManagersController removeItem:controller.marker
+                          clusterManagerId:clusterManagerId];
   } else {
     [controller removeMarker];
   }
