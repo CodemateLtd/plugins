@@ -13,9 +13,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FLTGoogleMapMarkerController : NSObject
 @property(assign, nonatomic, readonly) BOOL consumeTapEvents;
 - (instancetype)initWithMarker:(GMSMarker *)marker
-                            identifier:(NSString *)identifier
-                            clusterManagerId:(NSString *)identifier
-                               mapView:(GMSMapView *)mapView;
+                    identifier:(NSString *)identifier
+              clusterManagerId:(NSString *)identifier
+                       mapView:(GMSMapView *)mapView;
 - (void)showInfoWindow;
 - (void)hideInfoWindow;
 - (BOOL)isInfoWindowShown;

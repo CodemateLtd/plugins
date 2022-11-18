@@ -312,20 +312,12 @@
     return;
   }
   NSString *oldClusterManagerId = [controller clusterManagerId];
-  if (clusterManagerId && clusterManagerId != (id)[NSNull null]) {
-    if (clusterManagerId != oldClusterManagerId) {
-      [_clusterManagersController removeItem:controller.marker
-                            clusterManagerId:oldClusterManagerId];
-      [_clusterManagersController addItem:controller.marker clusterManagerId:clusterManagerId];
-    }
+  if (![oldClusterManagerId isEqualToString:clusterManagerId]) {
+    [self removeMarker:identifier];
+    [self addMarker:markerToChange];
   } else {
-    if (oldClusterManagerId && oldClusterManagerId != (id)[NSNull null]) {
-      [_clusterManagersController removeItem:controller.marker
-                            clusterManagerId:oldClusterManagerId];
-    }
+    [controller interpretMarkerOptions:markerToChange registrar:self.registrar];
   }
-
-  [controller interpretMarkerOptions:markerToChange registrar:self.registrar];
 }
 
 - (void)removeMarkersWithIdentifiers:(NSArray *)identifiers {
@@ -341,8 +333,7 @@
   }
   NSString *clusterManagerId = [controller clusterManagerId];
   if (clusterManagerId && clusterManagerId != (id)[NSNull null]) {
-    [_clusterManagersController removeItem:controller.marker
-                          clusterManagerId:clusterManagerId];
+    [_clusterManagersController removeItem:controller.marker clusterManagerId:clusterManagerId];
   } else {
     [controller removeMarker];
   }
