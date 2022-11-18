@@ -17,23 +17,23 @@ class _TestGoogleMapsPlacesApiCodec extends StandardMessageCodec{
   const _TestGoogleMapsPlacesApiCodec();
   @override
   void writeValue(WriteBuffer buffer, Object? value) {
-    if (value is AutocompletePrediction) {
+    if (value is AutocompletePredictionAndroid) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
     } else 
-    if (value is FindAutocompletePredictionsRequest) {
+    if (value is FindAutocompletePredictionsRequestAndroid) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
     } else 
-    if (value is FindAutocompletePredictionsResponse) {
+    if (value is FindAutocompletePredictionsResponseAndroid) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
     } else 
-    if (value is LatLng) {
+    if (value is LatLngAndroid) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
     } else 
-    if (value is LatLngBounds) {
+    if (value is LatLngBoundsAndroid) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
     } else 
@@ -45,19 +45,19 @@ class _TestGoogleMapsPlacesApiCodec extends StandardMessageCodec{
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
       case 128:       
-        return AutocompletePrediction.decode(readValue(buffer)!);
+        return AutocompletePredictionAndroid.decode(readValue(buffer)!);
       
       case 129:       
-        return FindAutocompletePredictionsRequest.decode(readValue(buffer)!);
+        return FindAutocompletePredictionsRequestAndroid.decode(readValue(buffer)!);
       
       case 130:       
-        return FindAutocompletePredictionsResponse.decode(readValue(buffer)!);
+        return FindAutocompletePredictionsResponseAndroid.decode(readValue(buffer)!);
       
       case 131:       
-        return LatLng.decode(readValue(buffer)!);
+        return LatLngAndroid.decode(readValue(buffer)!);
       
       case 132:       
-        return LatLngBounds.decode(readValue(buffer)!);
+        return LatLngBoundsAndroid.decode(readValue(buffer)!);
       
       default:      
         return super.readValueOfType(type, buffer);
@@ -68,20 +68,20 @@ class _TestGoogleMapsPlacesApiCodec extends StandardMessageCodec{
 abstract class TestGoogleMapsPlacesApi {
   static const MessageCodec<Object?> codec = _TestGoogleMapsPlacesApiCodec();
 
-  FindAutocompletePredictionsResponse findAutocompletePredictions(FindAutocompletePredictionsRequest request);
+  Future<FindAutocompletePredictionsResponseAndroid> findAutocompletePredictionsAndroid(FindAutocompletePredictionsRequestAndroid request);
   static void setup(TestGoogleMapsPlacesApi? api, {BinaryMessenger? binaryMessenger}) {
     {
       final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.GoogleMapsPlacesApi.findAutocompletePredictions', codec, binaryMessenger: binaryMessenger);
+          'dev.flutter.pigeon.GoogleMapsPlacesApiAndroid.findAutocompletePredictionsAndroid', codec, binaryMessenger: binaryMessenger);
       if (api == null) {
         channel.setMockMessageHandler(null);
       } else {
         channel.setMockMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.GoogleMapsPlacesApi.findAutocompletePredictions was null.');
+          assert(message != null, 'Argument for dev.flutter.pigeon.GoogleMapsPlacesApiAndroid.findAutocompletePredictionsAndroid was null.');
           final List<Object?> args = (message as List<Object?>?)!;
-          final FindAutocompletePredictionsRequest? arg_request = (args[0] as FindAutocompletePredictionsRequest?);
-          assert(arg_request != null, 'Argument for dev.flutter.pigeon.GoogleMapsPlacesApi.findAutocompletePredictions was null, expected non-null FindAutocompletePredictionsRequest.');
-          final FindAutocompletePredictionsResponse output = api.findAutocompletePredictions(arg_request!);
+          final FindAutocompletePredictionsRequestAndroid? arg_request = (args[0] as FindAutocompletePredictionsRequestAndroid?);
+          assert(arg_request != null, 'Argument for dev.flutter.pigeon.GoogleMapsPlacesApiAndroid.findAutocompletePredictionsAndroid was null, expected non-null FindAutocompletePredictionsRequestAndroid.');
+          final FindAutocompletePredictionsResponseAndroid output = await api.findAutocompletePredictionsAndroid(arg_request!);
           return <Object?, Object?>{'result': output};
         });
       }

@@ -7,14 +7,15 @@ import 'package:pigeon/pigeon.dart';
 @ConfigurePigeon(PigeonOptions(
   input: 'pigeons/messages.dart',
   kotlinOut:
-      'android/src/main/kotlin/io/flutter/plugins/google_maps_places_android/Messages.kt',
+      'android/src/main/kotlin/io/flutter/plugins/google_maps_places_android/messages.g.kt',
   kotlinOptions:
       KotlinOptions(package: 'io.flutter.plugins.google_maps_places_android'),
   dartOut: 'lib/messages.g.dart',
   dartTestOut: 'test/messages_test.g.dart',
   copyrightHeader: 'pigeons/copyright.txt',
 ))
-enum TypeFilter {
+
+enum TypeFilterAndroid {
   address,
   cities,
   establishment,
@@ -23,7 +24,7 @@ enum TypeFilter {
   all,
 }
 
-enum PlaceType {
+enum PlaceTypeAndroid {
   accounting,
   administrativeAreaLevel1,
   administrativeAreaLevel2,
@@ -166,31 +167,31 @@ enum PlaceType {
   zoo,
 }
 
-class LatLng {
+class LatLngAndroid {
   double? latitude;
   double? longitude;
 }
 
-class LatLngBounds {
-  LatLng? southwest;
-  LatLng? northeast;
+class LatLngBoundsAndroid {
+  LatLngAndroid? southwest;
+  LatLngAndroid? northeast;
 }
 
-class FindAutocompletePredictionsRequest {
-  FindAutocompletePredictionsRequest({
+class FindAutocompletePredictionsRequestAndroid {
+  FindAutocompletePredictionsRequestAndroid({
     this.query = "",
   });
   String query;
-  LatLngBounds? locationBias;
-  LatLngBounds? locationRestriction;
-  LatLng? origin;
+  LatLngBoundsAndroid? locationBias;
+  LatLngBoundsAndroid? locationRestriction;
+  LatLngAndroid? origin;
   List<String?>? countries;
   List<int?>? typeFilter;
   bool? refreshToken;
 }
 
-class AutocompletePrediction {
-  AutocompletePrediction({
+class AutocompletePredictionAndroid {
+  AutocompletePredictionAndroid({
     this.distanceMeters,
     this.fullText = "",
     this.placeId = "",
@@ -206,15 +207,16 @@ class AutocompletePrediction {
   String secondaryText;
 }
 
-class FindAutocompletePredictionsResponse {
-  FindAutocompletePredictionsResponse({
-    this.results = const <AutocompletePrediction>[],
+class FindAutocompletePredictionsResponseAndroid {
+  FindAutocompletePredictionsResponseAndroid({
+    this.results = const <AutocompletePredictionAndroid>[],
   });
-  List<AutocompletePrediction?> results;
+  List<AutocompletePredictionAndroid?> results;
 }
 
 @HostApi(dartHostTestHandler: 'TestGoogleMapsPlacesApi')
-abstract class GoogleMapsPlacesApi {
-  FindAutocompletePredictionsResponse findAutocompletePredictions(
-      FindAutocompletePredictionsRequest request);
+abstract class GoogleMapsPlacesApiAndroid {
+  @async
+  FindAutocompletePredictionsResponseAndroid findAutocompletePredictionsAndroid(
+      FindAutocompletePredictionsRequestAndroid request);
 }

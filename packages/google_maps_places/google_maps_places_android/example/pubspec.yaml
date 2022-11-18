@@ -17,6 +17,8 @@ dependencies:
     # the parent directory to use the current plugin's version.
     path: ../
   cupertino_icons: ^1.0.2
+  google_maps_places_platform_interface:
+    path: ../../google_maps_places_platform_interface
 
 dev_dependencies:
   flutter_test:

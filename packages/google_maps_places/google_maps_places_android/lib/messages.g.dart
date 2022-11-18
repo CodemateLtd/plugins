@@ -10,7 +10,7 @@ import 'dart:typed_data' show Float64List, Int32List, Int64List, Uint8List;
 import 'package:flutter/foundation.dart' show ReadBuffer, WriteBuffer;
 import 'package:flutter/services.dart';
 
-enum TypeFilter {
+enum TypeFilterAndroid {
   address,
   cities,
   establishment,
@@ -19,7 +19,7 @@ enum TypeFilter {
   all,
 }
 
-enum PlaceType {
+enum PlaceTypeAndroid {
   accounting,
   administrativeAreaLevel1,
   administrativeAreaLevel2,
@@ -162,8 +162,8 @@ enum PlaceType {
   zoo,
 }
 
-class LatLng {
-  LatLng({
+class LatLngAndroid {
+  LatLngAndroid({
     this.latitude,
     this.longitude,
   });
@@ -178,23 +178,23 @@ class LatLng {
     return pigeonMap;
   }
 
-  static LatLng decode(Object message) {
+  static LatLngAndroid decode(Object message) {
     final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
-    return LatLng(
+    return LatLngAndroid(
       latitude: pigeonMap['latitude'] as double?,
       longitude: pigeonMap['longitude'] as double?,
     );
   }
 }
 
-class LatLngBounds {
-  LatLngBounds({
+class LatLngBoundsAndroid {
+  LatLngBoundsAndroid({
     this.southwest,
     this.northeast,
   });
 
-  LatLng? southwest;
-  LatLng? northeast;
+  LatLngAndroid? southwest;
+  LatLngAndroid? northeast;
 
   Object encode() {
     final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
@@ -203,21 +203,21 @@ class LatLngBounds {
     return pigeonMap;
   }
 
-  static LatLngBounds decode(Object message) {
+  static LatLngBoundsAndroid decode(Object message) {
     final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
-    return LatLngBounds(
+    return LatLngBoundsAndroid(
       southwest: pigeonMap['southwest'] != null
-          ? LatLng.decode(pigeonMap['southwest']!)
+          ? LatLngAndroid.decode(pigeonMap['southwest']!)
           : null,
       northeast: pigeonMap['northeast'] != null
-          ? LatLng.decode(pigeonMap['northeast']!)
+          ? LatLngAndroid.decode(pigeonMap['northeast']!)
           : null,
     );
   }
 }
 
-class FindAutocompletePredictionsRequest {
-  FindAutocompletePredictionsRequest({
+class FindAutocompletePredictionsRequestAndroid {
+  FindAutocompletePredictionsRequestAndroid({
     required this.query,
     this.locationBias,
     this.locationRestriction,
@@ -228,9 +228,9 @@ class FindAutocompletePredictionsRequest {
   });
 
   String query;
-  LatLngBounds? locationBias;
-  LatLngBounds? locationRestriction;
-  LatLng? origin;
+  LatLngBoundsAndroid? locationBias;
+  LatLngBoundsAndroid? locationRestriction;
+  LatLngAndroid? origin;
   List<String?>? countries;
   List<int?>? typeFilter;
   bool? refreshToken;
@@ -247,18 +247,18 @@ class FindAutocompletePredictionsRequest {
     return pigeonMap;
   }
 
-  static FindAutocompletePredictionsRequest decode(Object message) {
+  static FindAutocompletePredictionsRequestAndroid decode(Object message) {
     final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
-    return FindAutocompletePredictionsRequest(
+    return FindAutocompletePredictionsRequestAndroid(
       query: pigeonMap['query']! as String,
       locationBias: pigeonMap['locationBias'] != null
-          ? LatLngBounds.decode(pigeonMap['locationBias']!)
+          ? LatLngBoundsAndroid.decode(pigeonMap['locationBias']!)
           : null,
       locationRestriction: pigeonMap['locationRestriction'] != null
-          ? LatLngBounds.decode(pigeonMap['locationRestriction']!)
+          ? LatLngBoundsAndroid.decode(pigeonMap['locationRestriction']!)
           : null,
       origin: pigeonMap['origin'] != null
-          ? LatLng.decode(pigeonMap['origin']!)
+          ? LatLngAndroid.decode(pigeonMap['origin']!)
           : null,
       countries: (pigeonMap['countries'] as List<Object?>?)?.cast<String?>(),
       typeFilter: (pigeonMap['typeFilter'] as List<Object?>?)?.cast<int?>(),
@@ -267,8 +267,8 @@ class FindAutocompletePredictionsRequest {
   }
 }
 
-class AutocompletePrediction {
-  AutocompletePrediction({
+class AutocompletePredictionAndroid {
+  AutocompletePredictionAndroid({
     this.distanceMeters,
     required this.fullText,
     required this.placeId,
@@ -295,9 +295,9 @@ class AutocompletePrediction {
     return pigeonMap;
   }
 
-  static AutocompletePrediction decode(Object message) {
+  static AutocompletePredictionAndroid decode(Object message) {
     final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
-    return AutocompletePrediction(
+    return AutocompletePredictionAndroid(
       distanceMeters: pigeonMap['distanceMeters'] as int?,
       fullText: pigeonMap['fullText']! as String,
       placeId: pigeonMap['placeId']! as String,
@@ -308,12 +308,12 @@ class AutocompletePrediction {
   }
 }
 
-class FindAutocompletePredictionsResponse {
-  FindAutocompletePredictionsResponse({
+class FindAutocompletePredictionsResponseAndroid {
+  FindAutocompletePredictionsResponseAndroid({
     required this.results,
   });
 
-  List<AutocompletePrediction?> results;
+  List<AutocompletePredictionAndroid?> results;
 
   Object encode() {
     final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
@@ -321,35 +321,35 @@ class FindAutocompletePredictionsResponse {
     return pigeonMap;
   }
 
-  static FindAutocompletePredictionsResponse decode(Object message) {
+  static FindAutocompletePredictionsResponseAndroid decode(Object message) {
     final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
-    return FindAutocompletePredictionsResponse(
-      results: (pigeonMap['results'] as List<Object?>?)!.cast<AutocompletePrediction?>(),
+    return FindAutocompletePredictionsResponseAndroid(
+      results: (pigeonMap['results'] as List<Object?>?)!.cast<AutocompletePredictionAndroid?>(),
     );
   }
 }
 
-class _GoogleMapsPlacesApiCodec extends StandardMessageCodec{
-  const _GoogleMapsPlacesApiCodec();
+class _GoogleMapsPlacesApiAndroidCodec extends StandardMessageCodec{
+  const _GoogleMapsPlacesApiAndroidCodec();
   @override
   void writeValue(WriteBuffer buffer, Object? value) {
-    if (value is AutocompletePrediction) {
+    if (value is AutocompletePredictionAndroid) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
     } else 
-    if (value is FindAutocompletePredictionsRequest) {
+    if (value is FindAutocompletePredictionsRequestAndroid) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
     } else 
-    if (value is FindAutocompletePredictionsResponse) {
+    if (value is FindAutocompletePredictionsResponseAndroid) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
     } else 
-    if (value is LatLng) {
+    if (value is LatLngAndroid) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
     } else 
-    if (value is LatLngBounds) {
+    if (value is LatLngBoundsAndroid) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
     } else 
@@ -361,19 +361,19 @@ class _GoogleMapsPlacesApiCodec extends StandardMessageCodec{
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
       case 128:       
-        return AutocompletePrediction.decode(readValue(buffer)!);
+        return AutocompletePredictionAndroid.decode(readValue(buffer)!);
       
       case 129:       
-        return FindAutocompletePredictionsRequest.decode(readValue(buffer)!);
+        return FindAutocompletePredictionsRequestAndroid.decode(readValue(buffer)!);
       
       case 130:       
-        return FindAutocompletePredictionsResponse.decode(readValue(buffer)!);
+        return FindAutocompletePredictionsResponseAndroid.decode(readValue(buffer)!);
       
       case 131:       
-        return LatLng.decode(readValue(buffer)!);
+        return LatLngAndroid.decode(readValue(buffer)!);
       
       case 132:       
-        return LatLngBounds.decode(readValue(buffer)!);
+        return LatLngBoundsAndroid.decode(readValue(buffer)!);
       
       default:      
         return super.readValueOfType(type, buffer);
@@ -382,18 +382,18 @@ class _GoogleMapsPlacesApiCodec extends StandardMessageCodec{
   }
 }
 
-class GoogleMapsPlacesApi {
-  /// Constructor for [GoogleMapsPlacesApi].  The [binaryMessenger] named argument is
+class GoogleMapsPlacesApiAndroid {
+  /// Constructor for [GoogleMapsPlacesApiAndroid].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  GoogleMapsPlacesApi({BinaryMessenger? binaryMessenger}) : _binaryMessenger = binaryMessenger;
+  GoogleMapsPlacesApiAndroid({BinaryMessenger? binaryMessenger}) : _binaryMessenger = binaryMessenger;
   final BinaryMessenger? _binaryMessenger;
 
-  static const MessageCodec<Object?> codec = _GoogleMapsPlacesApiCodec();
+  static const MessageCodec<Object?> codec = _GoogleMapsPlacesApiAndroidCodec();
 
-  Future<FindAutocompletePredictionsResponse> findAutocompletePredictions(FindAutocompletePredictionsRequest arg_request) async {
+  Future<FindAutocompletePredictionsResponseAndroid> findAutocompletePredictionsAndroid(FindAutocompletePredictionsRequestAndroid arg_request) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.GoogleMapsPlacesApi.findAutocompletePredictions', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.GoogleMapsPlacesApiAndroid.findAutocompletePredictionsAndroid', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(<Object?>[arg_request]) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -414,7 +414,7 @@ class GoogleMapsPlacesApi {
         message: 'Host platform returned null value for non-null return value.',
       );
     } else {
-      return (replyMap['result'] as FindAutocompletePredictionsResponse?)!;
+      return (replyMap['result'] as FindAutocompletePredictionsResponseAndroid?)!;
     }
   }
 }

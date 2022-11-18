@@ -2,14 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/services.dart';
 import 'package:google_maps_places_platform_interface/google_maps_places_platform_interface.dart';
-import 'package:google_maps_places_platform_interface/types/types.dart';
+import 'messages.g.dart' as messages;
+
+FindAutocompletePredictionsResponse convertReponse(
+    messages.FindAutocompletePredictionsResponseAndroid reponse) {
+  return FindAutocompletePredictionsResponse(
+      results: reponse.results.map((e) => convertPredicion(e)).toList());
+}
+
+AutocompletePrediction? convertPredicion(
+    messages.AutocompletePredictionAndroid? prediction) {
+  if (prediction == null) return null;
+  return AutocompletePrediction(
+      distanceMeters: prediction.distanceMeters,
+      fullText: prediction.fullText,
+      placeId: prediction.placeId,
+      placeTypes: prediction.placeTypes,
+      primaryText: prediction.primaryText,
+      secondaryText: prediction.secondaryText);
+}
 
 /// An implementation of [GoogleMapsPlacesPlatform] for Android.
 class GoogleMapsPlacesAndroid extends GoogleMapsPlacesPlatform {
-  static const MethodChannel _channel =
-      MethodChannel('plugins.flutter.io/google_maps_places_android');
+  final messages.GoogleMapsPlacesApiAndroid _api =
+      messages.GoogleMapsPlacesApiAndroid();
 
   /// Registers this class as the default platform implementation.
   static void registerWith() {
@@ -17,40 +34,12 @@ class GoogleMapsPlacesAndroid extends GoogleMapsPlacesPlatform {
   }
 
   @override
-  Future<FindPlacesAutoCompleteResponse> findPlacesAutoComplete(
-    String query, {
-    List<String>? countries,
-    PlaceTypeFilter placeTypeFilter = PlaceTypeFilter.ALL,
-    bool? newSessionToken,
-    LatLng? origin,
-    LatLngBounds? locationBias,
-    LatLngBounds? locationRestriction,
-  }) {
-    if (query.isEmpty) {
-      throw ArgumentError('Argument query can not be empty');
-    }
-    return _channel.invokeListMethod<Map<dynamic, dynamic>>(
-      'findPlacesAutoComplete',
-      {
-        'query': query,
-        'countries': countries ?? [],
-        'typeFilter': placeTypeFilter.value,
-        'newSessionToken': newSessionToken,
-        'origin': origin?.toJson(),
-        'locationBias': locationBias?.toJson(),
-        'locationRestriction': locationRestriction?.toJson(),
-      },
-    ).then(_responseFromResult);
-  }
-
-  FindPlacesAutoCompleteResponse _responseFromResult(
-    List<Map<dynamic, dynamic>>? value,
-  ) {
-    final items = value
-            ?.map((item) => item.cast<String, dynamic>())
-            .map((map) => AutoCompletePlace.fromJson(map))
-            .toList(growable: false) ??
-        [];
-    return FindPlacesAutoCompleteResponse(items);
+  Future<FindAutocompletePredictionsResponse> findAutocompletePredictions(
+      FindAutocompletePredictionsRequest request) async {
+    final messages.FindAutocompletePredictionsResponseAndroid response =
+        await _api.findAutocompletePredictionsAndroid(
+            messages.FindAutocompletePredictionsRequestAndroid.decode(
+                request.encode()));
+    return convertReponse(response);
   }
 }

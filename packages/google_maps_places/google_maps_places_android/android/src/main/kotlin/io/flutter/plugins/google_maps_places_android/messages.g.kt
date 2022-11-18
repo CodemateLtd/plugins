@@ -16,7 +16,7 @@ import java.nio.ByteBuffer
 
 /** Generated class from Pigeon. */
 
-enum class TypeFilter(val raw: Int) {
+enum class TypeFilterAndroid(val raw: Int) {
   ADDRESS(0),
   CITIES(1),
   ESTABLISHMENT(2),
@@ -25,13 +25,13 @@ enum class TypeFilter(val raw: Int) {
   ALL(5);
 
   companion object {
-    fun ofRaw(raw: Int): TypeFilter? {
+    fun ofRaw(raw: Int): TypeFilterAndroid? {
       return values().firstOrNull { it.raw == raw }
     }
   }
 }
 
-enum class PlaceType(val raw: Int) {
+enum class PlaceTypeAndroid(val raw: Int) {
   ACCOUNTING(0),
   ADMINISTRATIVEAREALEVEL1(1),
   ADMINISTRATIVEAREALEVEL2(2),
@@ -174,25 +174,25 @@ enum class PlaceType(val raw: Int) {
   ZOO(139);
 
   companion object {
-    fun ofRaw(raw: Int): PlaceType? {
+    fun ofRaw(raw: Int): PlaceTypeAndroid? {
       return values().firstOrNull { it.raw == raw }
     }
   }
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class LatLng (
+data class LatLngAndroid (
   val latitude: Double? = null,
   val longitude: Double? = null
 
 ) {
   companion object {
     @Suppress("UNCHECKED_CAST")
-    fun fromMap(map: Map<String, Any?>): LatLng {
+    fun fromMap(map: Map<String, Any?>): LatLngAndroid {
       val latitude = map["latitude"] as? Double
       val longitude = map["longitude"] as? Double
 
-      return LatLng(latitude, longitude)
+      return LatLngAndroid(latitude, longitude)
     }
   }
   fun toMap(): Map<String, Any?> {
@@ -204,22 +204,22 @@ data class LatLng (
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class LatLngBounds (
-  val southwest: LatLng? = null,
-  val northeast: LatLng? = null
+data class LatLngBoundsAndroid (
+  val southwest: LatLngAndroid? = null,
+  val northeast: LatLngAndroid? = null
 
 ) {
   companion object {
     @Suppress("UNCHECKED_CAST")
-    fun fromMap(map: Map<String, Any?>): LatLngBounds {
-      val southwest: LatLng? = (map["southwest"] as? Map<String, Any?>)?.let {
-        LatLng.fromMap(it)
+    fun fromMap(map: Map<String, Any?>): LatLngBoundsAndroid {
+      val southwest: LatLngAndroid? = (map["southwest"] as? Map<String, Any?>)?.let {
+        LatLngAndroid.fromMap(it)
       }
-      val northeast: LatLng? = (map["northeast"] as? Map<String, Any?>)?.let {
-        LatLng.fromMap(it)
+      val northeast: LatLngAndroid? = (map["northeast"] as? Map<String, Any?>)?.let {
+        LatLngAndroid.fromMap(it)
       }
 
-      return LatLngBounds(southwest, northeast)
+      return LatLngBoundsAndroid(southwest, northeast)
     }
   }
   fun toMap(): Map<String, Any?> {
@@ -231,11 +231,11 @@ data class LatLngBounds (
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class FindAutocompletePredictionsRequest (
+data class FindAutocompletePredictionsRequestAndroid (
   val query: String,
-  val locationBias: LatLngBounds? = null,
-  val locationRestriction: LatLngBounds? = null,
-  val origin: LatLng? = null,
+  val locationBias: LatLngBoundsAndroid? = null,
+  val locationRestriction: LatLngBoundsAndroid? = null,
+  val origin: LatLngAndroid? = null,
   val countries: List<String?>? = null,
   val typeFilter: List<Long?>? = null,
   val refreshToken: Boolean? = null
@@ -243,22 +243,22 @@ data class FindAutocompletePredictionsRequest (
 ) {
   companion object {
     @Suppress("UNCHECKED_CAST")
-    fun fromMap(map: Map<String, Any?>): FindAutocompletePredictionsRequest {
+    fun fromMap(map: Map<String, Any?>): FindAutocompletePredictionsRequestAndroid {
       val query = map["query"] as String
-      val locationBias: LatLngBounds? = (map["locationBias"] as? Map<String, Any?>)?.let {
-        LatLngBounds.fromMap(it)
+      val locationBias: LatLngBoundsAndroid? = (map["locationBias"] as? Map<String, Any?>)?.let {
+        LatLngBoundsAndroid.fromMap(it)
       }
-      val locationRestriction: LatLngBounds? = (map["locationRestriction"] as? Map<String, Any?>)?.let {
-        LatLngBounds.fromMap(it)
+      val locationRestriction: LatLngBoundsAndroid? = (map["locationRestriction"] as? Map<String, Any?>)?.let {
+        LatLngBoundsAndroid.fromMap(it)
       }
-      val origin: LatLng? = (map["origin"] as? Map<String, Any?>)?.let {
-        LatLng.fromMap(it)
+      val origin: LatLngAndroid? = (map["origin"] as? Map<String, Any?>)?.let {
+        LatLngAndroid.fromMap(it)
       }
       val countries = map["countries"] as? List<String?>
       val typeFilter = map["typeFilter"] as? List<Long?>
       val refreshToken = map["refreshToken"] as? Boolean
 
-      return FindAutocompletePredictionsRequest(query, locationBias, locationRestriction, origin, countries, typeFilter, refreshToken)
+      return FindAutocompletePredictionsRequestAndroid(query, locationBias, locationRestriction, origin, countries, typeFilter, refreshToken)
     }
   }
   fun toMap(): Map<String, Any?> {
@@ -275,7 +275,7 @@ data class FindAutocompletePredictionsRequest (
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class AutocompletePrediction (
+data class AutocompletePredictionAndroid (
   val distanceMeters: Long? = null,
   val fullText: String,
   val placeId: String,
@@ -286,7 +286,7 @@ data class AutocompletePrediction (
 ) {
   companion object {
     @Suppress("UNCHECKED_CAST")
-    fun fromMap(map: Map<String, Any?>): AutocompletePrediction {
+    fun fromMap(map: Map<String, Any?>): AutocompletePredictionAndroid {
       val distanceMeters = map["distanceMeters"].let { if (it is Int) it.toLong() else it as? Long }
       val fullText = map["fullText"] as String
       val placeId = map["placeId"] as String
@@ -294,7 +294,7 @@ data class AutocompletePrediction (
       val primaryText = map["primaryText"] as String
       val secondaryText = map["secondaryText"] as String
 
-      return AutocompletePrediction(distanceMeters, fullText, placeId, placeTypes, primaryText, secondaryText)
+      return AutocompletePredictionAndroid(distanceMeters, fullText, placeId, placeTypes, primaryText, secondaryText)
     }
   }
   fun toMap(): Map<String, Any?> {
@@ -310,16 +310,16 @@ data class AutocompletePrediction (
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class FindAutocompletePredictionsResponse (
-  val results: List<AutocompletePrediction?>
+data class FindAutocompletePredictionsResponseAndroid (
+  val results: List<AutocompletePredictionAndroid?>
 
 ) {
   companion object {
     @Suppress("UNCHECKED_CAST")
-    fun fromMap(map: Map<String, Any?>): FindAutocompletePredictionsResponse {
-      val results = map["results"] as List<AutocompletePrediction?>
+    fun fromMap(map: Map<String, Any?>): FindAutocompletePredictionsResponseAndroid {
+      val results = map["results"] as List<AutocompletePredictionAndroid?>
 
-      return FindAutocompletePredictionsResponse(results)
+      return FindAutocompletePredictionsResponseAndroid(results)
     }
   }
   fun toMap(): Map<String, Any?> {
@@ -328,33 +328,34 @@ data class FindAutocompletePredictionsResponse (
     return map
   }
 }
+
 @Suppress("UNCHECKED_CAST")
-private object GoogleMapsPlacesApiCodec : StandardMessageCodec() {
+private object GoogleMapsPlacesApiAndroidCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
       128.toByte() -> {
         return (readValue(buffer) as? Map<String, Any?>)?.let {
-          AutocompletePrediction.fromMap(it)
+          AutocompletePredictionAndroid.fromMap(it)
         }
       }
       129.toByte() -> {
         return (readValue(buffer) as? Map<String, Any?>)?.let {
-          FindAutocompletePredictionsRequest.fromMap(it)
+          FindAutocompletePredictionsRequestAndroid.fromMap(it)
         }
       }
       130.toByte() -> {
         return (readValue(buffer) as? Map<String, Any?>)?.let {
-          FindAutocompletePredictionsResponse.fromMap(it)
+          FindAutocompletePredictionsResponseAndroid.fromMap(it)
         }
       }
       131.toByte() -> {
         return (readValue(buffer) as? Map<String, Any?>)?.let {
-          LatLng.fromMap(it)
+          LatLngAndroid.fromMap(it)
         }
       }
       132.toByte() -> {
         return (readValue(buffer) as? Map<String, Any?>)?.let {
-          LatLngBounds.fromMap(it)
+          LatLngBoundsAndroid.fromMap(it)
         }
       }
       else -> super.readValueOfType(type, buffer)
@@ -362,23 +363,23 @@ private object GoogleMapsPlacesApiCodec : StandardMessageCodec() {
   }
   override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
     when (value) {
-      is AutocompletePrediction -> {
+      is AutocompletePredictionAndroid -> {
         stream.write(128)
         writeValue(stream, value.toMap())
       }
-      is FindAutocompletePredictionsRequest -> {
+      is FindAutocompletePredictionsRequestAndroid -> {
         stream.write(129)
         writeValue(stream, value.toMap())
       }
-      is FindAutocompletePredictionsResponse -> {
+      is FindAutocompletePredictionsResponseAndroid -> {
         stream.write(130)
         writeValue(stream, value.toMap())
       }
-      is LatLng -> {
+      is LatLngAndroid -> {
         stream.write(131)
         writeValue(stream, value.toMap())
       }
-      is LatLngBounds -> {
+      is LatLngBoundsAndroid -> {
         stream.write(132)
         writeValue(stream, value.toMap())
       }
@@ -388,30 +389,32 @@ private object GoogleMapsPlacesApiCodec : StandardMessageCodec() {
 }
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
-interface GoogleMapsPlacesApi {
-  fun findAutocompletePredictions(request: FindAutocompletePredictionsRequest): FindAutocompletePredictionsResponse
+interface GoogleMapsPlacesApiAndroid {
+  fun findAutocompletePredictionsAndroid(request: FindAutocompletePredictionsRequestAndroid, callback: (FindAutocompletePredictionsResponseAndroid) -> Unit)
 
   companion object {
-    /** The codec used by GoogleMapsPlacesApi. */
+    /** The codec used by GoogleMapsPlacesApiAndroid. */
     val codec: MessageCodec<Any?> by lazy {
-      GoogleMapsPlacesApiCodec
+      GoogleMapsPlacesApiAndroidCodec
     }
-    /** Sets up an instance of `GoogleMapsPlacesApi` to handle messages through the `binaryMessenger`. */
+    /** Sets up an instance of `GoogleMapsPlacesApiAndroid` to handle messages through the `binaryMessenger`. */
     @Suppress("UNCHECKED_CAST")
-    fun setUp(binaryMessenger: BinaryMessenger, api: GoogleMapsPlacesApi?) {
+    fun setUp(binaryMessenger: BinaryMessenger, api: GoogleMapsPlacesApiAndroid?) {
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.GoogleMapsPlacesApi.findAutocompletePredictions", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.GoogleMapsPlacesApiAndroid.findAutocompletePredictionsAndroid", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val wrapped = hashMapOf<String, Any?>()
             try {
               val args = message as List<Any?>
-              val requestArg = args[0] as FindAutocompletePredictionsRequest
-              wrapped["result"] = api.findAutocompletePredictions(requestArg)
+              val requestArg = args[0] as FindAutocompletePredictionsRequestAndroid
+              api.findAutocompletePredictionsAndroid(requestArg) {
+                reply.reply(wrapResult(it))
+              }
             } catch (exception: Error) {
               wrapped["error"] = wrapError(exception)
+              reply.reply(wrapped)
             }
-            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)

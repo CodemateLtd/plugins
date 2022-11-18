@@ -3,49 +3,119 @@ package io.flutter.plugins.google_maps_places_android
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.annotation.NonNull
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompletePrediction
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken
-import com.google.android.libraries.places.api.model.RectangularBounds
-import com.google.android.libraries.places.api.model.TypeFilter
+import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse
 import com.google.android.libraries.places.api.net.PlacesClient
-
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
 import java.util.*
-import kotlin.collections.ArrayList
+
 
 /** GoogleMapsPlacesAndroidPlugin */
-class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, MethodCallHandler {
+class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
   /// The MethodChannel that will the communication between Flutter and native Android
   ///
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
   /// when the Flutter Engine is detached from the Activity
   private lateinit var client: PlacesClient
-  private lateinit var channel : MethodChannel
   private var lastSessionToken: AutocompleteSessionToken? = null
   private lateinit var applicationContext: Context
 
+  private fun setup(messenger: BinaryMessenger, context: Context?) {
+    try {
+      GoogleMapsPlacesApiAndroid.setUp(messenger, this)
+    } catch (ex: Exception) {
+    }
+    if (context != null) {
+      this.applicationContext = context
+    }
+  }
+
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-      onAttachedToEngine(flutterPluginBinding.applicationContext, flutterPluginBinding.binaryMessenger)
+    setup(flutterPluginBinding.binaryMessenger, flutterPluginBinding.applicationContext)
   }
 
-  private fun onAttachedToEngine(applicationContext: Context, binaryMessenger: BinaryMessenger) {
-    this.applicationContext = applicationContext
-
-    channel = MethodChannel(binaryMessenger, "plugins.flutter.io/google_maps_places_android")
-    channel.setMethodCallHandler(this)
+  override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+    setup(binding.binaryMessenger, null);
   }
 
-  override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+
+  override fun findAutocompletePredictionsAndroid(
+    request: FindAutocompletePredictionsRequestAndroid,
+    callback: (FindAutocompletePredictionsResponseAndroid) -> Unit
+  ) {
+    initialize(Locale.ENGLISH)
+    val sessionToken = getSessionToken(request.refreshToken == true)
+    val placesRequest = FindAutocompletePredictionsRequest.builder()
+      .setQuery(request.query)
+      //.setLocationBias(request.locationBias)
+      .setCountries(request.countries)
+      //.setTypeFilter(request.typeFilter)
+      .setSessionToken(sessionToken)
+      //.setOrigin(request.origin)
+      .build()
+    client.findAutocompletePredictions(placesRequest).addOnCompleteListener { task ->
+      if (task.isSuccessful) {
+        lastSessionToken = placesRequest.sessionToken
+        print("findAutoCompletePredictions Result: ${task.result}")
+        callback(convertResponse(task.result))
+      } else {
+        val exception = task.exception
+        print("findAutoCompletePredictions Exception: $exception")
+        throw Error("API_ERROR_AUTOCOMPLETE")
+          //"API_ERROR_AUTOCOMPLETE", exception?.message ?: "Unknown exception",
+          //mapOf("type" to (exception?.javaClass?.toString() ?: "null"))
+        //)
+      }
+    }
+  }
+
+  private fun initialize(locale: Locale?) {
+    val applicationInfo =
+      applicationContext
+        .packageManager
+        .getApplicationInfo(applicationContext.packageName, PackageManager.GET_META_DATA);
+    var apiKey = ""
+    if (applicationInfo.metaData != null) {
+      apiKey = applicationInfo.metaData.getString("com.google.android.geo.API_KEY").toString()
+    }
+    Places.initialize(applicationContext, apiKey, locale)
+    client = Places.createClient(applicationContext)
+  }
+
+  private fun getSessionToken(force: Boolean): AutocompleteSessionToken {
+    val localToken = lastSessionToken
+    if (force || localToken == null) {
+      return AutocompleteSessionToken.newInstance()
+    }
+    return localToken
+  }
+
+  private fun convertResponse(result: FindAutocompletePredictionsResponse): FindAutocompletePredictionsResponseAndroid {
+    return FindAutocompletePredictionsResponseAndroid(result.autocompletePredictions.map { item -> convertPrediction(item) })
+  }
+
+  private fun convertPrediction(prediction: AutocompletePrediction): AutocompletePredictionAndroid {
+    return AutocompletePredictionAndroid(
+      prediction.distanceMeters?.toLong(),
+      prediction.getFullText(null).toString(),
+      prediction.placeId,
+      convertPlaceTypes(prediction.placeTypes),
+      prediction.getPrimaryText(null).toString(),
+      prediction.getSecondaryText(null).toString()
+    )
+  }
+
+  private fun convertPlaceTypes(types: List<Place.Type>): List<Long?>{
+    return listOf()
+  }
+
+
+  /* override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
     when (call.method) {
       "findPlacesAutoComplete" -> {
         val query = call.argument<String>("query")
@@ -159,22 +229,5 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, MethodCallHandler {
       return null
     }
     return TypeFilter.valueOf(typeFilterStrUpper)
-  }
-
-  private fun initialize(locale: Locale?) {
-    val applicationInfo =
-      applicationContext
-      .packageManager
-      .getApplicationInfo(applicationContext.packageName, PackageManager.GET_META_DATA);
-    var apiKey = ""
-    if (applicationInfo.metaData != null) {
-      apiKey = applicationInfo.metaData.getString("com.google.android.geo.API_KEY").toString()
-    }
-    Places.initialize(applicationContext, apiKey, locale)
-    client = Places.createClient(applicationContext)
-  }
-
-  override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
-    channel.setMethodCallHandler(null)
-  }
+  }*/
 }
