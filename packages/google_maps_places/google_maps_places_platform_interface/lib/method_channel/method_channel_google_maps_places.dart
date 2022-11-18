@@ -17,43 +17,27 @@ const MethodChannel _channel =
 /// clients that were relying on internal details of the method channel
 /// in the pre-federated plugin.
 class GoogleMapsPlacesMethodChannel extends GoogleMapsPlacesPlatform {
-
   ///
   @override
-  Future<FindPlacesAutoCompleteResponse> findPlacesAutoComplete(
-    String query, {
-    List<String>? countries,
-    PlaceTypeFilter placeTypeFilter = PlaceTypeFilter.ALL,
-    bool? newSessionToken,
-    LatLng? origin,
-    LatLngBounds? locationBias,
-    LatLngBounds? locationRestriction,
-  }) {
-    if (query.isEmpty) {
+  Future<FindAutocompletePredictionsResponse> findAutocompletePredictions(
+      FindAutocompletePredictionsRequest request) async {
+    if (request.query.isEmpty) {
       throw ArgumentError('Argument query can not be empty');
     }
-    return _channel.invokeListMethod<Map<dynamic, dynamic>>(
-      'findPlacesAutoComplete',
+    return await _channel.invokeMethod<Map<Object?, Object?>>(
+      'findAutocompletePredictions',
       {
-        'query': query,
-        'countries': countries ?? [],
-        'typeFilter': placeTypeFilter.value,
-        'newSessionToken': newSessionToken,
-        'origin': origin?.toJson(),
-        'locationBias': locationBias?.toJson(),
-        'locationRestriction': locationRestriction?.toJson(),
+        request.encode(),
       },
     ).then(_responseFromResult);
   }
 
-  FindPlacesAutoCompleteResponse _responseFromResult(
-    List<Map<dynamic, dynamic>>? value,
+  FindAutocompletePredictionsResponse _responseFromResult(
+    Map<Object?, Object?>? value,
   ) {
-    final items = value
-            ?.map((item) => item.cast<String, dynamic>())
-            .map((map) => AutoCompletePlace.fromJson(map))
-            .toList(growable: false) ??
-        [];
-    return FindPlacesAutoCompleteResponse(items);
+    if (value == null) {
+      throw ArgumentError('Argument query can not be empty');
+    }
+    return FindAutocompletePredictionsResponse.decode(value);
   }
 }

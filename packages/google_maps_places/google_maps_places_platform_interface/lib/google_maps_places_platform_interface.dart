@@ -6,6 +6,8 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'method_channel/method_channel_google_maps_places.dart';
 import 'types/types.dart';
 
+export 'types/types.dart';
+
 /// The interface that implementations of google_maps_platform must implement.
 ///
 /// Platform implementations should extend this class rather than implement it as `google_maps_places`
@@ -36,16 +38,9 @@ abstract class GoogleMapsPlacesPlatform extends PlatformInterface {
   }
 
   /// Fetches autocomplete predictions based on a query.
-  Future<FindPlacesAutoCompleteResponse> findPlacesAutoComplete(
-    String query, {
-    List<String>? countries,
-    PlaceTypeFilter placeTypeFilter = PlaceTypeFilter.ALL,
-    bool? newSessionToken,
-    LatLng? origin,
-    LatLngBounds? locationBias,
-    LatLngBounds? locationRestriction,
-  }) {
+  Future<FindAutocompletePredictionsResponse> findAutocompletePredictions(
+    FindAutocompletePredictionsRequest request) async {
     throw UnimplementedError(
-        'findPlacesAutoComplete() has not been implemented.');
+        'findAutocompletePredictions() has not been implemented.');
   }
 }
