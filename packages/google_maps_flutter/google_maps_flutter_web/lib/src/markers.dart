@@ -7,10 +7,10 @@ part of google_maps_flutter_web;
 /// This class manages a set of [MarkerController]s associated to a [GoogleMapController].
 class MarkersController extends GeometryController {
   /// Initialize the cache. The [StreamController] comes from the [GoogleMapController], and is shared with other controllers.
-  MarkersController(
-      {required StreamController<MapEvent<Object?>> stream,
-      required ClusterManagersController clusterManagersController})
-      : _streamController = stream,
+  MarkersController({
+    required StreamController<MapEvent<Object?>> stream,
+    required ClusterManagersController clusterManagersController,
+  })  : _streamController = stream,
         _clusterManagersController = clusterManagersController,
         _markerIdToController = <MarkerId, MarkerController>{};
 

@@ -32,42 +32,6 @@ class Cluster {
   /// Returns the amount of markers in cluster.
   int get count => markerIds.length;
 
-  /// Converts this object to something serializable in JSON.
-  Object toJson() {
-    return <Object>[
-      clusterManagerId,
-      position.toJson(),
-      bounds.toJson(),
-      markerIds.map((MarkerId markerId) => markerId.value).toList()
-    ];
-  }
-
-  /// Initialize a Cluster from an JSON array.
-  static Cluster? fromJson(Object? json) {
-    if (json == null) {
-      return null;
-    }
-    assert(json is List && json.length == 4);
-    final List<Object?> list = json as List<Object?>;
-
-    final LatLng? clusterPosition = LatLng.fromJson(list[1]);
-    assert(clusterPosition != null);
-
-    final List<Object?> bounds = list[2]! as List<Object?>;
-    assert(bounds.length == 2);
-    final LatLngBounds clusterBounds = LatLngBounds(
-        southwest: LatLng.fromJson(bounds[0])!,
-        northeast: LatLng.fromJson(bounds[1])!);
-
-    return Cluster(
-        ClusterManagerId(list[0]! as String),
-        clusterPosition!,
-        clusterBounds,
-        (list[3]! as List<String>)
-            .map((String markerId) => MarkerId(markerId))
-            .toList());
-  }
-
   @override
   String toString() =>
       '${objectRuntimeType(this, 'Cluster')}($clusterManagerId, $position, $bounds, $markerIds)';

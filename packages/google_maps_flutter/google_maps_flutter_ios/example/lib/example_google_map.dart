@@ -208,7 +208,7 @@ class ExampleGoogleMapController {
     return GoogleMapsFlutterPlatform.instance.takeSnapshot(mapId: mapId);
   }
 
-  /// Returns current clusters from [ClusterManager]
+  /// Returns current clusters from [ClusterManager].
   Future<List<Cluster>> getClusters(
       {required ClusterManagerId clusterManagerId}) {
     return GoogleMapsFlutterPlatform.instance

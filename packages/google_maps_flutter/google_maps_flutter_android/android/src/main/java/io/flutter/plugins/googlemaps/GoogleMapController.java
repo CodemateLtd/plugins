@@ -649,23 +649,17 @@ final class GoogleMapController
   }
 
   // @Override
-  // The minimum supported version of Flutter doesn't have this method on the
-  // PlatformView interface, but the maximum
-  // does. This will override it when available even with the annotation commented
-  // out.
+  // The minimum supported version of Flutter doesn't have this method on the PlatformView interface, but the maximum
+  // does. This will override it when available even with the annotation commented out.
   public void onInputConnectionLocked() {
-    // TODO(mklim): Remove this empty override once
-    // https://github.com/flutter/flutter/issues/40126 is fixed in stable.
+    // TODO(mklim): Remove this empty override once https://github.com/flutter/flutter/issues/40126 is fixed in stable.
   }
 
   // @Override
-  // The minimum supported version of Flutter doesn't have this method on the
-  // PlatformView interface, but the maximum
-  // does. This will override it when available even with the annotation commented
-  // out.
+  // The minimum supported version of Flutter doesn't have this method on the PlatformView interface, but the maximum
+  // does. This will override it when available even with the annotation commented out.
   public void onInputConnectionUnlocked() {
-    // TODO(mklim): Remove this empty override once
-    // https://github.com/flutter/flutter/issues/40126 is fixed in stable.
+    // TODO(mklim): Remove this empty override once https://github.com/flutter/flutter/issues/40126 is fixed in stable.
   }
 
   // DefaultLifecycleObserver
@@ -923,13 +917,10 @@ final class GoogleMapController
   @SuppressLint("MissingPermission")
   private void updateMyLocationSettings() {
     if (hasLocationPermission()) {
-      // The plugin doesn't add the location permission by default so that apps that
-      // don't need
+      // The plugin doesn't add the location permission by default so that apps that don't need
       // the feature won't require the permission.
-      // Gradle is doing a static check for missing permission and in some
-      // configurations will
-      // fail the build if the permission is missing. The following disables the
-      // Gradle lint.
+      // Gradle is doing a static check for missing permission and in some configurations will
+      // fail the build if the permission is missing. The following disables the Gradle lint.
       // noinspection ResourceType
       googleMap.setMyLocationEnabled(myLocationEnabled);
       googleMap.getUiSettings().setMyLocationButtonEnabled(myLocationButtonEnabled);

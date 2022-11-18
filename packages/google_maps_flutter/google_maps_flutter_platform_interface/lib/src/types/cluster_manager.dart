@@ -26,7 +26,6 @@ class ClusterManager implements MapsObject<ClusterManager> {
   /// * reports [onTap] events
   const ClusterManager({
     required this.clusterManagerId,
-    this.consumeTapEvents = false,
     this.onClusterTap,
   });
 
@@ -36,23 +35,16 @@ class ClusterManager implements MapsObject<ClusterManager> {
   @override
   ClusterManagerId get mapsId => clusterManagerId;
 
-  /// True if the cluster icon consumes tap events. If not, the map will perform
-  /// default tap handling by centering the map on the cluster and displaying its
-  /// info window.
-  final bool consumeTapEvents;
-
   /// Callbacks to receive tap events for cluster icons placed on this map.
   final ArgumentCallback<Cluster>? onClusterTap;
 
   /// Creates a new [ClusterManager] object whose values are the same as this instance,
   /// unless overwritten by the specified parameters.
   ClusterManager copyWith({
-    bool? consumeTapEventsParam,
     ArgumentCallback<Cluster>? onClusterTapParam,
   }) {
     return ClusterManager(
       clusterManagerId: clusterManagerId,
-      consumeTapEvents: consumeTapEventsParam ?? consumeTapEvents,
       onClusterTap: onClusterTapParam ?? onClusterTap,
     );
   }
@@ -73,7 +65,6 @@ class ClusterManager implements MapsObject<ClusterManager> {
     }
 
     addIfPresent('clusterManagerId', clusterManagerId.value);
-    addIfPresent('consumeTapEvents', consumeTapEvents);
     return json;
   }
 
@@ -86,8 +77,7 @@ class ClusterManager implements MapsObject<ClusterManager> {
       return false;
     }
     return other is ClusterManager &&
-        clusterManagerId == other.clusterManagerId &&
-        consumeTapEvents == other.consumeTapEvents;
+        clusterManagerId == other.clusterManagerId;
   }
 
   @override
@@ -95,7 +85,6 @@ class ClusterManager implements MapsObject<ClusterManager> {
 
   @override
   String toString() {
-    return 'Cluster{clusterManagerId: $clusterManagerId, consumeTapEvents: $consumeTapEvents, '
-        'onClusterTap: $onClusterTap}';
+    return 'Cluster{clusterManagerId: $clusterManagerId, onClusterTap: $onClusterTap}';
   }
 }

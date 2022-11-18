@@ -15,8 +15,6 @@ flutter:
         default_package: google_maps_flutter_android
       ios:
         default_package: google_maps_flutter_ios
-      web:
-        default_package: google_maps_flutter_web
 
 dependencies:
   flutter:
@@ -24,7 +22,6 @@ dependencies:
   google_maps_flutter_android: ^2.1.10
   google_maps_flutter_ios: ^2.1.10
   google_maps_flutter_platform_interface: ^2.2.1
-  google_maps_flutter_web: ^0.4.0+3
 
 dev_dependencies:
   flutter_test:
@@ -41,5 +38,3 @@ dependency_overrides:
     path: ../../google_maps_flutter/google_maps_flutter_ios
   google_maps_flutter_platform_interface:
     path: ../../google_maps_flutter/google_maps_flutter_platform_interface
-  google_maps_flutter_web:
-    path: ../../google_maps_flutter/google_maps_flutter_web

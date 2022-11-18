@@ -115,13 +115,14 @@ class GoogleMapController {
 
   /// Overrides certain properties to install mocks defined during testing.
   @visibleForTesting
-  void debugSetOverrides(
-      {DebugCreateMapFunction? createMap,
-      MarkersController? markers,
-      CirclesController? circles,
-      PolygonsController? polygons,
-      PolylinesController? polylines,
-      ClusterManagersController? clusterManagers}) {
+  void debugSetOverrides({
+    DebugCreateMapFunction? createMap,
+    MarkersController? markers,
+    CirclesController? circles,
+    PolygonsController? polygons,
+    PolylinesController? polylines,
+    ClusterManagersController? clusterManagers,
+  }) {
     _overrideCreateMap = createMap;
     _markersController = markers ?? _markersController;
     _circlesController = circles ?? _circlesController;

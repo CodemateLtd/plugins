@@ -88,10 +88,7 @@ class MarkersController {
       markerController.showInfoWindow();
       result.success(null);
     } else {
-      result.error(
-          "Invalid markerId",
-          "showInfoWindow called with invalid markerId or for hidden cluster marker",
-          null);
+      result.error("Invalid markerId", "showInfoWindow called with invalid markerId", null);
     }
   }
 

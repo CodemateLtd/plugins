@@ -70,7 +70,7 @@ class Marker implements MapsObject<Marker> {
   @override
   MarkerId get mapsId => markerId;
 
-  /// Marker clustering is managed by [ClusterManager] with [clusterManagerId]
+  /// Marker clustering is managed by [ClusterManager] with [clusterManagerId].
   final ClusterManagerId? clusterManagerId;
 
   /// The opacity of the marker, between 0.0 and 1.0 inclusive.

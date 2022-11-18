@@ -153,8 +153,6 @@
   if (zIndex && zIndex != (id)[NSNull null]) {
     [self setZIndex:[zIndex intValue]];
   }
-
-  [self updateMarkerUserData];
 }
 
 - (void)interpretInfoWindow:(NSDictionary *)data {
