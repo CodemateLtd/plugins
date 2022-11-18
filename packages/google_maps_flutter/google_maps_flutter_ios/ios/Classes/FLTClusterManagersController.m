@@ -40,17 +40,6 @@
   }
 }
 
-- (void)changeClusterManagers:(NSArray *)clusterManagersToChange {
-  for (NSDictionary *clusterManager in clusterManagersToChange) {
-    NSString *identifier = clusterManager[@"clusterManagerId"];
-    GMUClusterManager *clusterManager = self.clusterManagerIdToManager[identifier];
-    if (!clusterManager) {
-      continue;
-    }
-    // TODO: change the cluster
-  }
-}
-
 - (void)removeClusterManagers:(NSArray *)identifiers {
   for (NSString *identifier in identifiers) {
     GMUClusterManager *clusterManager = self.clusterManagerIdToManager[identifier];

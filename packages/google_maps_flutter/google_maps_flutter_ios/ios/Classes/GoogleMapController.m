@@ -303,10 +303,6 @@
     if ([clusterManagersToAdd isKindOfClass:[NSArray class]]) {
       [self.clusterManagersController addClusterManagers:clusterManagersToAdd];
     }
-    id clusterManagersToChange = call.arguments[@"clusterManagersToChange"];
-    if ([clusterManagersToChange isKindOfClass:[NSArray class]]) {
-      [self.clusterManagersController changeClusterManagers:clusterManagersToChange];
-    }
     id clusterManagerIdsToRemove = call.arguments[@"clusterManagerIdsToRemove"];
     if ([clusterManagerIdsToRemove isKindOfClass:[NSArray class]]) {
       [self.clusterManagersController removeClusterManagers:clusterManagerIdsToRemove];
