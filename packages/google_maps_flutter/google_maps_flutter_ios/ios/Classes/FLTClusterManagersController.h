@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removeItem:(GMSMarker *)marker clusterManagerId:(NSString *)clusterManagerId;
 - (void)getClustersWithIdentifier:(NSString *)identifier result:(FlutterResult)result;
 - (bool)didTapCluster:(GMUStaticCluster *)cluster;
+- (void)clusterAll;
 @end
 
 NS_ASSUME_NONNULL_END

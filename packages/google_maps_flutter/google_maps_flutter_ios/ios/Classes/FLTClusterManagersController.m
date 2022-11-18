@@ -7,7 +7,7 @@
 
 @interface FLTClusterManagersController ()
 
-@property(strong, nonatomic) NSMutableDictionary *clusterManagerIdToManager;
+@property(strong, nonatomic) NSMutableDictionary *clusterManagerIdToManagers;
 @property(strong, nonatomic) FlutterMethodChannel *methodChannel;
 @property(weak, nonatomic) GMSMapView *mapView;
 
@@ -20,7 +20,7 @@
   if (self) {
     _methodChannel = methodChannel;
     _mapView = mapView;
-    _clusterManagerIdToManager = [[NSMutableDictionary alloc] init];
+    _clusterManagerIdToManagers = [[NSMutableDictionary alloc] init];
   }
   return self;
 }
@@ -36,39 +36,45 @@
     GMUClusterManager *clusterManager = [[GMUClusterManager alloc] initWithMap:_mapView
                                                                      algorithm:algorithm
                                                                       renderer:renderer];
-    self.clusterManagerIdToManager[identifier] = clusterManager;
+    self.clusterManagerIdToManagers[identifier] = clusterManager;
   }
 }
 
 - (void)removeClusterManagers:(NSArray *)identifiers {
   for (NSString *identifier in identifiers) {
-    GMUClusterManager *clusterManager = self.clusterManagerIdToManager[identifier];
+    GMUClusterManager *clusterManager = [self.clusterManagerIdToManagers objectForKey:identifier];
     if (!clusterManager) {
       continue;
     }
     [clusterManager clearItems];
-    [self.clusterManagerIdToManager removeObjectForKey:identifier];
+    [self.clusterManagerIdToManagers removeObjectForKey:identifier];
   }
 }
 
 - (void)addItem:(GMSMarker *)marker clusterManagerId:(NSString *)clusterManagerId {
-  GMUClusterManager *clusterManager = self.clusterManagerIdToManager[clusterManagerId];
+  GMUClusterManager *clusterManager =
+      [self.clusterManagerIdToManagers objectForKey:clusterManagerId];
   if (marker && clusterManager != (id)[NSNull null]) {
     [clusterManager addItem:(id<GMUClusterItem>)marker];
-    [clusterManager cluster];
   }
 }
 
 - (void)removeItem:(GMSMarker *)marker clusterManagerId:(NSArray *)clusterManagerId {
-  GMUClusterManager *clusterManager = self.clusterManagerIdToManager[clusterManagerId];
+  GMUClusterManager *clusterManager =
+      [self.clusterManagerIdToManagers objectForKey:clusterManagerId];
   if (marker && clusterManager != (id)[NSNull null]) {
     [clusterManager removeItem:(id<GMUClusterItem>)marker];
+  }
+}
+
+- (void)clusterAll {
+  for (GMUClusterManager *clusterManager in [self.clusterManagerIdToManagers allValues]) {
     [clusterManager cluster];
   }
 }
 
 - (void)getClustersWithIdentifier:(NSString *)identifier result:(FlutterResult)result {
-  GMUClusterManager *clusterManager = self.clusterManagerIdToManager[identifier];
+  GMUClusterManager *clusterManager = [self.clusterManagerIdToManagers objectForKey:identifier];
   if (clusterManager) {
     NSMutableArray *response = [[NSMutableArray alloc] init];
 

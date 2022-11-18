@@ -270,6 +270,7 @@
     if ([markerIdsToRemove isKindOfClass:[NSArray class]]) {
       [self.markersController removeMarkersWithIdentifiers:markerIdsToRemove];
     }
+    [self.clusterManagersController clusterAll];
     result(nil);
   } else if ([call.method isEqualToString:@"markers#showInfoWindow"]) {
     id markerId = call.arguments[@"markerId"];
