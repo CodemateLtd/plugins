@@ -6,17 +6,79 @@ import Flutter
 import UIKit
 import GooglePlaces
 
-public class SwiftGoogleMapsPlacesIosPlugin: NSObject, FlutterPlugin {
-        
+public class SwiftGoogleMapsPlacesIosPlugin: NSObject, FlutterPlugin, GoogleMapsPlacesApiIOS {
+   
     private var placesClient: GMSPlacesClient!
     private var lastSessionToken: GMSAutocompleteSessionToken?
     
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let channel = FlutterMethodChannel(name: "plugins.flutter.io/google_maps_places_ios", binaryMessenger: registrar.messenger())
-        let instance = SwiftGoogleMapsPlacesIosPlugin()
-        registrar.addMethodCallDelegate(instance, channel: channel)
+        let messenger : FlutterBinaryMessenger = registrar.messenger()
+        let api : GoogleMapsPlacesApiIOS & NSObjectProtocol = SwiftGoogleMapsPlacesIosPlugin.init()
+        GoogleMapsPlacesApiIOSSetup.setUp(binaryMessenger: messenger, api: api)
     }
-
+    
+    func findAutocompletePredictionsIOS(request: FindAutocompletePredictionsRequestIOS, completion: @escaping (FindAutocompletePredictionsResponseIOS?) -> Void) {
+        let sessionToken = getSessionToken(force: request.refreshToken == true)
+        
+        // Create a type filter.
+        let filter = GMSAutocompleteFilter()
+        //filter.type = makeTypeFilter(typeFilter: placeTypeFilter);
+        filter.countries = request.countries as? [String]
+        //filter.origin = request.origin
+        
+        initialize()
+        placesClient.findAutocompletePredictions(
+            fromQuery: request.query, filter: filter, sessionToken: sessionToken,
+            callback: { (results, error) in
+                if let error = error {
+                    print("findPlacesAutoComplete error: \(error)")
+                    /*completion(FlutterError(
+                     code: "API_ERROR",
+                     message: error.localizedDescription,
+                     details: nil
+                     ))*/
+                    completion(nil)
+                } else {
+                    self.lastSessionToken = sessionToken
+                    completion(self.convertResults(results))
+                }
+            })
+        
+    }
+    
+    private func initialize() {
+        guard (placesClient == nil) else {
+            return
+        }
+        placesClient = GMSPlacesClient.shared()
+    }
+    
+    private func getSessionToken(force: Bool) -> GMSAutocompleteSessionToken! {
+        let localToken = lastSessionToken
+        if (force || localToken == nil) {
+            return GMSAutocompleteSessionToken.init()
+        }
+        return localToken
+    }
+    
+    private func convertResults(_ results: [GMSAutocompletePrediction]?) -> FindAutocompletePredictionsResponseIOS {
+        guard let results = results else {
+            return FindAutocompletePredictionsResponseIOS(results: [])
+        }
+        var predictions = results.map { (prediction: GMSAutocompletePrediction) in
+            return convertPrediction(prediction) }
+        return FindAutocompletePredictionsResponseIOS(results: predictions)
+    }
+    
+    private func convertPrediction(_ prediction: GMSAutocompletePrediction) -> AutocompletePredictionIOS? {
+        return AutocompletePredictionIOS(fullText: prediction.attributedFullText.string, placeId: prediction.placeID, placeTypes: convertPlaceTypes(prediction.types), primaryText: prediction.attributedPrimaryText.string, secondaryText: prediction.attributedSecondaryText?.string ?? "")
+    }
+    
+    private func convertPlaceTypes(_ placeTypes: [String]) -> [Int32?] {
+        return []
+    }
+}
+    /*
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
         case "findPlacesAutoComplete":
@@ -56,21 +118,6 @@ public class SwiftGoogleMapsPlacesIosPlugin: NSObject, FlutterPlugin {
         }
     }
     
-    private func initialize() {
-        guard (placesClient == nil) else {
-            return
-        }
-        placesClient = GMSPlacesClient.shared()
-    }
-    
-    private func getSessionToken(force: Bool) -> GMSAutocompleteSessionToken! {
-        let localToken = lastSessionToken
-        if (force || localToken == nil) {
-            return GMSAutocompleteSessionToken.init()
-        }
-        return localToken
-    }
-    
     private func latLngFromMap(argument: Array<Double>?) -> CLLocation? {
         guard argument != nil else {
             return nil
@@ -100,23 +147,4 @@ public class SwiftGoogleMapsPlacesIosPlugin: NSObject, FlutterPlugin {
             return GMSPlacesAutocompleteTypeFilter.noFilter
         }
     }
-    
-    private func responseToList(results: [GMSAutocompletePrediction]?) -> [Dictionary<String, Any?>]? {
-        guard let results = results else {
-            return nil;
-        }
-        
-        return results.map { (prediction: GMSAutocompletePrediction) in
-            return predictionToMap(prediction: prediction) }
-    }
-    
-    private func predictionToMap(prediction: GMSAutocompletePrediction) -> Dictionary<String, Any?> {
-        return [
-            "placeId": prediction.placeID,
-            "distanceMeters": prediction.distanceMeters,
-            "primaryText": prediction.attributedPrimaryText.string,
-            "secondaryText": prediction.attributedSecondaryText?.string ?? "",
-            "fullText": prediction.attributedFullText.string
-        ];
-    }
-}
+}*/

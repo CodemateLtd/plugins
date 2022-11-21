@@ -1,11 +1,32 @@
-import 'package:flutter/services.dart';
-import 'package:google_maps_places_platform_interface/google_maps_places_platform_interface.dart';
-import 'package:google_maps_places_platform_interface/types/types.dart';
+// Copyright 2013 The Flutter Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-/// An implementation of [GoogleMapsPlacesPlatform] for iOS.
+import 'package:google_maps_places_platform_interface/google_maps_places_platform_interface.dart';
+import 'messages.g.dart' as messages;
+
+FindAutocompletePredictionsResponse convertReponse(
+    messages.FindAutocompletePredictionsResponseIOS reponse) {
+  return FindAutocompletePredictionsResponse(
+      results: reponse.results.map((e) => convertPredicion(e)).toList());
+}
+
+AutocompletePrediction? convertPredicion(
+    messages.AutocompletePredictionIOS? prediction) {
+  if (prediction == null) return null;
+  return AutocompletePrediction(
+      distanceMeters: prediction.distanceMeters,
+      fullText: prediction.fullText,
+      placeId: prediction.placeId,
+      placeTypes: prediction.placeTypes,
+      primaryText: prediction.primaryText,
+      secondaryText: prediction.secondaryText);
+}
+
+/// An implementation of [GoogleMapsPlacesPlatform] for IOS.
 class GoogleMapsPlacesIOS extends GoogleMapsPlacesPlatform {
-  static const MethodChannel _channel =
-      MethodChannel('plugins.flutter.io/google_maps_places_ios');
+  final messages.GoogleMapsPlacesApiIOS _api =
+      messages.GoogleMapsPlacesApiIOS();
 
   /// Registers this class as the default platform implementation.
   static void registerWith() {
@@ -13,40 +34,15 @@ class GoogleMapsPlacesIOS extends GoogleMapsPlacesPlatform {
   }
 
   @override
-  Future<FindPlacesAutoCompleteResponse> findPlacesAutoComplete(
-    String query, {
-    List<String>? countries,
-    PlaceTypeFilter placeTypeFilter = PlaceTypeFilter.ALL,
-    bool? newSessionToken,
-    LatLng? origin,
-    LatLngBounds? locationBias,
-    LatLngBounds? locationRestriction,
-  }) {
-    if (query.isEmpty) {
-      throw ArgumentError('Argument query can not be empty');
+  Future<FindAutocompletePredictionsResponse> findAutocompletePredictions(
+      FindAutocompletePredictionsRequest request) async {
+    final messages.FindAutocompletePredictionsResponseIOS? response =
+        await _api.findAutocompletePredictionsIOS(
+            messages.FindAutocompletePredictionsRequestIOS.decode(
+                request.encode()));
+    if (response == null) {
+      throw ArgumentError('API returned empty response. Check log for details.');
     }
-    return _channel.invokeListMethod<Map<dynamic, dynamic>>(
-      'findPlacesAutoComplete',
-      {
-        'query': query,
-        'countries': countries ?? [],
-        'typeFilter': placeTypeFilter.value,
-        'newSessionToken': newSessionToken,
-        'origin': origin?.toJson(),
-        'locationBias': locationBias?.toJson(),
-        'locationRestriction': locationRestriction?.toJson(),
-      },
-    ).then(_responseFromResult);
-  }
-
-  FindPlacesAutoCompleteResponse _responseFromResult(
-    List<Map<dynamic, dynamic>>? value,
-  ) {
-    final items = value
-            ?.map((item) => item.cast<String, dynamic>())
-            .map((map) => AutoCompletePlace.fromJson(map))
-            .toList(growable: false) ??
-        [];
-    return FindPlacesAutoCompleteResponse(items);
+    return convertReponse(response);
   }
 }

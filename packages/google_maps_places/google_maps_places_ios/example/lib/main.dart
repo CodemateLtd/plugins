@@ -3,11 +3,9 @@
 // found in the LICENSE file.
 
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
-import 'package:google_maps_places_ios/google_maps_places_ios.dart';
 
+import 'package:flutter/material.dart';
 import 'package:google_maps_places_platform_interface/google_maps_places_platform_interface.dart';
-import 'package:google_maps_places_platform_interface/types/types.dart';
 
 /// Title
 const title = 'Flutter Google Places iOS SDK Example';
@@ -37,22 +35,22 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _places = GoogleMapsPlacesIOS();
+  final _places = GoogleMapsPlacesPlatform.instance;
 
   //
   String? _predictLastText;
   List<String> _countries = ['fi'];
-  PlaceTypeFilter _placeTypeFilter = PlaceTypeFilter.ADDRESS;
+  TypeFilter _placeTypeFilter = TypeFilter.address;
 
   final LatLngBounds _locationBias = LatLngBounds(
-    southwest: const LatLng(60.4518, 22.2666),
-    northeast: const LatLng(70.0821, 27.8718),
+    southwest: LatLng(latitude: 60.4518, longitude: 22.2666),
+    northeast: LatLng(latitude: 70.0821, longitude: 27.8718),
   );
 
   bool _predicting = false;
   dynamic _predictErr;
 
-  List<AutoCompletePlace>? _predictions;
+  List<AutocompletePrediction?>? _predictions;
 
   final TextEditingController _fetchPlaceIdController = TextEditingController();
 
@@ -67,11 +65,10 @@ class _MyHomePageState extends State<MyHomePage> {
     _loading = init();
   }
 
-  Future<bool> init() =>
-    Future.delayed(
-      const Duration(seconds: 1),
-      () => true,
-    );
+  Future<bool> init() => Future.delayed(
+        const Duration(seconds: 1),
+        () => true,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void _onPlaceTypeFilterChanged(PlaceTypeFilter? value) {
+  void _onPlaceTypeFilterChanged(TypeFilter? value) {
     if (value != null) {
       setState(() {
         _placeTypeFilter = value;
@@ -156,19 +153,16 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!hasContent) {
       return;
     }
-
-    try {
-      final result = await _places.findPlacesAutoComplete(
-        _predictLastText!,
+    final request = FindAutocompletePredictionsRequest(
+        query: _predictLastText!,
         countries: _countries,
-        placeTypeFilter: _placeTypeFilter,
-        newSessionToken: false,
-        origin: const LatLng(60.1699, 24.9384),
-        locationBias: _locationBias,
-      );
+        origin: LatLng(latitude: 60.1699, longitude: 24.9384),
+        locationBias: _locationBias);
+    try {
+      final result = await _places.findAutocompletePredictions(request);
 
       setState(() {
-        _predictions = result.places;
+        _predictions = result.results;
         _predicting = false;
       });
     } catch (err) {
@@ -179,11 +173,16 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void _onItemClicked(AutoCompletePlace item) {
-    _fetchPlaceIdController.text = item.placeId;
+  void _onItemClicked(AutocompletePrediction? item) {
+    if (item != null) {
+      _fetchPlaceIdController.text = item.placeId;
+    }
   }
 
-  Widget _buildPredictionItem(AutoCompletePlace item) {
+  Widget _buildPredictionItem(AutocompletePrediction? item) {
+    if (item == null) {
+      return Container();
+    }
     return InkWell(
       onTap: () => _onItemClicked(item),
       child: Column(children: [
@@ -216,10 +215,10 @@ class _MyHomePageState extends State<MyHomePage> {
         autovalidateMode: AutovalidateMode.onUserInteraction,
         initialValue: _countries.join(","),
       ),
-      DropdownButton<PlaceTypeFilter>(
-        items: PlaceTypeFilter.values
-            .map((item) => DropdownMenuItem<PlaceTypeFilter>(
-                child: Text(item.value), value: item))
+      DropdownButton<TypeFilter>(
+        items: TypeFilter.values
+            .map((item) => DropdownMenuItem<TypeFilter>(
+                child: Text(item.name), value: item))
             .toList(growable: false),
         value: _placeTypeFilter,
         onChanged: _onPlaceTypeFilterChanged,

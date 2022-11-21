@@ -19,6 +19,7 @@ dev_dependencies:
     sdk: flutter
   plugin_platform_interface: ^2.0.2
   flutter_lints: ^2.0.0
+  pigeon: ^4.2.5
 
 flutter:
   plugin:
