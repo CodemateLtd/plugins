@@ -55,7 +55,7 @@ final class GoogleMapController
         MethodChannel.MethodCallHandler,
         OnMapReadyCallback,
         GoogleMapListener,
-        ClusterMarkerListener,
+        ClusterItemListener,
         PlatformView {
 
   private static final String TAG = "GoogleMapController";
@@ -639,13 +639,13 @@ final class GoogleMapController
     markerCollection.setOnMarkerDragListener(listener);
   }
 
-  private void setClusterListener(@Nullable ClusterMarkerListener listener) {
+  private void setClusterListener(@Nullable ClusterItemListener listener) {
     if (googleMap == null) {
       Log.v(TAG, "Controller was disposed before GoogleMap was ready.");
       return;
     }
 
-    clusterManagersController.setClusterMarkerListener(listener);
+    clusterManagersController.setClusterItemListener(listener);
   }
 
   // @Override
@@ -971,18 +971,12 @@ final class GoogleMapController
   }
 
   @Override
-  public void onClusterMarker(MarkerBuilder markerBuilder, Marker marker) {
-    markersController.onClusterMarker(markerBuilder, marker);
+  public void onClusterItemMarker(MarkerBuilder markerBuilder, Marker marker) {
+    markersController.onClusterItemMarker(markerBuilder, marker);
   }
 
   @Override
   public boolean onClusterItemClick(MarkerBuilder item) {
     return markersController.onMarkerTap(item.markerId());
   }
-
-  @Override
-  public void onClusterItemInfoWindowClick(MarkerBuilder item) {}
-
-  @Override
-  public void onClusterItemInfoWindowLongClick(MarkerBuilder item) {}
 }

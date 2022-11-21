@@ -1169,8 +1169,9 @@ void main() {
     final Set<ClusterManager> clusterManagers = <ClusterManager>{};
 
     for (int i = 0; i < clusterManagersAmount; i++) {
-      const ClusterManagerId clusterManagerId = ClusterManagerId('cluster');
-      const ClusterManager clusterManager =
+      final ClusterManagerId clusterManagerId =
+          ClusterManagerId('cluster_manager_$i');
+      final ClusterManager clusterManager =
           ClusterManager(clusterManagerId: clusterManagerId);
       clusterManagers.add(clusterManager);
     }

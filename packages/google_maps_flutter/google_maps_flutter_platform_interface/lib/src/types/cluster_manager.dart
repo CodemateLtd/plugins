@@ -14,16 +14,11 @@ class ClusterManagerId extends MapsObjectId<ClusterManager> {
   const ClusterManagerId(String value) : super(value);
 }
 
-/// TBD
+/// [ClusterManager] manages marker clustering for set of [Marker]s that have
+/// the same [ClusterManagerId] set.
 @immutable
 class ClusterManager implements MapsObject<ClusterManager> {
-  /// Creates a set of cluster configuration options.
-  ///
-  /// Default cluster options.
-  ///
-  /// Specifies a cluster that
-  /// * TBD
-  /// * reports [onTap] events
+  /// Creates an immutable object for managing clustering for set of markers.
   const ClusterManager({
     required this.clusterManagerId,
     this.onClusterTap,
@@ -35,7 +30,7 @@ class ClusterManager implements MapsObject<ClusterManager> {
   @override
   ClusterManagerId get mapsId => clusterManagerId;
 
-  /// Callbacks to receive tap events for cluster icons placed on this map.
+  /// Callbacks to receive tap events for cluster markers placed on this map.
   final ArgumentCallback<Cluster>? onClusterTap;
 
   /// Creates a new [ClusterManager] object whose values are the same as this instance,

@@ -177,7 +177,7 @@ class MarkersController {
 
   // Called each time clusterManager adds new visible marker to the map.
   // Creates markerController for marker for realtime marker updates.
-  public void onClusterMarker(MarkerBuilder markerBuilder, Marker marker) {
+  public void onClusterItemMarker(MarkerBuilder markerBuilder, Marker marker) {
     String markerId = markerBuilder.markerId();
     if (markerIdToMarkerBuilder.get(markerId) == markerBuilder) {
       createControllerForMarker(markerBuilder.markerId(), marker, markerBuilder.consumeTapEvents());
