@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:flutter/services.dart';
-import '../google_maps_places_platform_interface.dart';
+import '../../google_maps_places_platform_interface.dart';
 
 const MethodChannel _channel =
     MethodChannel('plugins.flutter.io/google_maps_places');

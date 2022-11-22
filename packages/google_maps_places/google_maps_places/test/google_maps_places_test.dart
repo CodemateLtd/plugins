@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_maps_places/google_maps_places.dart';
 import 'package:google_maps_places_platform_interface/google_maps_places_platform_interface.dart';
-import 'package:google_maps_places_platform_interface/method_channel/method_channel_google_maps_places.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('$GoogleMapsPlacesPlatform', () {
-    test('$GoogleMapsPlacesMethodChannel() is the default instance', () {
+  group('$GoogleMapsPlaces', () {
+    test('$GoogleMapsPlaces() is the default instance', () {
       expect(GoogleMapsPlacesPlatform.instance,
           isInstanceOf<GoogleMapsPlacesMethodChannel>());
     });
