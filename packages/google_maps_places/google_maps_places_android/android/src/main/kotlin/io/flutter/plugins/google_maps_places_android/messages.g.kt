@@ -231,50 +231,6 @@ data class LatLngBoundsAndroid (
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class FindAutocompletePredictionsRequestAndroid (
-  val query: String,
-  val locationBias: LatLngBoundsAndroid? = null,
-  val locationRestriction: LatLngBoundsAndroid? = null,
-  val origin: LatLngAndroid? = null,
-  val countries: List<String?>? = null,
-  val typeFilter: List<Long?>? = null,
-  val refreshToken: Boolean? = null
-
-) {
-  companion object {
-    @Suppress("UNCHECKED_CAST")
-    fun fromMap(map: Map<String, Any?>): FindAutocompletePredictionsRequestAndroid {
-      val query = map["query"] as String
-      val locationBias: LatLngBoundsAndroid? = (map["locationBias"] as? Map<String, Any?>)?.let {
-        LatLngBoundsAndroid.fromMap(it)
-      }
-      val locationRestriction: LatLngBoundsAndroid? = (map["locationRestriction"] as? Map<String, Any?>)?.let {
-        LatLngBoundsAndroid.fromMap(it)
-      }
-      val origin: LatLngAndroid? = (map["origin"] as? Map<String, Any?>)?.let {
-        LatLngAndroid.fromMap(it)
-      }
-      val countries = map["countries"] as? List<String?>
-      val typeFilter = map["typeFilter"] as? List<Long?>
-      val refreshToken = map["refreshToken"] as? Boolean
-
-      return FindAutocompletePredictionsRequestAndroid(query, locationBias, locationRestriction, origin, countries, typeFilter, refreshToken)
-    }
-  }
-  fun toMap(): Map<String, Any?> {
-    val map = mutableMapOf<String, Any?>()
-    map["query"] = query
-    locationBias?.let { map["locationBias"] = it.toMap() }
-    locationRestriction?.let { map["locationRestriction"] = it.toMap() }
-    origin?.let { map["origin"] = it.toMap() }
-    countries?.let { map["countries"] = it }
-    typeFilter?.let { map["typeFilter"] = it }
-    refreshToken?.let { map["refreshToken"] = it }
-    return map
-  }
-}
-
-/** Generated class from Pigeon that represents data sent in messages. */
 data class AutocompletePredictionAndroid (
   val distanceMeters: Long? = null,
   val fullText: String,
@@ -309,26 +265,6 @@ data class AutocompletePredictionAndroid (
   }
 }
 
-/** Generated class from Pigeon that represents data sent in messages. */
-data class FindAutocompletePredictionsResponseAndroid (
-  val results: List<AutocompletePredictionAndroid?>
-
-) {
-  companion object {
-    @Suppress("UNCHECKED_CAST")
-    fun fromMap(map: Map<String, Any?>): FindAutocompletePredictionsResponseAndroid {
-      val results = map["results"] as List<AutocompletePredictionAndroid?>
-
-      return FindAutocompletePredictionsResponseAndroid(results)
-    }
-  }
-  fun toMap(): Map<String, Any?> {
-    val map = mutableMapOf<String, Any?>()
-    map["results"] = results
-    return map
-  }
-}
-
 @Suppress("UNCHECKED_CAST")
 private object GoogleMapsPlacesApiAndroidCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
@@ -340,20 +276,10 @@ private object GoogleMapsPlacesApiAndroidCodec : StandardMessageCodec() {
       }
       129.toByte() -> {
         return (readValue(buffer) as? Map<String, Any?>)?.let {
-          FindAutocompletePredictionsRequestAndroid.fromMap(it)
-        }
-      }
-      130.toByte() -> {
-        return (readValue(buffer) as? Map<String, Any?>)?.let {
-          FindAutocompletePredictionsResponseAndroid.fromMap(it)
-        }
-      }
-      131.toByte() -> {
-        return (readValue(buffer) as? Map<String, Any?>)?.let {
           LatLngAndroid.fromMap(it)
         }
       }
-      132.toByte() -> {
+      130.toByte() -> {
         return (readValue(buffer) as? Map<String, Any?>)?.let {
           LatLngBoundsAndroid.fromMap(it)
         }
@@ -367,20 +293,12 @@ private object GoogleMapsPlacesApiAndroidCodec : StandardMessageCodec() {
         stream.write(128)
         writeValue(stream, value.toMap())
       }
-      is FindAutocompletePredictionsRequestAndroid -> {
+      is LatLngAndroid -> {
         stream.write(129)
         writeValue(stream, value.toMap())
       }
-      is FindAutocompletePredictionsResponseAndroid -> {
-        stream.write(130)
-        writeValue(stream, value.toMap())
-      }
-      is LatLngAndroid -> {
-        stream.write(131)
-        writeValue(stream, value.toMap())
-      }
       is LatLngBoundsAndroid -> {
-        stream.write(132)
+        stream.write(130)
         writeValue(stream, value.toMap())
       }
       else -> super.writeValue(stream, value)
@@ -390,7 +308,7 @@ private object GoogleMapsPlacesApiAndroidCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface GoogleMapsPlacesApiAndroid {
-  fun findAutocompletePredictionsAndroid(request: FindAutocompletePredictionsRequestAndroid, callback: (FindAutocompletePredictionsResponseAndroid) -> Unit)
+  fun findAutocompletePredictionsAndroid(query: String, locationBias: LatLngBoundsAndroid?, locationRestriction: LatLngBoundsAndroid?, origin: LatLngAndroid?, countries: List<String?>?, typeFilter: List<Long?>?, refreshToken: Boolean?, callback: (List<AutocompletePredictionAndroid?>) -> Unit)
 
   companion object {
     /** The codec used by GoogleMapsPlacesApiAndroid. */
@@ -407,8 +325,14 @@ interface GoogleMapsPlacesApiAndroid {
             val wrapped = hashMapOf<String, Any?>()
             try {
               val args = message as List<Any?>
-              val requestArg = args[0] as FindAutocompletePredictionsRequestAndroid
-              api.findAutocompletePredictionsAndroid(requestArg) {
+              val queryArg = args[0] as String
+              val locationBiasArg = args[1] as? LatLngBoundsAndroid
+              val locationRestrictionArg = args[2] as? LatLngBoundsAndroid
+              val originArg = args[3] as? LatLngAndroid
+              val countriesArg = args[4] as? List<String?>
+              val typeFilterArg = args[5] as? List<Long?>
+              val refreshTokenArg = args[6] as? Boolean
+              api.findAutocompletePredictionsAndroid(queryArg, locationBiasArg, locationRestrictionArg, originArg, countriesArg, typeFilterArg, refreshTokenArg) {
                 reply.reply(wrapResult(it))
               }
             } catch (exception: Error) {

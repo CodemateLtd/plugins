@@ -216,57 +216,6 @@ class LatLngBoundsIOS {
   }
 }
 
-class FindAutocompletePredictionsRequestIOS {
-  FindAutocompletePredictionsRequestIOS({
-    required this.query,
-    this.locationBias,
-    this.locationRestriction,
-    this.origin,
-    this.countries,
-    this.typeFilter,
-    this.refreshToken,
-  });
-
-  String query;
-  LatLngBoundsIOS? locationBias;
-  LatLngBoundsIOS? locationRestriction;
-  LatLngIOS? origin;
-  List<String?>? countries;
-  List<int?>? typeFilter;
-  bool? refreshToken;
-
-  Object encode() {
-    final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
-    pigeonMap['query'] = query;
-    pigeonMap['locationBias'] = locationBias?.encode();
-    pigeonMap['locationRestriction'] = locationRestriction?.encode();
-    pigeonMap['origin'] = origin?.encode();
-    pigeonMap['countries'] = countries;
-    pigeonMap['typeFilter'] = typeFilter;
-    pigeonMap['refreshToken'] = refreshToken;
-    return pigeonMap;
-  }
-
-  static FindAutocompletePredictionsRequestIOS decode(Object message) {
-    final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
-    return FindAutocompletePredictionsRequestIOS(
-      query: pigeonMap['query']! as String,
-      locationBias: pigeonMap['locationBias'] != null
-          ? LatLngBoundsIOS.decode(pigeonMap['locationBias']!)
-          : null,
-      locationRestriction: pigeonMap['locationRestriction'] != null
-          ? LatLngBoundsIOS.decode(pigeonMap['locationRestriction']!)
-          : null,
-      origin: pigeonMap['origin'] != null
-          ? LatLngIOS.decode(pigeonMap['origin']!)
-          : null,
-      countries: (pigeonMap['countries'] as List<Object?>?)?.cast<String?>(),
-      typeFilter: (pigeonMap['typeFilter'] as List<Object?>?)?.cast<int?>(),
-      refreshToken: pigeonMap['refreshToken'] as bool?,
-    );
-  }
-}
-
 class AutocompletePredictionIOS {
   AutocompletePredictionIOS({
     this.distanceMeters,
@@ -308,27 +257,6 @@ class AutocompletePredictionIOS {
   }
 }
 
-class FindAutocompletePredictionsResponseIOS {
-  FindAutocompletePredictionsResponseIOS({
-    required this.results,
-  });
-
-  List<AutocompletePredictionIOS?> results;
-
-  Object encode() {
-    final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
-    pigeonMap['results'] = results;
-    return pigeonMap;
-  }
-
-  static FindAutocompletePredictionsResponseIOS decode(Object message) {
-    final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
-    return FindAutocompletePredictionsResponseIOS(
-      results: (pigeonMap['results'] as List<Object?>?)!.cast<AutocompletePredictionIOS?>(),
-    );
-  }
-}
-
 class _GoogleMapsPlacesApiIOSCodec extends StandardMessageCodec{
   const _GoogleMapsPlacesApiIOSCodec();
   @override
@@ -337,20 +265,12 @@ class _GoogleMapsPlacesApiIOSCodec extends StandardMessageCodec{
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
     } else 
-    if (value is FindAutocompletePredictionsRequestIOS) {
+    if (value is LatLngBoundsIOS) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
     } else 
-    if (value is FindAutocompletePredictionsResponseIOS) {
-      buffer.putUint8(130);
-      writeValue(buffer, value.encode());
-    } else 
-    if (value is LatLngBoundsIOS) {
-      buffer.putUint8(131);
-      writeValue(buffer, value.encode());
-    } else 
     if (value is LatLngIOS) {
-      buffer.putUint8(132);
+      buffer.putUint8(130);
       writeValue(buffer, value.encode());
     } else 
 {
@@ -364,15 +284,9 @@ class _GoogleMapsPlacesApiIOSCodec extends StandardMessageCodec{
         return AutocompletePredictionIOS.decode(readValue(buffer)!);
       
       case 129:       
-        return FindAutocompletePredictionsRequestIOS.decode(readValue(buffer)!);
-      
-      case 130:       
-        return FindAutocompletePredictionsResponseIOS.decode(readValue(buffer)!);
-      
-      case 131:       
         return LatLngBoundsIOS.decode(readValue(buffer)!);
       
-      case 132:       
+      case 130:       
         return LatLngIOS.decode(readValue(buffer)!);
       
       default:      
@@ -391,11 +305,11 @@ class GoogleMapsPlacesApiIOS {
 
   static const MessageCodec<Object?> codec = _GoogleMapsPlacesApiIOSCodec();
 
-  Future<FindAutocompletePredictionsResponseIOS?> findAutocompletePredictionsIOS(FindAutocompletePredictionsRequestIOS arg_request) async {
+  Future<List<AutocompletePredictionIOS?>?> findAutocompletePredictionsIOS(String arg_query, LatLngBoundsIOS? arg_locationBias, LatLngBoundsIOS? arg_locationRestriction, LatLngIOS? arg_origin, List<String?>? arg_countries, List<int?>? arg_typeFilter, bool? arg_refreshToken) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.GoogleMapsPlacesApiIOS.findAutocompletePredictionsIOS', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object?>[arg_request]) as Map<Object?, Object?>?;
+        await channel.send(<Object?>[arg_query, arg_locationBias, arg_locationRestriction, arg_origin, arg_countries, arg_typeFilter, arg_refreshToken]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -409,7 +323,7 @@ class GoogleMapsPlacesApiIOS {
         details: error['details'],
       );
     } else {
-      return (replyMap['result'] as FindAutocompletePredictionsResponseIOS?);
+      return (replyMap['result'] as List<Object?>?)?.cast<AutocompletePredictionIOS?>();
     }
   }
 }

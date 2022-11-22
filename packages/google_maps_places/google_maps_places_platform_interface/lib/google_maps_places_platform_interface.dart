@@ -38,8 +38,15 @@ abstract class GoogleMapsPlacesPlatform extends PlatformInterface {
   }
 
   /// Fetches autocomplete predictions based on a query.
-  Future<FindAutocompletePredictionsResponse> findAutocompletePredictions(
-    FindAutocompletePredictionsRequest request) async {
+  Future<List<AutocompletePrediction>> findAutocompletePredictions({
+    required String query,
+    LatLngBounds? locationBias,
+    LatLngBounds? locationRestriction,
+    LatLng? origin,
+    List<String?>? countries,
+    List<int?>? typeFilter,
+    bool? refreshToken,
+  }) async {
     throw UnimplementedError(
         'findAutocompletePredictions() has not been implemented.');
   }

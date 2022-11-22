@@ -14,7 +14,6 @@ import 'package:pigeon/pigeon.dart';
   dartTestOut: 'test/messages_test.g.dart',
   copyrightHeader: 'pigeons/copyright.txt',
 ))
-
 enum TypeFilterAndroid {
   address,
   cities,
@@ -177,27 +176,14 @@ class LatLngBoundsAndroid {
   LatLngAndroid? northeast;
 }
 
-class FindAutocompletePredictionsRequestAndroid {
-  FindAutocompletePredictionsRequestAndroid({
-    this.query = "",
-  });
-  String query;
-  LatLngBoundsAndroid? locationBias;
-  LatLngBoundsAndroid? locationRestriction;
-  LatLngAndroid? origin;
-  List<String?>? countries;
-  List<int?>? typeFilter;
-  bool? refreshToken;
-}
-
 class AutocompletePredictionAndroid {
   AutocompletePredictionAndroid({
     this.distanceMeters,
-    this.fullText = "",
-    this.placeId = "",
+    this.fullText = '',
+    this.placeId = '',
     this.placeTypes = const <int?>[],
-    this.primaryText = "",
-    this.secondaryText = "",
+    this.primaryText = '',
+    this.secondaryText = '',
   });
   int? distanceMeters;
   String fullText;
@@ -207,16 +193,16 @@ class AutocompletePredictionAndroid {
   String secondaryText;
 }
 
-class FindAutocompletePredictionsResponseAndroid {
-  FindAutocompletePredictionsResponseAndroid({
-    this.results = const <AutocompletePredictionAndroid>[],
-  });
-  List<AutocompletePredictionAndroid?> results;
-}
-
 @HostApi(dartHostTestHandler: 'TestGoogleMapsPlacesApi')
 abstract class GoogleMapsPlacesApiAndroid {
   @async
-  FindAutocompletePredictionsResponseAndroid findAutocompletePredictionsAndroid(
-      FindAutocompletePredictionsRequestAndroid request);
+  List<AutocompletePredictionAndroid?> findAutocompletePredictionsAndroid(
+    String query,
+    LatLngBoundsAndroid? locationBias,
+    LatLngBoundsAndroid? locationRestriction,
+    LatLngAndroid? origin,
+    List<String?>? countries,
+    List<int?>? typeFilter,
+    bool? refreshToken,
+  );
 }

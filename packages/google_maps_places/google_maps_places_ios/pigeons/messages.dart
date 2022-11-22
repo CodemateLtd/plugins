@@ -6,13 +6,11 @@ import 'package:pigeon/pigeon.dart';
 
 @ConfigurePigeon(PigeonOptions(
   input: 'pigeons/messages.dart',
-  swiftOut:
-      'ios/Classes/messages.g.swift',
+  swiftOut: 'ios/Classes/messages.g.swift',
   dartOut: 'lib/messages.g.dart',
   dartTestOut: 'test/messages_test.g.dart',
   copyrightHeader: 'pigeons/copyright.txt',
 ))
-
 enum TypeFilterIOS {
   address,
   cities,
@@ -175,27 +173,14 @@ class LatLngBoundsIOS {
   LatLngIOS? northeast;
 }
 
-class FindAutocompletePredictionsRequestIOS {
-  FindAutocompletePredictionsRequestIOS({
-    this.query = "",
-  });
-  String query;
-  LatLngBoundsIOS? locationBias;
-  LatLngBoundsIOS? locationRestriction;
-  LatLngIOS? origin;
-  List<String?>? countries;
-  List<int?>? typeFilter;
-  bool? refreshToken;
-}
-
 class AutocompletePredictionIOS {
   AutocompletePredictionIOS({
     this.distanceMeters,
-    this.fullText = "",
-    this.placeId = "",
+    this.fullText = '',
+    this.placeId = '',
     this.placeTypes = const <int?>[],
-    this.primaryText = "",
-    this.secondaryText = "",
+    this.primaryText = '',
+    this.secondaryText = '',
   });
   int? distanceMeters;
   String fullText;
@@ -205,16 +190,16 @@ class AutocompletePredictionIOS {
   String secondaryText;
 }
 
-class FindAutocompletePredictionsResponseIOS {
-  FindAutocompletePredictionsResponseIOS({
-    this.results = const <AutocompletePredictionIOS>[],
-  });
-  List<AutocompletePredictionIOS?> results;
-}
-
 @HostApi(dartHostTestHandler: 'TestGoogleMapsPlacesApi')
 abstract class GoogleMapsPlacesApiIOS {
   @async
-  FindAutocompletePredictionsResponseIOS? findAutocompletePredictionsIOS(
-      FindAutocompletePredictionsRequestIOS request);
+  List<AutocompletePredictionIOS?>? findAutocompletePredictionsIOS(
+    String query,
+    LatLngBoundsIOS? locationBias,
+    LatLngBoundsIOS? locationRestriction,
+    LatLngIOS? origin,
+    List<String?>? countries,
+    List<int?>? typeFilter,
+    bool? refreshToken,
+  );
 }

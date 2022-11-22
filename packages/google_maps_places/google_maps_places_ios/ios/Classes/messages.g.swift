@@ -219,57 +219,6 @@ struct LatLngBoundsIOS {
 }
 
 ///Generated class from Pigeon that represents data sent in messages.
-struct FindAutocompletePredictionsRequestIOS {
-  var query: String
-  var locationBias: LatLngBoundsIOS? = nil
-  var locationRestriction: LatLngBoundsIOS? = nil
-  var origin: LatLngIOS? = nil
-  var countries: [String?]? = nil
-  var typeFilter: [Int32?]? = nil
-  var refreshToken: Bool? = nil
-
-  static func fromMap(_ map: [String: Any?]) -> FindAutocompletePredictionsRequestIOS? {
-    let query = map["query"] as! String
-    var locationBias: LatLngBoundsIOS? = nil
-    if let locationBiasMap = map["locationBias"] as? [String: Any?] {
-      locationBias = LatLngBoundsIOS.fromMap(locationBiasMap)
-    }
-    var locationRestriction: LatLngBoundsIOS? = nil
-    if let locationRestrictionMap = map["locationRestriction"] as? [String: Any?] {
-      locationRestriction = LatLngBoundsIOS.fromMap(locationRestrictionMap)
-    }
-    var origin: LatLngIOS? = nil
-    if let originMap = map["origin"] as? [String: Any?] {
-      origin = LatLngIOS.fromMap(originMap)
-    }
-    let countries = map["countries"] as? [String?] 
-    let typeFilter = map["typeFilter"] as? [Int32?] 
-    let refreshToken = map["refreshToken"] as? Bool 
-
-    return FindAutocompletePredictionsRequestIOS(
-      query: query,
-      locationBias: locationBias,
-      locationRestriction: locationRestriction,
-      origin: origin,
-      countries: countries,
-      typeFilter: typeFilter,
-      refreshToken: refreshToken
-    )
-  }
-  func toMap() -> [String: Any?] {
-    return [
-      "query": query,
-      "locationBias": locationBias?.toMap(),
-      "locationRestriction": locationRestriction?.toMap(),
-      "origin": origin?.toMap(),
-      "countries": countries,
-      "typeFilter": typeFilter,
-      "refreshToken": refreshToken
-    ]
-  }
-}
-
-///Generated class from Pigeon that represents data sent in messages.
 struct AutocompletePredictionIOS {
   var distanceMeters: Int32? = nil
   var fullText: String
@@ -307,36 +256,14 @@ struct AutocompletePredictionIOS {
   }
 }
 
-///Generated class from Pigeon that represents data sent in messages.
-struct FindAutocompletePredictionsResponseIOS {
-  var results: [AutocompletePredictionIOS?]
-
-  static func fromMap(_ map: [String: Any?]) -> FindAutocompletePredictionsResponseIOS? {
-    let results = map["results"] as! [AutocompletePredictionIOS?]
-
-    return FindAutocompletePredictionsResponseIOS(
-      results: results
-    )
-  }
-  func toMap() -> [String: Any?] {
-    return [
-      "results": results
-    ]
-  }
-}
-
 private class GoogleMapsPlacesApiIOSCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
       case 128:
         return AutocompletePredictionIOS.fromMap(self.readValue() as! [String: Any])      
       case 129:
-        return FindAutocompletePredictionsRequestIOS.fromMap(self.readValue() as! [String: Any])      
-      case 130:
-        return FindAutocompletePredictionsResponseIOS.fromMap(self.readValue() as! [String: Any])      
-      case 131:
         return LatLngBoundsIOS.fromMap(self.readValue() as! [String: Any])      
-      case 132:
+      case 130:
         return LatLngIOS.fromMap(self.readValue() as! [String: Any])      
       default:
         return super.readValue(ofType: type)
@@ -349,17 +276,11 @@ private class GoogleMapsPlacesApiIOSCodecWriter: FlutterStandardWriter {
     if let value = value as? AutocompletePredictionIOS {
       super.writeByte(128)
       super.writeValue(value.toMap())
-    } else if let value = value as? FindAutocompletePredictionsRequestIOS {
+    } else if let value = value as? LatLngBoundsIOS {
       super.writeByte(129)
       super.writeValue(value.toMap())
-    } else if let value = value as? FindAutocompletePredictionsResponseIOS {
-      super.writeByte(130)
-      super.writeValue(value.toMap())
-    } else if let value = value as? LatLngBoundsIOS {
-      super.writeByte(131)
-      super.writeValue(value.toMap())
     } else if let value = value as? LatLngIOS {
-      super.writeByte(132)
+      super.writeByte(130)
       super.writeValue(value.toMap())
     } else {
       super.writeValue(value)
@@ -383,7 +304,7 @@ class GoogleMapsPlacesApiIOSCodec: FlutterStandardMessageCodec {
 
 ///Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol GoogleMapsPlacesApiIOS {
-  func findAutocompletePredictionsIOS(request: FindAutocompletePredictionsRequestIOS, completion: @escaping (FindAutocompletePredictionsResponseIOS?) -> Void)
+  func findAutocompletePredictionsIOS(query: String, locationBias: LatLngBoundsIOS?, locationRestriction: LatLngBoundsIOS?, origin: LatLngIOS?, countries: [String?]?, typeFilter: [Int32?]?, refreshToken: Bool?, completion: @escaping ([AutocompletePredictionIOS?]?) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -396,8 +317,14 @@ class GoogleMapsPlacesApiIOSSetup {
     if let api = api {
       findAutocompletePredictionsIOSChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
-        let requestArg = args[0] as! FindAutocompletePredictionsRequestIOS
-        api.findAutocompletePredictionsIOS(request: requestArg) { result in
+        let queryArg = args[0] as! String
+        let locationBiasArg = args[1] as? LatLngBoundsIOS
+        let locationRestrictionArg = args[2] as? LatLngBoundsIOS
+        let originArg = args[3] as? LatLngIOS
+        let countriesArg = args[4] as? [String?]
+        let typeFilterArg = args[5] as? [Int32?]
+        let refreshTokenArg = args[6] as? Bool
+        api.findAutocompletePredictionsIOS(query: queryArg, locationBias: locationBiasArg, locationRestriction: locationRestrictionArg, origin: originArg, countries: countriesArg, typeFilter: typeFilterArg, refreshToken: refreshTokenArg) { result in
           reply(wrapResult(result))
         }
       }

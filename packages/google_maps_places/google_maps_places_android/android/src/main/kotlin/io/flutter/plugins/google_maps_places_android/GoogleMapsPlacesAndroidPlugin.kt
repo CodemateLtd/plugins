@@ -45,15 +45,21 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
 
 
   override fun findAutocompletePredictionsAndroid(
-    request: FindAutocompletePredictionsRequestAndroid,
-    callback: (FindAutocompletePredictionsResponseAndroid) -> Unit
+    query: String,
+    locationBias: LatLngBoundsAndroid?,
+    locationRestriction: LatLngBoundsAndroid?,
+    origin: LatLngAndroid?,
+    countries: List<String?>?,
+    typeFilter: List<Long?>?,
+    refreshToken: Boolean?,
+    callback: (List<AutocompletePredictionAndroid?>) -> Unit
   ) {
     initialize(Locale.ENGLISH)
-    val sessionToken = getSessionToken(request.refreshToken == true)
+    val sessionToken = getSessionToken(refreshToken == true)
     val placesRequest = FindAutocompletePredictionsRequest.builder()
-      .setQuery(request.query)
+      .setQuery(query)
       //.setLocationBias(request.locationBias)
-      .setCountries(request.countries)
+      .setCountries(countries)
       //.setTypeFilter(request.typeFilter)
       .setSessionToken(sessionToken)
       //.setOrigin(request.origin)
@@ -95,8 +101,8 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
     return localToken
   }
 
-  private fun convertResponse(result: FindAutocompletePredictionsResponse): FindAutocompletePredictionsResponseAndroid {
-    return FindAutocompletePredictionsResponseAndroid(result.autocompletePredictions.map { item -> convertPrediction(item) })
+  private fun convertResponse(result: FindAutocompletePredictionsResponse): List<AutocompletePredictionAndroid?> {
+    return result.autocompletePredictions.map { item -> convertPrediction(item) }
   }
 
   private fun convertPrediction(prediction: AutocompletePrediction): AutocompletePredictionAndroid {
@@ -113,7 +119,6 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
   private fun convertPlaceTypes(types: List<Place.Type>): List<Long?>{
     return listOf()
   }
-
 
   /* override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
     when (call.method) {

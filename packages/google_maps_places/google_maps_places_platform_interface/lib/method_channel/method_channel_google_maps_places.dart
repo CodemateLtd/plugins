@@ -4,7 +4,6 @@
 
 import 'package:flutter/services.dart';
 import '../google_maps_places_platform_interface.dart';
-import '../types/types.dart';
 
 const MethodChannel _channel =
     MethodChannel('plugins.flutter.io/google_maps_places');
@@ -19,25 +18,37 @@ const MethodChannel _channel =
 class GoogleMapsPlacesMethodChannel extends GoogleMapsPlacesPlatform {
   ///
   @override
-  Future<FindAutocompletePredictionsResponse> findAutocompletePredictions(
-      FindAutocompletePredictionsRequest request) async {
-    if (request.query.isEmpty) {
+  Future<List<AutocompletePrediction>> findAutocompletePredictions({
+    required String query,
+    LatLngBounds? locationBias,
+    LatLngBounds? locationRestriction,
+    LatLng? origin,
+    List<String?>? countries,
+    List<int?>? typeFilter,
+    bool? refreshToken,
+  }) async {
+    if (query.isEmpty) {
       throw ArgumentError('Argument query can not be empty');
     }
-    return await _channel.invokeMethod<Map<Object?, Object?>>(
+    final List<Map<Object?, Object?>>? result =
+        await _channel.invokeListMethod<Map<Object?, Object?>>(
       'findAutocompletePredictions',
-      {
-        request.encode(),
+      <String, Object?>{
+        'query': query,
+        'countries': countries,
+        'typeFilter': typeFilter,
+        'origin': origin?.toJson(),
+        'locationBias': locationBias?.toJson(),
+        'locationRestriction': locationRestriction?.toJson(),
+        'refreshToken': refreshToken
       },
-    ).then(_responseFromResult);
-  }
-
-  FindAutocompletePredictionsResponse _responseFromResult(
-    Map<Object?, Object?>? value,
-  ) {
-    if (value == null) {
-      throw ArgumentError('Argument query can not be empty');
-    }
-    return FindAutocompletePredictionsResponse.decode(value);
+    );
+    final List<AutocompletePrediction> items = result
+            ?.map((Map<Object?, Object?> item) => item.cast<String, dynamic>())
+            .map((Map<String, dynamic> map) =>
+                AutocompletePrediction.decode(map))
+            .toList(growable: false) ??
+        <AutocompletePrediction>[];
+    return items;
   }
 }

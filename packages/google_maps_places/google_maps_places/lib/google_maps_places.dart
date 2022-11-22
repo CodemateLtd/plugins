@@ -7,13 +7,7 @@
 import 'package:google_maps_places_platform_interface/google_maps_places_platform_interface.dart';
 
 export 'package:google_maps_places_platform_interface/google_maps_places_platform_interface.dart'
-    show
-        AutocompletePrediction,
-        FindAutocompletePredictionsResponse,
-        LatLng,
-        LatLngBounds,
-        TypeFilter,
-        PlaceType;
+    show AutocompletePrediction, LatLng, LatLngBounds, TypeFilter, PlaceType;
 
 /// Document this
 class GoogleMapsPlaces {
@@ -21,8 +15,7 @@ class GoogleMapsPlaces {
       GoogleMapsPlacesPlatform.instance;
 
   /// Comment
-  static Future<FindAutocompletePredictionsResponse>
-      findAutocompletePredictions({
+  static Future<List<AutocompletePrediction>> findAutocompletePredictions({
     required String query,
     LatLngBounds? locationBias,
     LatLngBounds? locationRestriction,
@@ -31,15 +24,13 @@ class GoogleMapsPlaces {
     List<int?>? typeFilter,
     bool? refreshToken,
   }) async {
-    final FindAutocompletePredictionsRequest request =
-        FindAutocompletePredictionsRequest(
-            query: query,
-            countries: countries,
-            origin: origin,
-            locationBias: locationBias,
-            locationRestriction: locationRestriction,
-            typeFilter: typeFilter,
-            refreshToken: refreshToken);
-    return await _instance.findAutocompletePredictions(request);
+    return await _instance.findAutocompletePredictions(
+        query: query,
+        countries: countries,
+        origin: origin,
+        locationBias: locationBias,
+        locationRestriction: locationRestriction,
+        typeFilter: typeFilter,
+        refreshToken: refreshToken);
   }
 }

@@ -35,15 +35,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   //
   String? _predictLastText;
   List<String> _countries = ['fi'];
   TypeFilter _placeTypeFilter = TypeFilter.address;
 
   final LatLngBounds _locationBias = LatLngBounds(
-    southwest: LatLng(latitude: 60.4518, longitude: 22.2666),
-    northeast: LatLng(latitude: 70.0821, longitude: 27.8718),
+    southwest: const LatLng(60.4518, 22.2666),
+    northeast: const LatLng(70.0821, 27.8718),
   );
 
   bool _predicting = false;
@@ -153,13 +152,15 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
     try {
-      final result = await GoogleMapsPlaces.findAutocompletePredictions(query: _predictLastText!,
-        countries: _countries,
-        origin: LatLng(latitude: 65.0121, longitude: 25.4651),
-        locationBias: _locationBias);
+      final List<AutocompletePrediction> result =
+          await GoogleMapsPlaces.findAutocompletePredictions(
+              query: _predictLastText!,
+              countries: _countries,
+              origin: const LatLng(65.0121, 25.4651),
+              locationBias: _locationBias);
 
       setState(() {
-        _predictions = result.results;
+        _predictions = result;
         _predicting = false;
       });
     } catch (err) {

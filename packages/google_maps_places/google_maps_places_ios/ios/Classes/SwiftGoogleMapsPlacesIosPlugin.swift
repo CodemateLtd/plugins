@@ -17,18 +17,18 @@ public class SwiftGoogleMapsPlacesIosPlugin: NSObject, FlutterPlugin, GoogleMaps
         GoogleMapsPlacesApiIOSSetup.setUp(binaryMessenger: messenger, api: api)
     }
     
-    func findAutocompletePredictionsIOS(request: FindAutocompletePredictionsRequestIOS, completion: @escaping (FindAutocompletePredictionsResponseIOS?) -> Void) {
-        let sessionToken = getSessionToken(force: request.refreshToken == true)
+    func findAutocompletePredictionsIOS(query: String, locationBias: LatLngBoundsIOS?, locationRestriction: LatLngBoundsIOS?, origin: LatLngIOS?, countries: [String?]?, typeFilter: [Int32?]?, refreshToken: Bool?, completion: @escaping ([AutocompletePredictionIOS?]?) -> Void) {
+        let sessionToken = getSessionToken(force: refreshToken == true)
         
         // Create a type filter.
         let filter = GMSAutocompleteFilter()
         //filter.type = makeTypeFilter(typeFilter: placeTypeFilter);
-        filter.countries = request.countries as? [String]
+        filter.countries = countries as? [String]
         //filter.origin = request.origin
         
         initialize()
         placesClient.findAutocompletePredictions(
-            fromQuery: request.query, filter: filter, sessionToken: sessionToken,
+            fromQuery: query, filter: filter, sessionToken: sessionToken,
             callback: { (results, error) in
                 if let error = error {
                     print("findPlacesAutoComplete error: \(error)")
@@ -61,13 +61,13 @@ public class SwiftGoogleMapsPlacesIosPlugin: NSObject, FlutterPlugin, GoogleMaps
         return localToken
     }
     
-    private func convertResults(_ results: [GMSAutocompletePrediction]?) -> FindAutocompletePredictionsResponseIOS {
+    private func convertResults(_ results: [GMSAutocompletePrediction]?) -> [AutocompletePredictionIOS?] {
         guard let results = results else {
-            return FindAutocompletePredictionsResponseIOS(results: [])
+            return []
         }
         var predictions = results.map { (prediction: GMSAutocompletePrediction) in
             return convertPrediction(prediction) }
-        return FindAutocompletePredictionsResponseIOS(results: predictions)
+        return predictions
     }
     
     private func convertPrediction(_ prediction: GMSAutocompletePrediction) -> AutocompletePredictionIOS? {

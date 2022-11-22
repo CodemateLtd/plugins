@@ -43,8 +43,8 @@ class _MyHomePageState extends State<MyHomePage> {
   TypeFilter _placeTypeFilter = TypeFilter.address;
 
   final LatLngBounds _locationBias = LatLngBounds(
-    southwest: LatLng(latitude: 60.4518, longitude: 22.2666),
-    northeast: LatLng(latitude: 70.0821, longitude: 27.8718),
+    southwest: const LatLng(60.4518, 22.2666),
+    northeast: const LatLng(70.0821, 27.8718),
   );
 
   bool _predicting = false;
@@ -153,16 +153,16 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!hasContent) {
       return;
     }
-    final request = FindAutocompletePredictionsRequest(
-        query: _predictLastText!,
-        countries: _countries,
-        origin: LatLng(latitude: 60.1699, longitude: 24.9384),
-        locationBias: _locationBias);
     try {
-      final result = await _places.findAutocompletePredictions(request);
+      final List<AutocompletePrediction> result =
+          await _places.findAutocompletePredictions(
+              query: _predictLastText!,
+              countries: _countries,
+              origin: const LatLng(65.0121, 25.4651),
+              locationBias: _locationBias);
 
       setState(() {
-        _predictions = result.results;
+        _predictions = result;
         _predicting = false;
       });
     } catch (err) {

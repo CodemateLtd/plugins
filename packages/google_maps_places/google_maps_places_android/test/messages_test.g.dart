@@ -21,20 +21,12 @@ class _TestGoogleMapsPlacesApiCodec extends StandardMessageCodec{
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
     } else 
-    if (value is FindAutocompletePredictionsRequestAndroid) {
+    if (value is LatLngAndroid) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
     } else 
-    if (value is FindAutocompletePredictionsResponseAndroid) {
-      buffer.putUint8(130);
-      writeValue(buffer, value.encode());
-    } else 
-    if (value is LatLngAndroid) {
-      buffer.putUint8(131);
-      writeValue(buffer, value.encode());
-    } else 
     if (value is LatLngBoundsAndroid) {
-      buffer.putUint8(132);
+      buffer.putUint8(130);
       writeValue(buffer, value.encode());
     } else 
 {
@@ -48,15 +40,9 @@ class _TestGoogleMapsPlacesApiCodec extends StandardMessageCodec{
         return AutocompletePredictionAndroid.decode(readValue(buffer)!);
       
       case 129:       
-        return FindAutocompletePredictionsRequestAndroid.decode(readValue(buffer)!);
-      
-      case 130:       
-        return FindAutocompletePredictionsResponseAndroid.decode(readValue(buffer)!);
-      
-      case 131:       
         return LatLngAndroid.decode(readValue(buffer)!);
       
-      case 132:       
+      case 130:       
         return LatLngBoundsAndroid.decode(readValue(buffer)!);
       
       default:      
@@ -68,7 +54,7 @@ class _TestGoogleMapsPlacesApiCodec extends StandardMessageCodec{
 abstract class TestGoogleMapsPlacesApi {
   static const MessageCodec<Object?> codec = _TestGoogleMapsPlacesApiCodec();
 
-  Future<FindAutocompletePredictionsResponseAndroid> findAutocompletePredictionsAndroid(FindAutocompletePredictionsRequestAndroid request);
+  Future<List<AutocompletePredictionAndroid?>> findAutocompletePredictionsAndroid(String query, LatLngBoundsAndroid? locationBias, LatLngBoundsAndroid? locationRestriction, LatLngAndroid? origin, List<String?>? countries, List<int?>? typeFilter, bool? refreshToken);
   static void setup(TestGoogleMapsPlacesApi? api, {BinaryMessenger? binaryMessenger}) {
     {
       final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
@@ -79,9 +65,15 @@ abstract class TestGoogleMapsPlacesApi {
         channel.setMockMessageHandler((Object? message) async {
           assert(message != null, 'Argument for dev.flutter.pigeon.GoogleMapsPlacesApiAndroid.findAutocompletePredictionsAndroid was null.');
           final List<Object?> args = (message as List<Object?>?)!;
-          final FindAutocompletePredictionsRequestAndroid? arg_request = (args[0] as FindAutocompletePredictionsRequestAndroid?);
-          assert(arg_request != null, 'Argument for dev.flutter.pigeon.GoogleMapsPlacesApiAndroid.findAutocompletePredictionsAndroid was null, expected non-null FindAutocompletePredictionsRequestAndroid.');
-          final FindAutocompletePredictionsResponseAndroid output = await api.findAutocompletePredictionsAndroid(arg_request!);
+          final String? arg_query = (args[0] as String?);
+          assert(arg_query != null, 'Argument for dev.flutter.pigeon.GoogleMapsPlacesApiAndroid.findAutocompletePredictionsAndroid was null, expected non-null String.');
+          final LatLngBoundsAndroid? arg_locationBias = (args[1] as LatLngBoundsAndroid?);
+          final LatLngBoundsAndroid? arg_locationRestriction = (args[2] as LatLngBoundsAndroid?);
+          final LatLngAndroid? arg_origin = (args[3] as LatLngAndroid?);
+          final List<String?>? arg_countries = (args[4] as List<Object?>?)?.cast<String?>();
+          final List<int?>? arg_typeFilter = (args[5] as List<Object?>?)?.cast<int?>();
+          final bool? arg_refreshToken = (args[6] as bool?);
+          final List<AutocompletePredictionAndroid?> output = await api.findAutocompletePredictionsAndroid(arg_query!, arg_locationBias, arg_locationRestriction, arg_origin, arg_countries, arg_typeFilter, arg_refreshToken);
           return <Object?, Object?>{'result': output};
         });
       }

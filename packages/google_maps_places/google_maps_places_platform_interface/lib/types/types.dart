@@ -4,8 +4,6 @@
 
 // All the public types exposed by this package.
 export 'autocomplete_prediction.dart';
-export 'find_autocomplete_predictions_request.dart';
-export 'find_autocomplete_predictions_response.dart';
 export 'lat_lng.dart';
 export 'lat_lng_bounds.dart';
 export 'place_type.dart';
