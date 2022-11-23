@@ -19,8 +19,8 @@ class GoogleMapsPlacesAndroid extends GoogleMapsPlacesPlatform {
     LatLngBounds? locationBias,
     LatLngBounds? locationRestriction,
     LatLng? origin,
-    List<String?>? countries,
-    List<int?>? typeFilter,
+    List<String>? countries,
+    List<TypeFilter>? typeFilter,
     bool? refreshToken,
   }) async {
     final List<AutocompletePredictionAndroid?> response =
@@ -30,7 +30,7 @@ class GoogleMapsPlacesAndroid extends GoogleMapsPlacesPlatform {
             convertLatLngBounds(locationBias),
             convertLatLng(origin),
             countries,
-            typeFilter,
+            convertTypeFilter(typeFilter),
             refreshToken);
     return convertReponse(response);
   }

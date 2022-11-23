@@ -30,6 +30,19 @@ List<AutocompletePrediction> convertReponse(
       .toList();
 }
 
+/// Converts list of [TypeFilter] to list of [int]
+List<int>? convertTypeFilter(List<TypeFilter>? filters) => filters
+    ?.map<int>((TypeFilter filter) => TypeFilterAndroid.values
+        .firstWhere((TypeFilterAndroid element) => element.name == filter.name)
+        .index)
+    .toList();
+
+/// Converts list of [int] to list of [PlaceType]
+List<PlaceType> convertPlaceTypes(List<int?> placeTypes) => placeTypes
+    .map<PlaceType>((int? placeType) => PlaceType.values
+        .firstWhere((PlaceType element) => element.name == PlaceTypeAndroid.values[placeType!].name))
+    .toList();
+
 /// Converts [AutocompletePredictionAndroid] to [AutocompletePrediction]
 AutocompletePrediction convertPrediction(
     AutocompletePredictionAndroid prediction) {
@@ -37,7 +50,7 @@ AutocompletePrediction convertPrediction(
       distanceMeters: prediction.distanceMeters,
       fullText: prediction.fullText,
       placeId: prediction.placeId,
-      placeTypes: prediction.placeTypes,
+      placeTypes: convertPlaceTypes(prediction.placeTypes),
       primaryText: prediction.primaryText,
       secondaryText: prediction.secondaryText);
 }

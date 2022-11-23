@@ -16,7 +16,6 @@ const MethodChannel _channel =
 /// clients that were relying on internal details of the method channel
 /// in the pre-federated plugin.
 class GoogleMapsPlacesMethodChannel extends GoogleMapsPlacesPlatform {
-  ///
   @override
   Future<List<AutocompletePrediction>> findAutocompletePredictions({
     required String query,
@@ -24,7 +23,7 @@ class GoogleMapsPlacesMethodChannel extends GoogleMapsPlacesPlatform {
     LatLngBounds? locationRestriction,
     LatLng? origin,
     List<String?>? countries,
-    List<int?>? typeFilter,
+    List<TypeFilter?>? typeFilter,
     bool? refreshToken,
   }) async {
     if (query.isEmpty) {
@@ -46,7 +45,7 @@ class GoogleMapsPlacesMethodChannel extends GoogleMapsPlacesPlatform {
     final List<AutocompletePrediction> items = result
             ?.map((Map<Object?, Object?> item) => item.cast<String, dynamic>())
             .map((Map<String, dynamic> map) =>
-                AutocompletePrediction.decode(map))
+                AutocompletePrediction.fromJson(map))
             .toList(growable: false) ??
         <AutocompletePrediction>[];
     return items;

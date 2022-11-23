@@ -7,11 +7,6 @@ library google_maps_places;
 import 'package:google_maps_places_platform_interface/google_maps_places_platform_interface.dart';
 
 export 'package:google_maps_places_platform_interface/google_maps_places_platform_interface.dart'
-    show
-        AutocompletePrediction,
-        LatLng,
-        LatLngBounds,
-        TypeFilter,
-        PlaceType;
+    show AutocompletePrediction, LatLng, LatLngBounds, TypeFilter, PlaceType;
 
 part 'src/google_maps_places.dart';
