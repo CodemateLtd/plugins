@@ -71,6 +71,7 @@ class MarkersController {
     final MarkerController markerController = markerIdToController.remove(markerId);
     final String clusterManagerId = markerBuilder.clusterManagerId();
     if (clusterManagerId != null) {
+      // Remove marker from clusterManager
       clusterManagersController.removeItem(markerBuilder);
     } else if (markerController != null && this.markerCollection != null) {
       // Remove marker from map and markerCollection
@@ -246,15 +247,15 @@ class MarkersController {
 
     // Cluster id on updated marker has changed.
     // Marker need to be removed and added again.
-    if (!clusterManagerId.equals(oldClusterManagerId)) {
+    if (!((clusterManagerId == oldClusterManagerId)
+        || (clusterManagerId != null && clusterManagerId.equals(oldClusterManagerId)))) {
       removeMarker(markerId);
-      // Update marker builder
-      Convert.interpretMarkerOptions(marker, markerBuilder);
-      addMarker(markerBuilder);
-    } else {
-      // Update marker builder
-      Convert.interpretMarkerOptions(marker, markerBuilder);
+      addMarker(marker);
+      return;
     }
+
+    // Update marker builder
+    Convert.interpretMarkerOptions(marker, markerBuilder);
 
     // Update existing marker on map
     MarkerController markerController = markerIdToController.get(markerId);

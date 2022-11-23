@@ -41,6 +41,7 @@ class MarkerBuilder implements MarkerOptionsSink, ClusterItem {
   /** Update existing markerOptions with builder values */
   MarkerOptions build(MarkerOptions markerOptions) {
     return markerOptions
+        .position(position)
         .alpha(alpha)
         .anchor(anchorU, anchorV)
         .draggable(draggable)
