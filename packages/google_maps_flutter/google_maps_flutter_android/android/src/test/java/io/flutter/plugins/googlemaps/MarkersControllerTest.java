@@ -10,6 +10,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
+import androidx.test.core.app.ApplicationProvider;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -23,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -48,7 +50,6 @@ public class MarkersControllerTest {
     final MarkerManager.Collection markerCollection = markerManager.newCollection();
     controller.setCollection(markerCollection);
     clusterManagersController.init(googleMap, markerManager);
-    controller.setGoogleMap(googleMap);
 
     final Marker marker = mock(Marker.class);
 
@@ -89,7 +90,6 @@ public class MarkersControllerTest {
     final MarkerManager.Collection markerCollection = markerManager.newCollection();
     controller.setCollection(markerCollection);
     clusterManagersController.init(googleMap, markerManager);
-    controller.setGoogleMap(googleMap);
 
     final Marker marker = mock(Marker.class);
 
@@ -130,7 +130,6 @@ public class MarkersControllerTest {
     final MarkerManager.Collection markerCollection = markerManager.newCollection();
     controller.setCollection(markerCollection);
     clusterManagersController.init(googleMap, markerManager);
-    controller.setGoogleMap(googleMap);
 
     final Marker marker = mock(Marker.class);
 
