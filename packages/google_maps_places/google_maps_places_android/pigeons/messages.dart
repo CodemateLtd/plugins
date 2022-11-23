@@ -20,7 +20,6 @@ enum TypeFilterAndroid {
   establishment,
   geocode,
   regions,
-  all,
 }
 
 enum PlaceTypeAndroid {

@@ -1,18 +1,23 @@
+// Copyright 2013 The Flutter Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 package io.flutter.plugins.google_maps_places_android
 
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.annotation.NonNull
 import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.AutocompletePrediction
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken
-import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
-import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse
 import com.google.android.libraries.places.api.net.PlacesClient
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
-import java.util.*
+import io.flutter.plugins.google_maps_places_android.Convert.convertCountries
+import io.flutter.plugins.google_maps_places_android.Convert.convertLatLng
+import io.flutter.plugins.google_maps_places_android.Convert.convertLatLngBounds
+import io.flutter.plugins.google_maps_places_android.Convert.convertResponse
+import io.flutter.plugins.google_maps_places_android.Convert.convertTypeFilters
 
 
 /** GoogleMapsPlacesAndroidPlugin */
@@ -29,6 +34,7 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
     try {
       GoogleMapsPlacesApiAndroid.setUp(messenger, this)
     } catch (ex: Exception) {
+      print("setup Exception: $ex")
     }
     if (context != null) {
       this.applicationContext = context
@@ -43,7 +49,8 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
     setup(binding.binaryMessenger, null);
   }
 
-
+  /// Find Autocomplete Predictions
+  /// ref: https://developers.google.com/maps/documentation/places/android-sdk/autocomplete#get_place_predictions
   override fun findAutocompletePredictionsAndroid(
     query: String,
     locationBias: LatLngBoundsAndroid?,
@@ -54,33 +61,30 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
     refreshToken: Boolean?,
     callback: (List<AutocompletePredictionAndroid?>) -> Unit
   ) {
-    initialize(Locale.ENGLISH)
-    val sessionToken = getSessionToken(refreshToken == true)
+    val sessionToken = initialize(refreshToken == true)
     val placesRequest = FindAutocompletePredictionsRequest.builder()
       .setQuery(query)
-      //.setLocationBias(request.locationBias)
-      .setCountries(countries)
-      //.setTypeFilter(request.typeFilter)
+      .setLocationBias(convertLatLngBounds(locationBias))
+      .setCountries(convertCountries(countries) ?: emptyList())
+      .setTypesFilter(convertTypeFilters(typeFilter) ?: emptyList())
       .setSessionToken(sessionToken)
-      //.setOrigin(request.origin)
+      .setOrigin(convertLatLng(origin))
       .build()
     client.findAutocompletePredictions(placesRequest).addOnCompleteListener { task ->
       if (task.isSuccessful) {
         lastSessionToken = placesRequest.sessionToken
-        print("findAutoCompletePredictions Result: ${task.result}")
+        print("findAutocompletePredictionsAndroid Result: ${task.result}")
         callback(convertResponse(task.result))
       } else {
         val exception = task.exception
-        print("findAutoCompletePredictions Exception: $exception")
-        throw Error("API_ERROR_AUTOCOMPLETE")
-          //"API_ERROR_AUTOCOMPLETE", exception?.message ?: "Unknown exception",
-          //mapOf("type" to (exception?.javaClass?.toString() ?: "null"))
-        //)
+        print("findAutocompletePredictionsAndroid Exception: $exception")
+        throw Error("API_ERROR_AUTOCOMPLETE" + (exception?.message ?: "Unknown exception"))
       }
     }
   }
 
-  private fun initialize(locale: Locale?) {
+  /// Initialize Places client
+  private fun initialize(refreshToken: Boolean): AutocompleteSessionToken  {
     val applicationInfo =
       applicationContext
         .packageManager
@@ -89,150 +93,17 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
     if (applicationInfo.metaData != null) {
       apiKey = applicationInfo.metaData.getString("com.google.android.geo.API_KEY").toString()
     }
-    Places.initialize(applicationContext, apiKey, locale)
+    Places.initialize(applicationContext, apiKey)
     client = Places.createClient(applicationContext)
+    return getSessionToken(refreshToken);
   }
 
-  private fun getSessionToken(force: Boolean): AutocompleteSessionToken {
-    val localToken = lastSessionToken
-    if (force || localToken == null) {
+  /// Fetch new session token if needed
+  private fun getSessionToken(refreshToken: Boolean): AutocompleteSessionToken {
+    val sessionToken = lastSessionToken
+    if (refreshToken || sessionToken == null) {
       return AutocompleteSessionToken.newInstance()
     }
-    return localToken
+    return sessionToken
   }
-
-  private fun convertResponse(result: FindAutocompletePredictionsResponse): List<AutocompletePredictionAndroid?> {
-    return result.autocompletePredictions.map { item -> convertPrediction(item) }
-  }
-
-  private fun convertPrediction(prediction: AutocompletePrediction): AutocompletePredictionAndroid {
-    return AutocompletePredictionAndroid(
-      prediction.distanceMeters?.toLong(),
-      prediction.getFullText(null).toString(),
-      prediction.placeId,
-      convertPlaceTypes(prediction.placeTypes),
-      prediction.getPrimaryText(null).toString(),
-      prediction.getSecondaryText(null).toString()
-    )
-  }
-
-  private fun convertPlaceTypes(types: List<Place.Type>): List<Long?>{
-    return listOf()
-  }
-
-  /* override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-    when (call.method) {
-      "findPlacesAutoComplete" -> {
-        val query = call.argument<String>("query")
-        val countries = call.argument<List<String>>("countries") ?: emptyList()
-        val placeTypeFilter = call.argument<String>("typeFilter")
-        val newSessionToken = call.argument<Boolean>("newSessionToken")
-
-        val origin = latLngFromMap(call.argument<ArrayList<Double>>("origin"))
-        val locationBias =
-          rectangularBoundsFromMap(call.argument<ArrayList<ArrayList<Double>?>?>("locationBias"))
-        val locationRestriction =
-          rectangularBoundsFromMap(call.argument<ArrayList<ArrayList<Double>?>?>("locationRestriction"))
-        val sessionToken = getSessionToken(newSessionToken == true)
-        val typeFilter = makeTypeFilter(placeTypeFilter)
-        initialize(Locale.ENGLISH)
-        val request = FindAutocompletePredictionsRequest.builder()
-          .setQuery(query)
-          .setLocationBias(locationBias)
-          .setLocationRestriction(locationRestriction)
-          .setCountries(countries)
-          .setTypeFilter(typeFilter)
-          .setSessionToken(sessionToken)
-          .setOrigin(origin)
-          .build()
-        client.findAutocompletePredictions(request).addOnCompleteListener { task ->
-          if (task.isSuccessful) {
-            lastSessionToken = request.sessionToken
-            val resultList = responseToList(task.result)
-            print("findAutoCompletePredictions Result: $resultList")
-            result.success(resultList)
-          } else {
-            val exception = task.exception
-            print("findAutoCompletePredictions Exception: $exception")
-            result.error(
-              "API_ERROR_AUTOCOMPLETE", exception?.message ?: "Unknown exception",
-              mapOf("type" to (exception?.javaClass?.toString() ?: "null"))
-            )
-          }
-        }
-      }
-      else -> {
-        result.notImplemented()
-      }
-    }
-  }
-
-  private fun getSessionToken(force: Boolean): AutocompleteSessionToken {
-    val localToken = lastSessionToken
-    if (force || localToken == null) {
-      return AutocompleteSessionToken.newInstance()
-    }
-    return localToken
-  }
-
-  private fun rectangularBoundsFromMap(argument: ArrayList<ArrayList<Double>?>?): RectangularBounds? {
-    if (argument == null) {
-      return null
-    }
-
-    val latLngBounds = latLngBoundsFromMap(argument) ?: return null
-    return RectangularBounds.newInstance(latLngBounds)
-  }
-
-  @Suppress("UNCHECKED_CAST")
-  private fun latLngBoundsFromMap(argument: ArrayList<ArrayList<Double>?>?): LatLngBounds? {
-    if (argument == null) {
-      return null
-    }
-
-    val southWest = latLngFromMap(argument[0]) ?: return null
-    val northEast = latLngFromMap(argument[1]) ?: return null
-
-    return LatLngBounds(southWest, northEast)
-  }
-
-  private fun latLngFromMap(argument: ArrayList<Double>?): LatLng? {
-    if (argument == null) {
-      return null
-    }
-
-    val lat = argument[0] as Double?
-    val lng = argument[1] as Double?
-    if (lat == null || lng == null) {
-      return null
-    }
-
-    return LatLng(lat, lng)
-  }
-
-  private fun responseToList(result: FindAutocompletePredictionsResponse?): List<Map<String, Any?>>? {
-    if (result == null) {
-      return null
-    }
-
-    return result.autocompletePredictions.map { item -> predictionToMap(item) }
-  }
-
-  private fun predictionToMap(result: AutocompletePrediction): Map<String, Any?> {
-    return mapOf(
-      "placeId" to result.placeId,
-      "distanceMeters" to result.distanceMeters,
-      "primaryText" to result.getPrimaryText(null).toString(),
-      "secondaryText" to result.getSecondaryText(null).toString(),
-      "fullText" to result.getFullText(null).toString()
-    )
-  }
-
-  private fun makeTypeFilter(typeFilterStr: String?): TypeFilter? {
-    val typeFilterStrUpper = typeFilterStr?.toUpperCase(Locale.getDefault())
-    if (typeFilterStrUpper == null || typeFilterStrUpper == "ALL") {
-      return null
-    }
-    return TypeFilter.valueOf(typeFilterStrUpper)
-  }*/
 }

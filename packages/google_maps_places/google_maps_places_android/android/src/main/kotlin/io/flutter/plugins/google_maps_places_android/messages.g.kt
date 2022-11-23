@@ -21,8 +21,7 @@ enum class TypeFilterAndroid(val raw: Int) {
   CITIES(1),
   ESTABLISHMENT(2),
   GEOCODE(3),
-  REGIONS(4),
-  ALL(5);
+  REGIONS(4);
 
   companion object {
     fun ofRaw(raw: Int): TypeFilterAndroid? {
