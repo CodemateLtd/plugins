@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "FLTClusterManagersController.h"
+#import "ClusterManagersController.h"
 #import "FLTGoogleMapJSONConversions.h"
 
 @interface FLTClusterManagersController ()
@@ -14,7 +14,6 @@
 @end
 
 @implementation FLTClusterManagersController
-
 - (instancetype)init:(FlutterMethodChannel *)methodChannel mapView:(GMSMapView *)mapView {
   self = [super init];
   if (self) {

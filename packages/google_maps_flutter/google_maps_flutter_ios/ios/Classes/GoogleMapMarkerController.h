@@ -4,7 +4,7 @@
 
 #import <Flutter/Flutter.h>
 #import <GoogleMaps/GoogleMaps.h>
-#import "FLTClusterManagersController.h"
+#import "ClusterManagersController.h"
 #import "GoogleMapController.h"
 
 NS_ASSUME_NONNULL_BEGIN

@@ -90,6 +90,7 @@
 - (void)setVisible:(BOOL)visible {
   // If marker belongs the cluster manager, visibility need to be controlled with the opacity
   // as the cluster manager controls when marker is on the map and when not.
+  // Alpha value for marker must always be interpreted before visibility value.
   if (self.clusterManagerId && self.clusterManagerId != (id)[NSNull null]) {
     self.marker.opacity = visible ? self.marker.opacity : 0.0f;
   } else {
@@ -111,6 +112,7 @@
 
 - (void)interpretMarkerOptions:(NSDictionary *)data
                      registrar:(NSObject<FlutterPluginRegistrar> *)registrar {
+  // Alpha must be always set before visibility.
   NSNumber *alpha = data[@"alpha"];
   if (alpha && alpha != (id)[NSNull null]) {
     [self setAlpha:[alpha floatValue]];
