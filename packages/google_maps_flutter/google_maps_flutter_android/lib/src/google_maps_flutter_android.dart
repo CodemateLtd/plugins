@@ -167,6 +167,11 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     return _events(mapId).whereType<MapLongPressEvent>();
   }
 
+  @override
+  Stream<ClusterTapEvent> onClusterTap({required int mapId}) {
+    return _events(mapId).whereType<ClusterTapEvent>();
+  }
+
   Future<dynamic> _handleMethodCall(MethodCall call, int mapId) async {
     switch (call.method) {
       case 'camera#onMoveStarted':
@@ -260,9 +265,43 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
           call.arguments['zoom'] as int?,
         );
         return tile.toJson();
+      case 'cluster#onTap':
+        final Cluster cluster = parseCluster(
+            call.arguments['clusterManagerId']! as String,
+            call.arguments['position']! as Object,
+            call.arguments['bounds']! as Map<dynamic, dynamic>,
+            call.arguments['markerIds']! as List<dynamic>);
+        _mapEventStreamController.add(ClusterTapEvent(
+          mapId,
+          cluster,
+        ));
+        break;
       default:
         throw MissingPluginException();
     }
+  }
+
+  /// Parses cluster data from dynamic json objects and returns [Cluster] object.
+  /// Used by `cluster#onTap` method call handler and [getClusters] response parser.
+  Cluster parseCluster(String clusterManagerIdString, Object positionObject,
+      Map<dynamic, dynamic> boundsMap, List<dynamic> markerIdsList) {
+    final ClusterManagerId clusterManagerId =
+        ClusterManagerId(clusterManagerIdString);
+    final LatLng position = LatLng.fromJson(positionObject)!;
+
+    final Map<String, List<dynamic>> latLngData = boundsMap.map(
+        (dynamic key, dynamic object) => MapEntry<String, List<dynamic>>(
+            key as String, object as List<dynamic>));
+
+    final LatLngBounds bounds = LatLngBounds(
+        northeast: LatLng.fromJson(latLngData['northeast'])!,
+        southwest: LatLng.fromJson(latLngData['southwest'])!);
+
+    final List<MarkerId> markerIds = markerIdsList
+        .map((dynamic markerId) => MarkerId(markerId as String))
+        .toList();
+
+    return Cluster(clusterManagerId, position, bounds, markerIds);
   }
 
   @override
@@ -343,6 +382,18 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     return _channel(mapId).invokeMethod<void>(
       'tileOverlays#update',
       updates.toJson(),
+    );
+  }
+
+  @override
+  Future<void> updateClusterManagers(
+    ClusterManagerUpdates clusterManagerUpdates, {
+    required int mapId,
+  }) {
+    assert(clusterManagerUpdates != null);
+    return _channel(mapId).invokeMethod<void>(
+      'clusterManagers#update',
+      clusterManagerUpdates.toJson(),
     );
   }
 
@@ -471,6 +522,25 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     return _channel(mapId).invokeMethod<Uint8List>('map#takeSnapshot');
   }
 
+  @override
+  Future<List<Cluster>> getClusters({
+    required int mapId,
+    required ClusterManagerId clusterManagerId,
+  }) async {
+    final List<dynamic> data = (await _channel(mapId)
+        .invokeMethod<List<dynamic>>('clusterManager#getClusters',
+            <String, String>{'clusterManagerId': clusterManagerId.value}))!;
+    return data.map<Cluster>((dynamic clusterData) {
+      final Map<String, dynamic> clusterDataMap =
+          Map<String, dynamic>.from(clusterData as Map<dynamic, dynamic>);
+      return parseCluster(
+          clusterDataMap['clusterManagerId']! as String,
+          clusterDataMap['position']! as Object,
+          clusterDataMap['bounds']! as Map<dynamic, dynamic>,
+          clusterDataMap['markerIds']! as List<dynamic>);
+    }).toList();
+  }
+
   /// Set [GoogleMapsFlutterPlatform] to use [AndroidViewSurface] to build the
   /// Google Maps widget.
   ///
@@ -496,6 +566,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
       'polylinesToAdd': serializePolylineSet(mapObjects.polylines),
       'circlesToAdd': serializeCircleSet(mapObjects.circles),
       'tileOverlaysToAdd': serializeTileOverlaySet(mapObjects.tileOverlays),
+      'clusterManagersToAdd': serializeClusterSet(mapObjects.clusterManagers),
     };
 
     const String viewType = 'plugins.flutter.dev/google_maps_android';
@@ -572,6 +643,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     Set<Polyline> polylines = const <Polyline>{},
     Set<Circle> circles = const <Circle>{},
     Set<TileOverlay> tileOverlays = const <TileOverlay>{},
+    Set<ClusterManager> clusterManagers = const <ClusterManager>{},
     Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers,
     Map<String, dynamic> mapOptions = const <String, dynamic>{},
   }) {
@@ -586,6 +658,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
           polygons: polygons,
           polylines: polylines,
           circles: circles,
+          clusterManagers: clusterManagers,
           tileOverlays: tileOverlays),
       mapOptions: mapOptions,
     );
@@ -601,6 +674,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     Set<Polyline> polylines = const <Polyline>{},
     Set<Circle> circles = const <Circle>{},
     Set<TileOverlay> tileOverlays = const <TileOverlay>{},
+    Set<ClusterManager> clusterManagers = const <ClusterManager>{},
     Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers,
     Map<String, dynamic> mapOptions = const <String, dynamic>{},
   }) {
@@ -614,6 +688,7 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
       polylines: polylines,
       circles: circles,
       tileOverlays: tileOverlays,
+      clusterManagers: clusterManagers,
       gestureRecognizers: gestureRecognizers,
       mapOptions: mapOptions,
     );

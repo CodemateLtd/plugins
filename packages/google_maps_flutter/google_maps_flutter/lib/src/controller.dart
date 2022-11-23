@@ -80,6 +80,9 @@ class GoogleMapController {
         .listen((MapTapEvent e) => _googleMapState.onTap(e.position));
     GoogleMapsFlutterPlatform.instance.onLongPress(mapId: mapId).listen(
         (MapLongPressEvent e) => _googleMapState.onLongPress(e.position));
+    GoogleMapsFlutterPlatform.instance
+        .onClusterTap(mapId: mapId)
+        .listen((ClusterTapEvent e) => _googleMapState.onClusterTap(e.value));
   }
 
   /// Updates configuration options of the map user interface.
@@ -103,6 +106,19 @@ class GoogleMapController {
     assert(markerUpdates != null);
     return GoogleMapsFlutterPlatform.instance
         .updateMarkers(markerUpdates, mapId: mapId);
+  }
+
+  /// Updates cluster manager configuration.
+  ///
+  /// Change listeners are notified once the update has been made on the
+  /// platform side.
+  ///
+  /// The returned [Future] completes after listeners have been notified.
+  Future<void> _updateClusterManagers(
+      ClusterManagerUpdates clusterManagerUpdates) {
+    assert(clusterManagerUpdates != null);
+    return GoogleMapsFlutterPlatform.instance
+        .updateClusterManagers(clusterManagerUpdates, mapId: mapId);
   }
 
   /// Updates polygon configuration.
@@ -275,6 +291,13 @@ class GoogleMapController {
   /// Returns the image bytes of the map
   Future<Uint8List?> takeSnapshot() {
     return GoogleMapsFlutterPlatform.instance.takeSnapshot(mapId: mapId);
+  }
+
+  /// Returns current clusters from [ClusterManager].
+  Future<List<Cluster>> getClusters(
+      {required ClusterManagerId clusterManagerId}) {
+    return GoogleMapsFlutterPlatform.instance
+        .getClusters(mapId: mapId, clusterManagerId: clusterManagerId);
   }
 
   /// Disposes of the platform resources

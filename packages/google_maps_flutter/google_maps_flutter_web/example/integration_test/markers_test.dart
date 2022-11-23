@@ -22,14 +22,18 @@ void main() {
 
   group('MarkersController', () {
     late StreamController<MapEvent<Object?>> events;
-    late MarkersController controller;
+    late MarkersController markersController;
+    late ClusterManagersController clusterManagersController;
     late gmaps.GMap map;
 
     setUp(() {
       events = StreamController<MapEvent<Object?>>();
-      controller = MarkersController(stream: events);
+      clusterManagersController = ClusterManagersController(stream: events);
+      markersController = MarkersController(
+          stream: events, clusterManagersController: clusterManagersController);
       map = gmaps.GMap(html.DivElement());
-      controller.bindToMap(123, map);
+      clusterManagersController.bindToMap(123, map);
+      markersController.bindToMap(123, map);
     });
 
     testWidgets('addMarkers', (WidgetTester tester) async {
@@ -38,32 +42,32 @@ void main() {
         const Marker(markerId: MarkerId('2')),
       };
 
-      controller.addMarkers(markers);
+      markersController.addMarkers(markers);
 
-      expect(controller.markers.length, 2);
-      expect(controller.markers, contains(const MarkerId('1')));
-      expect(controller.markers, contains(const MarkerId('2')));
-      expect(controller.markers, isNot(contains(const MarkerId('66'))));
+      expect(markersController.markers.length, 2);
+      expect(markersController.markers, contains(const MarkerId('1')));
+      expect(markersController.markers, contains(const MarkerId('2')));
+      expect(markersController.markers, isNot(contains(const MarkerId('66'))));
     });
 
     testWidgets('changeMarkers', (WidgetTester tester) async {
       final Set<Marker> markers = <Marker>{
         const Marker(markerId: MarkerId('1')),
       };
-      controller.addMarkers(markers);
+      markersController.addMarkers(markers);
 
-      expect(
-          controller.markers[const MarkerId('1')]?.marker?.draggable, isFalse);
+      expect(markersController.markers[const MarkerId('1')]?.marker?.draggable,
+          isFalse);
 
       // Update the marker with radius 10
       final Set<Marker> updatedMarkers = <Marker>{
         const Marker(markerId: MarkerId('1'), draggable: true),
       };
-      controller.changeMarkers(updatedMarkers);
+      markersController.changeMarkers(updatedMarkers);
 
-      expect(controller.markers.length, 1);
-      expect(
-          controller.markers[const MarkerId('1')]?.marker?.draggable, isTrue);
+      expect(markersController.markers.length, 1);
+      expect(markersController.markers[const MarkerId('1')]?.marker?.draggable,
+          isTrue);
     });
 
     testWidgets('removeMarkers', (WidgetTester tester) async {
@@ -73,9 +77,9 @@ void main() {
         const Marker(markerId: MarkerId('3')),
       };
 
-      controller.addMarkers(markers);
+      markersController.addMarkers(markers);
 
-      expect(controller.markers.length, 3);
+      expect(markersController.markers.length, 3);
 
       // Remove some markers...
       final Set<MarkerId> markerIdsToRemove = <MarkerId>{
@@ -83,12 +87,12 @@ void main() {
         const MarkerId('3'),
       };
 
-      controller.removeMarkers(markerIdsToRemove);
+      markersController.removeMarkers(markerIdsToRemove);
 
-      expect(controller.markers.length, 1);
-      expect(controller.markers, isNot(contains(const MarkerId('1'))));
-      expect(controller.markers, contains(const MarkerId('2')));
-      expect(controller.markers, isNot(contains(const MarkerId('3'))));
+      expect(markersController.markers.length, 1);
+      expect(markersController.markers, isNot(contains(const MarkerId('1'))));
+      expect(markersController.markers, contains(const MarkerId('2')));
+      expect(markersController.markers, isNot(contains(const MarkerId('3'))));
     });
 
     testWidgets('InfoWindow show/hide', (WidgetTester tester) async {
@@ -99,17 +103,20 @@ void main() {
         ),
       };
 
-      controller.addMarkers(markers);
+      markersController.addMarkers(markers);
 
-      expect(controller.markers[const MarkerId('1')]?.infoWindowShown, isFalse);
+      expect(markersController.markers[const MarkerId('1')]?.infoWindowShown,
+          isFalse);
 
-      controller.showMarkerInfoWindow(const MarkerId('1'));
+      markersController.showMarkerInfoWindow(const MarkerId('1'));
 
-      expect(controller.markers[const MarkerId('1')]?.infoWindowShown, isTrue);
+      expect(markersController.markers[const MarkerId('1')]?.infoWindowShown,
+          isTrue);
 
-      controller.hideMarkerInfoWindow(const MarkerId('1'));
+      markersController.hideMarkerInfoWindow(const MarkerId('1'));
 
-      expect(controller.markers[const MarkerId('1')]?.infoWindowShown, isFalse);
+      expect(markersController.markers[const MarkerId('1')]?.infoWindowShown,
+          isFalse);
     });
 
     // https://github.com/flutter/flutter/issues/67380
@@ -125,20 +132,26 @@ void main() {
           infoWindow: InfoWindow(title: 'Title', snippet: 'Snippet'),
         ),
       };
-      controller.addMarkers(markers);
+      markersController.addMarkers(markers);
 
-      expect(controller.markers[const MarkerId('1')]?.infoWindowShown, isFalse);
-      expect(controller.markers[const MarkerId('2')]?.infoWindowShown, isFalse);
+      expect(markersController.markers[const MarkerId('1')]?.infoWindowShown,
+          isFalse);
+      expect(markersController.markers[const MarkerId('2')]?.infoWindowShown,
+          isFalse);
 
-      controller.showMarkerInfoWindow(const MarkerId('1'));
+      markersController.showMarkerInfoWindow(const MarkerId('1'));
 
-      expect(controller.markers[const MarkerId('1')]?.infoWindowShown, isTrue);
-      expect(controller.markers[const MarkerId('2')]?.infoWindowShown, isFalse);
+      expect(markersController.markers[const MarkerId('1')]?.infoWindowShown,
+          isTrue);
+      expect(markersController.markers[const MarkerId('2')]?.infoWindowShown,
+          isFalse);
 
-      controller.showMarkerInfoWindow(const MarkerId('2'));
+      markersController.showMarkerInfoWindow(const MarkerId('2'));
 
-      expect(controller.markers[const MarkerId('1')]?.infoWindowShown, isFalse);
-      expect(controller.markers[const MarkerId('2')]?.infoWindowShown, isTrue);
+      expect(markersController.markers[const MarkerId('1')]?.infoWindowShown,
+          isFalse);
+      expect(markersController.markers[const MarkerId('2')]?.infoWindowShown,
+          isTrue);
     });
 
     // https://github.com/flutter/flutter/issues/66622
@@ -152,11 +165,11 @@ void main() {
         ),
       };
 
-      controller.addMarkers(markers);
+      markersController.addMarkers(markers);
 
-      expect(controller.markers.length, 1);
-      final gmaps.Icon? icon =
-          controller.markers[const MarkerId('1')]?.marker?.icon as gmaps.Icon?;
+      expect(markersController.markers.length, 1);
+      final gmaps.Icon? icon = markersController
+          .markers[const MarkerId('1')]?.marker?.icon as gmaps.Icon?;
       expect(icon, isNotNull);
 
       final String blobUrl = icon!.url!;
@@ -179,11 +192,11 @@ void main() {
         ),
       };
 
-      controller.addMarkers(markers);
+      markersController.addMarkers(markers);
 
-      expect(controller.markers.length, 1);
-      final gmaps.Icon? icon =
-          controller.markers[const MarkerId('1')]?.marker?.icon as gmaps.Icon?;
+      expect(markersController.markers.length, 1);
+      final gmaps.Icon? icon = markersController
+          .markers[const MarkerId('1')]?.marker?.icon as gmaps.Icon?;
       expect(icon, isNotNull);
 
       final gmaps.Size size = icon!.size!;
@@ -208,11 +221,13 @@ void main() {
         ),
       };
 
-      controller.addMarkers(markers);
+      markersController.addMarkers(markers);
 
-      expect(controller.markers.length, 1);
-      final html.HtmlElement? content = controller.markers[const MarkerId('1')]
-          ?.infoWindow?.content as html.HtmlElement?;
+      expect(markersController.markers.length, 1);
+      final html.HtmlElement? content = markersController
+          .markers[const MarkerId('1')]
+          ?.infoWindow
+          ?.content as html.HtmlElement?;
       expect(content?.innerHtml, contains('title for test'));
       expect(
           content?.innerHtml,
@@ -233,11 +248,13 @@ void main() {
         ),
       };
 
-      controller.addMarkers(markers);
+      markersController.addMarkers(markers);
 
-      expect(controller.markers.length, 1);
-      final html.HtmlElement? content = controller.markers[const MarkerId('1')]
-          ?.infoWindow?.content as html.HtmlElement?;
+      expect(markersController.markers.length, 1);
+      final html.HtmlElement? content = markersController
+          .markers[const MarkerId('1')]
+          ?.infoWindow
+          ?.content as html.HtmlElement?;
 
       content?.click();
 
@@ -245,6 +262,35 @@ void main() {
 
       expect(event, isA<InfoWindowTapEvent>());
       expect((event as InfoWindowTapEvent).value, equals(const MarkerId('1')));
+    });
+
+    testWidgets('clustering', (WidgetTester tester) async {
+      const ClusterManagerId clusterManagerId = ClusterManagerId('cluster 1');
+
+      final Set<ClusterManager> clusterManagers = <ClusterManager>{
+        const ClusterManager(clusterManagerId: clusterManagerId),
+      };
+
+      // Create the marker with clusterManagerId.
+      final Set<Marker> markers = <Marker>{
+        const Marker(
+            markerId: MarkerId('1'), clusterManagerId: clusterManagerId),
+      };
+
+      clusterManagersController.addClusterManagers(clusterManagers);
+      markersController.addMarkers(markers);
+
+      expect(clusterManagersController.getClusters(clusterManagerId).length, 1);
+
+      // Update the marker with null clusterManagerId.
+      final Set<Marker> updatedMarkers = <Marker>{
+        markers.first.copyWithDefaults(defaultClusterManagerId: true)
+      };
+      markersController.changeMarkers(updatedMarkers);
+
+      expect(markersController.markers.length, 1);
+
+      expect(clusterManagersController.getClusters(clusterManagerId).length, 1);
     });
   });
 }

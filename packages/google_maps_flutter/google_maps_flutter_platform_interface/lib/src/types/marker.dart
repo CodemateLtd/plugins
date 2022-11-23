@@ -9,100 +9,6 @@ import 'package:flutter/foundation.dart'
 
 import 'types.dart';
 
-Object _offsetToJson(Offset offset) {
-  return <Object>[offset.dx, offset.dy];
-}
-
-/// Text labels for a [Marker] info window.
-@immutable
-class InfoWindow {
-  /// Creates an immutable representation of a label on for [Marker].
-  const InfoWindow({
-    this.title,
-    this.snippet,
-    this.anchor = const Offset(0.5, 0.0),
-    this.onTap,
-  });
-
-  /// Text labels specifying that no text is to be displayed.
-  static const InfoWindow noText = InfoWindow();
-
-  /// Text displayed in an info window when the user taps the marker.
-  ///
-  /// A null value means no title.
-  final String? title;
-
-  /// Additional text displayed below the [title].
-  ///
-  /// A null value means no additional text.
-  final String? snippet;
-
-  /// The icon image point that will be the anchor of the info window when
-  /// displayed.
-  ///
-  /// The image point is specified in normalized coordinates: An anchor of
-  /// (0.0, 0.0) means the top left corner of the image. An anchor
-  /// of (1.0, 1.0) means the bottom right corner of the image.
-  final Offset anchor;
-
-  /// onTap callback for this [InfoWindow].
-  final VoidCallback? onTap;
-
-  /// Creates a new [InfoWindow] object whose values are the same as this instance,
-  /// unless overwritten by the specified parameters.
-  InfoWindow copyWith({
-    String? titleParam,
-    String? snippetParam,
-    Offset? anchorParam,
-    VoidCallback? onTapParam,
-  }) {
-    return InfoWindow(
-      title: titleParam ?? title,
-      snippet: snippetParam ?? snippet,
-      anchor: anchorParam ?? anchor,
-      onTap: onTapParam ?? onTap,
-    );
-  }
-
-  Object _toJson() {
-    final Map<String, Object> json = <String, Object>{};
-
-    void addIfPresent(String fieldName, Object? value) {
-      if (value != null) {
-        json[fieldName] = value;
-      }
-    }
-
-    addIfPresent('title', title);
-    addIfPresent('snippet', snippet);
-    addIfPresent('anchor', _offsetToJson(anchor));
-
-    return json;
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    if (other.runtimeType != runtimeType) {
-      return false;
-    }
-    return other is InfoWindow &&
-        title == other.title &&
-        snippet == other.snippet &&
-        anchor == other.anchor;
-  }
-
-  @override
-  int get hashCode => Object.hash(title.hashCode, snippet, anchor);
-
-  @override
-  String toString() {
-    return 'InfoWindow{title: $title, snippet: $snippet, anchor: $anchor}';
-  }
-}
-
 /// Uniquely identifies a [Marker] among [GoogleMap] markers.
 ///
 /// This does not have to be globally unique, only unique among the list.
@@ -140,28 +46,50 @@ class Marker implements MapsObject<Marker> {
   /// * reports [onDragEnd] events
   const Marker({
     required this.markerId,
-    this.alpha = 1.0,
-    this.anchor = const Offset(0.5, 1.0),
-    this.consumeTapEvents = false,
-    this.draggable = false,
-    this.flat = false,
-    this.icon = BitmapDescriptor.defaultMarker,
-    this.infoWindow = InfoWindow.noText,
-    this.position = const LatLng(0.0, 0.0),
-    this.rotation = 0.0,
-    this.visible = true,
-    this.zIndex = 0.0,
-    this.onTap,
-    this.onDrag,
-    this.onDragStart,
-    this.onDragEnd,
+    this.alpha = _defaultAlphaValue,
+    this.anchor = _defaultAnchorValue,
+    this.consumeTapEvents = _defaultConsumeTapEventsValue,
+    this.draggable = _defaultDraggableValue,
+    this.flat = _defaultFlatValue,
+    this.icon = _defaultIconValue,
+    this.infoWindow = _defaultInfoWindowValue,
+    this.position = _defaultPositionValue,
+    this.rotation = _defaultRotationValue,
+    this.visible = _defaultVisibleValue,
+    this.zIndex = _defaultZIndexValue,
+    this.clusterManagerId = _defaultClusterManagerId,
+    this.onTap = _defaultOnTap,
+    this.onDrag = _defaultOnDrag,
+    this.onDragStart = _defaultOnDragStart,
+    this.onDragEnd = _defaultOnDragEnd,
   }) : assert(alpha == null || (0.0 <= alpha && alpha <= 1.0));
+
+  // Defaults used by constructor and copyWithDefaults method.
+  static const double _defaultAlphaValue = 1.0;
+  static const Offset _defaultAnchorValue = Offset(0.5, 1.0);
+  static const bool _defaultConsumeTapEventsValue = false;
+  static const bool _defaultDraggableValue = false;
+  static const bool _defaultFlatValue = false;
+  static const BitmapDescriptor _defaultIconValue = BitmapDescriptor.defaultMarker;
+  static const InfoWindow _defaultInfoWindowValue = InfoWindow.noText;
+  static const LatLng _defaultPositionValue = LatLng(0.0, 0.0);
+  static const double _defaultRotationValue = 0.0;
+  static const bool _defaultVisibleValue = true;
+  static const double _defaultZIndexValue = 0.0;
+  static const VoidCallback? _defaultOnTap = null;
+  static const ValueChanged<LatLng>? _defaultOnDrag = null;
+  static const ValueChanged<LatLng>? _defaultOnDragStart = null;
+  static const ValueChanged<LatLng>? _defaultOnDragEnd = null;
+  static const ClusterManagerId? _defaultClusterManagerId = null;
 
   /// Uniquely identifies a [Marker].
   final MarkerId markerId;
 
   @override
   MarkerId get mapsId => markerId;
+
+  /// Marker clustering is managed by [ClusterManager] with [clusterManagerId].
+  final ClusterManagerId? clusterManagerId;
 
   /// The opacity of the marker, between 0.0 and 1.0 inclusive.
   ///
@@ -241,6 +169,7 @@ class Marker implements MapsObject<Marker> {
     ValueChanged<LatLng>? onDragStartParam,
     ValueChanged<LatLng>? onDragParam,
     ValueChanged<LatLng>? onDragEndParam,
+    ClusterManagerId? clusterManagerIdParam,
   }) {
     return Marker(
       markerId: markerId,
@@ -259,6 +188,49 @@ class Marker implements MapsObject<Marker> {
       onDragStart: onDragStartParam ?? onDragStart,
       onDrag: onDragParam ?? onDrag,
       onDragEnd: onDragEndParam ?? onDragEnd,
+      clusterManagerId: clusterManagerIdParam ?? clusterManagerId,
+    );
+  }
+
+  /// Creates a new [Marker] object whose values are the same as this instance,
+  /// unless overwritten by the default values for specified parameters.
+  Marker copyWithDefaults({
+    bool? defaultAlpha,
+    bool? defaultAnchor,
+    bool? defaultConsumeTapEvents,
+    bool? defaultDraggable,
+    bool? defaultFlat,
+    bool? defaultIcon,
+    bool? defaultInfoWindow,
+    bool? defaultPosition,
+    bool? defaultRotation,
+    bool? defaultVisible,
+    bool? defaultZIndex,
+    bool? defaultOnTap,
+    bool? defaultOnDragStart,
+    bool? defaultOnDrag,
+    bool? defaultOnDragEnd,
+    bool? defaultClusterManagerId,
+  }) {
+    return Marker(
+      markerId: markerId,
+      alpha: (defaultAlpha ?? false) ? _defaultAlphaValue : alpha,
+      anchor: (defaultAnchor ?? false) ? _defaultAnchorValue : anchor,
+      consumeTapEvents: (defaultConsumeTapEvents ?? false) ? _defaultConsumeTapEventsValue : consumeTapEvents,
+      draggable: (defaultDraggable ?? false) ? _defaultDraggableValue: draggable,
+      flat: (defaultFlat ?? false) ?_defaultFlatValue: flat,
+      icon: (defaultIcon ?? false) ? _defaultIconValue : icon,
+      infoWindow: (defaultInfoWindow ?? false) ? _defaultInfoWindowValue : infoWindow,
+      position: (defaultPosition ?? false) ? _defaultPositionValue : position,
+      rotation: (defaultRotation ?? false) ? _defaultRotationValue : rotation,
+      visible: (defaultVisible ?? false) ?_defaultVisibleValue: visible,
+      zIndex: (defaultZIndex ?? false) ? _defaultZIndexValue : zIndex,
+      onTap: (defaultOnTap ?? false) ? _defaultOnTap : onTap,
+      onDragStart: (defaultOnDragStart ?? false) ? _defaultOnDragStart : onDragStart,
+      onDrag: (defaultOnDrag ?? false) ? _defaultOnDrag : onDrag,
+      onDragEnd: (defaultOnDragEnd ?? false) ? _defaultOnDragEnd : onDragEnd,
+      clusterManagerId:
+          (defaultClusterManagerId ?? false) ? _defaultClusterManagerId : clusterManagerId,
     );
   }
 
@@ -279,16 +251,17 @@ class Marker implements MapsObject<Marker> {
 
     addIfPresent('markerId', markerId.value);
     addIfPresent('alpha', alpha);
-    addIfPresent('anchor', _offsetToJson(anchor));
+    addIfPresent('anchor', <Object>[anchor.dx, anchor.dy]);
     addIfPresent('consumeTapEvents', consumeTapEvents);
     addIfPresent('draggable', draggable);
     addIfPresent('flat', flat);
     addIfPresent('icon', icon.toJson());
-    addIfPresent('infoWindow', infoWindow._toJson());
+    addIfPresent('infoWindow', infoWindow.toJson());
     addIfPresent('position', position.toJson());
     addIfPresent('rotation', rotation);
     addIfPresent('visible', visible);
     addIfPresent('zIndex', zIndex);
+    addIfPresent('clusterManagerId', clusterManagerId?.value);
     return json;
   }
 
@@ -312,7 +285,8 @@ class Marker implements MapsObject<Marker> {
         position == other.position &&
         rotation == other.rotation &&
         visible == other.visible &&
-        zIndex == other.zIndex;
+        zIndex == other.zIndex &&
+        clusterManagerId == other.clusterManagerId;
   }
 
   @override
@@ -324,6 +298,6 @@ class Marker implements MapsObject<Marker> {
         'consumeTapEvents: $consumeTapEvents, draggable: $draggable, flat: $flat, '
         'icon: $icon, infoWindow: $infoWindow, position: $position, rotation: $rotation, '
         'visible: $visible, zIndex: $zIndex, onTap: $onTap, onDragStart: $onDragStart, '
-        'onDrag: $onDrag, onDragEnd: $onDragEnd}';
+        'onDrag: $onDrag, onDragEnd: $onDragEnd, clusterManagerId: $clusterManagerId}';
   }
 }
