@@ -77,7 +77,9 @@ class AutocompletePrediction {
 
   @override
   String toString() =>
-      '${objectRuntimeType(this, 'AutocompletePrediction')}($distanceMeters, $fullText, $placeId, $placeTypes, $primaryText, $secondaryText)';
+      '${objectRuntimeType(this, 'AutocompletePrediction')}(distanceMeters:  '
+      ' $distanceMeters, fullText: $fullText, placeId $placeId, placeTypes  '
+      '$placeTypes, primaryText: $primaryText, secondaryText: $secondaryText)';
 
   @override
   bool operator ==(Object other) =>

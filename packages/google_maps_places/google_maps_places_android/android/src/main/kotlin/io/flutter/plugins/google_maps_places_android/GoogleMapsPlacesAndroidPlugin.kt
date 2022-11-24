@@ -67,9 +67,9 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
     val placesRequest = FindAutocompletePredictionsRequest.builder()
       .setQuery(query)
       .setLocationBias(convertLatLngBounds(locationBias))
-      .setLocationRestriction(convertLatLngBounds(locationRestriction))
+      //.setLocationRestriction(convertLatLngBounds(locationRestriction))
       .setCountries(convertCountries(countries) ?: emptyList())
-      .setTypeFilter(convertTypeFiltersToSingle(typeFilter))
+      //.setTypeFilter(convertTypeFiltersToSingle(typeFilter))
       //Not working at the moment. API return an error when used.
       //.setTypesFilter(convertTypeFilters(typeFilter) ?: emptyList())
       .setSessionToken(sessionToken)

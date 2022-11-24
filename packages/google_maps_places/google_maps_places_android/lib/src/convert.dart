@@ -22,14 +22,6 @@ LatLngBoundsAndroid? convertLatLngBounds(LatLngBounds? bounds) {
       southwest: convertLatLng(bounds.southwest));
 }
 
-/// Converts list of [AutocompletePredictionAndroid] to list of [AutocompletePrediction]
-List<AutocompletePrediction> convertReponse(
-    List<AutocompletePredictionAndroid?> results) {
-  return results
-      .map((AutocompletePredictionAndroid? e) => convertPrediction(e!))
-      .toList();
-}
-
 /// Converts list of [TypeFilter] to list of [int]
 List<int>? convertTypeFilter(List<TypeFilter>? filters) => filters
     ?.map<int>((TypeFilter filter) => TypeFilterAndroid.values
@@ -39,8 +31,9 @@ List<int>? convertTypeFilter(List<TypeFilter>? filters) => filters
 
 /// Converts list of [int] to list of [PlaceType]
 List<PlaceType> convertPlaceTypes(List<int?> placeTypes) => placeTypes
-    .map<PlaceType>((int? placeType) => PlaceType.values
-        .firstWhere((PlaceType element) => element.name == PlaceTypeAndroid.values[placeType!].name))
+    .map<PlaceType>((int? placeType) => PlaceType.values.firstWhere(
+        (PlaceType element) =>
+            element.name == PlaceTypeAndroid.values[placeType!].name))
     .toList();
 
 /// Converts [AutocompletePredictionAndroid] to [AutocompletePrediction]
@@ -53,4 +46,12 @@ AutocompletePrediction convertPrediction(
       placeTypes: convertPlaceTypes(prediction.placeTypes),
       primaryText: prediction.primaryText,
       secondaryText: prediction.secondaryText);
+}
+
+/// Converts list of [AutocompletePredictionAndroid] to list of [AutocompletePrediction]
+List<AutocompletePrediction> convertReponse(
+    List<AutocompletePredictionAndroid?> results) {
+  return results
+      .map((AutocompletePredictionAndroid? e) => convertPrediction(e!))
+      .toList();
 }
