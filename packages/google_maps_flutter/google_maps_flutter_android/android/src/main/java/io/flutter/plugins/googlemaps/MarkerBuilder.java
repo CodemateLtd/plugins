@@ -21,7 +21,7 @@ class MarkerBuilder implements MarkerOptionsSink, ClusterItem {
   private float infoWindowAnchorV;
   private String infoWindowTitle;
   private String infoWindowSnippet;
-  private LatLng position;
+  private LatLng position = new LatLng(0.0f, 0.0f);
   private float rotation;
   private boolean visible;
   private float zIndex;
