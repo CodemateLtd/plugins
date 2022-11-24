@@ -23,6 +23,10 @@ class GoogleMapsPlacesAndroid extends GoogleMapsPlacesPlatform {
     List<TypeFilter>? typeFilter,
     bool? refreshToken,
   }) async {
+    // This assert can be removed when multiple typefilters are working properly
+    assert(typeFilter == null || typeFilter.length <= 1);
+    // Only either locationBias or locationRestriction is allowed
+    assert(locationBias == null || locationRestriction == null);
     final List<AutocompletePredictionAndroid?> response =
         await _api.findAutocompletePredictionsAndroid(
             query,

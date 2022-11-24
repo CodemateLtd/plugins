@@ -49,18 +49,27 @@ object Convert {
     if (filters == null) {
       return null
     }
-    return filters.map { filter ->  convertTypeFilter(filter) }
+    return filters.map { filter ->  convertTypeFilter(filter?.toInt()).toString() }
+  }
+
+  /// Convert list of [TypeFilterAndroid] to [TypeFilter]
+  fun convertTypeFiltersToSingle(filters: List<Long?>?): TypeFilter? {
+    if (filters == null || filters.isEmpty()) {
+      return null
+    }
+    val filter = filters.first() ?: return null
+    return convertTypeFilter(filter.toInt())
   }
 
   /// Convert [TypeFilterAndroid] to [TypeFilter]
-  private fun convertTypeFilter(filter: Long?): String {
-    return when (val formatted = filter?.let { TypeFilterAndroid.ofRaw(it.toInt()) }) {
-      TypeFilterAndroid.ADDRESS -> TypeFilter.ADDRESS.toString()
-      TypeFilterAndroid.CITIES -> TypeFilter.CITIES.toString()
-      TypeFilterAndroid.ESTABLISHMENT -> TypeFilter.ESTABLISHMENT.toString()
-      TypeFilterAndroid.GEOCODE -> TypeFilter.GEOCODE.toString()
-      TypeFilterAndroid.REGIONS -> TypeFilter.REGIONS.toString()
-      else -> throw IllegalArgumentException("Invalid TypeFilter: $formatted")
+  fun convertTypeFilter(filter: Int?): TypeFilter {
+    return when (filter?.let { TypeFilterAndroid.ofRaw(it) }) {
+      TypeFilterAndroid.ADDRESS -> TypeFilter.ADDRESS
+      TypeFilterAndroid.CITIES -> TypeFilter.CITIES
+      TypeFilterAndroid.ESTABLISHMENT -> TypeFilter.ESTABLISHMENT
+      TypeFilterAndroid.GEOCODE -> TypeFilter.GEOCODE
+      TypeFilterAndroid.REGIONS -> TypeFilter.REGIONS
+      else -> {throw IllegalArgumentException("Invalid TypeFilter: $filter")}
     }
   }
 
@@ -83,152 +92,152 @@ object Convert {
 
   /// Converts list of [Place.Type] to list of [Long]
   private fun convertPlaceTypes(types: List<Place.Type>): List<Long?> {
-    return types.map { type -> convertPlaceType(type) }
+    return types.map { type -> convertPlaceType(type).raw.toLong() }
   }
 
   /// Convert [Place.Type] to [Long] value of [PlaceTypeAndroid]
-  private fun convertPlaceType(type: Place.Type): Long? {
+  private fun convertPlaceType(type: Place.Type): PlaceTypeAndroid {
     return when (type) {
-      Place.Type.ACCOUNTING -> PlaceTypeAndroid.ACCOUNTING.raw.toLong()
-      Place.Type.ADMINISTRATIVE_AREA_LEVEL_1 -> PlaceTypeAndroid.ADMINISTRATIVEAREALEVEL1.raw.toLong()
-      Place.Type.ADMINISTRATIVE_AREA_LEVEL_2 -> PlaceTypeAndroid.ADMINISTRATIVEAREALEVEL2.raw.toLong()
-      Place.Type.ADMINISTRATIVE_AREA_LEVEL_3 -> PlaceTypeAndroid.ADMINISTRATIVEAREALEVEL3.raw.toLong()
-      Place.Type.ADMINISTRATIVE_AREA_LEVEL_4 -> PlaceTypeAndroid.ADMINISTRATIVEAREALEVEL4.raw.toLong()
-      Place.Type.ADMINISTRATIVE_AREA_LEVEL_5 -> PlaceTypeAndroid.ADMINISTRATIVEAREALEVEL5.raw.toLong()
-      Place.Type.AIRPORT -> PlaceTypeAndroid.AIRPORT.raw.toLong()
-      Place.Type.AMUSEMENT_PARK -> PlaceTypeAndroid.AMUSEMENTPARK.raw.toLong()
-      Place.Type.AQUARIUM -> PlaceTypeAndroid.AQUARIUM.raw.toLong()
-      Place.Type.ARCHIPELAGO -> PlaceTypeAndroid.ARCHIPELAGO.raw.toLong()
-      Place.Type.ART_GALLERY -> PlaceTypeAndroid.ARTGALLERY.raw.toLong()
-      Place.Type.ATM -> PlaceTypeAndroid.ATM.raw.toLong()
-      Place.Type.BAKERY -> PlaceTypeAndroid.BAKERY.raw.toLong()
-      Place.Type.BANK -> PlaceTypeAndroid.BANK.raw.toLong()
-      Place.Type.BAR -> PlaceTypeAndroid.BAR.raw.toLong()
-      Place.Type.BEAUTY_SALON -> PlaceTypeAndroid.BEAUTYSALON.raw.toLong()
-      Place.Type.BICYCLE_STORE -> PlaceTypeAndroid.BICYCLESTORE.raw.toLong()
-      Place.Type.BOOK_STORE -> PlaceTypeAndroid.BOOKSTORE.raw.toLong()
-      Place.Type.BOWLING_ALLEY -> PlaceTypeAndroid.BOWLINGALLEY.raw.toLong()
-      Place.Type.BUS_STATION -> PlaceTypeAndroid.BUSSTATION.raw.toLong()
-      Place.Type.CAFE -> PlaceTypeAndroid.CAFE.raw.toLong()
-      Place.Type.CAMPGROUND -> PlaceTypeAndroid.CAMPGROUND.raw.toLong()
-      Place.Type.CAR_DEALER -> PlaceTypeAndroid.CARDEALER.raw.toLong()
-      Place.Type.CAR_RENTAL -> PlaceTypeAndroid.CARRENTAL.raw.toLong()
-      Place.Type.CAR_REPAIR -> PlaceTypeAndroid.CARREPAIR.raw.toLong()
-      Place.Type.CAR_WASH -> PlaceTypeAndroid.CARWASH.raw.toLong()
-      Place.Type.CASINO -> PlaceTypeAndroid.CASINO.raw.toLong()
-      Place.Type.CEMETERY -> PlaceTypeAndroid.CEMETERY.raw.toLong()
-      Place.Type.CHURCH -> PlaceTypeAndroid.CHURCH.raw.toLong()
-      Place.Type.CITY_HALL -> PlaceTypeAndroid.CITYHALL.raw.toLong()
-      Place.Type.CLOTHING_STORE -> PlaceTypeAndroid.CLOTHINGSTORE.raw.toLong()
-      Place.Type.COLLOQUIAL_AREA -> PlaceTypeAndroid.COLLOQUIALAREA.raw.toLong()
-      Place.Type.CONTINENT -> PlaceTypeAndroid.CONTINENT.raw.toLong()
-      Place.Type.CONVENIENCE_STORE -> PlaceTypeAndroid.CONVENIENCESTORE.raw.toLong()
-      Place.Type.COUNTRY -> PlaceTypeAndroid.COUNTRY.raw.toLong()
-      Place.Type.COURTHOUSE -> PlaceTypeAndroid.COURTHOUSE.raw.toLong()
-      Place.Type.DENTIST -> PlaceTypeAndroid.DENTIST.raw.toLong()
-      Place.Type.DEPARTMENT_STORE -> PlaceTypeAndroid.DEPARTMENTSTORE.raw.toLong()
-      Place.Type.DOCTOR -> PlaceTypeAndroid.DOCTOR.raw.toLong()
-      Place.Type.DRUGSTORE -> PlaceTypeAndroid.DRUGSTORE.raw.toLong()
-      Place.Type.ELECTRICIAN -> PlaceTypeAndroid.ELECTRICIAN.raw.toLong()
-      Place.Type.ELECTRONICS_STORE -> PlaceTypeAndroid.ELECTRONICSSTORE.raw.toLong()
-      Place.Type.EMBASSY -> PlaceTypeAndroid.EMBASSY.raw.toLong()
-      Place.Type.ESTABLISHMENT -> PlaceTypeAndroid.ESTABLISHMENT.raw.toLong()
-      Place.Type.FINANCE -> PlaceTypeAndroid.FINANCE.raw.toLong()
-      Place.Type.FIRE_STATION -> PlaceTypeAndroid.FIRESTATION.raw.toLong()
-      Place.Type.FLOOR -> PlaceTypeAndroid.FLOOR.raw.toLong()
-      Place.Type.FLORIST -> PlaceTypeAndroid.FLORIST.raw.toLong()
-      Place.Type.FOOD -> PlaceTypeAndroid.FOOD.raw.toLong()
-      Place.Type.FUNERAL_HOME -> PlaceTypeAndroid.FUNERALHOME.raw.toLong()
-      Place.Type.FURNITURE_STORE -> PlaceTypeAndroid.FURNITURESTORE.raw.toLong()
-      Place.Type.GAS_STATION -> PlaceTypeAndroid.GASSTATION.raw.toLong()
-      Place.Type.GENERAL_CONTRACTOR -> PlaceTypeAndroid.GENERALCONTRACTOR.raw.toLong()
-      Place.Type.GEOCODE -> PlaceTypeAndroid.GEOCODE.raw.toLong()
-      Place.Type.GROCERY_OR_SUPERMARKET -> PlaceTypeAndroid.GROCERYORSUPERMARKET.raw.toLong()
-      Place.Type.GYM -> PlaceTypeAndroid.GYM.raw.toLong()
-      Place.Type.HAIR_CARE -> PlaceTypeAndroid.HAIRCARE.raw.toLong()
-      Place.Type.HARDWARE_STORE -> PlaceTypeAndroid.HARDWARESTORE.raw.toLong()
-      Place.Type.HEALTH -> PlaceTypeAndroid.HEALTH.raw.toLong()
-      Place.Type.HINDU_TEMPLE -> PlaceTypeAndroid.HINDUTEMPLE.raw.toLong()
-      Place.Type.HOME_GOODS_STORE -> PlaceTypeAndroid.HOMEGOODSSTORE.raw.toLong()
-      Place.Type.HOSPITAL -> PlaceTypeAndroid.HOSPITAL.raw.toLong()
-      Place.Type.INSURANCE_AGENCY -> PlaceTypeAndroid.INSURANCEAGENCY.raw.toLong()
-      Place.Type.INTERSECTION -> PlaceTypeAndroid.INTERSECTION.raw.toLong()
-      Place.Type.JEWELRY_STORE -> PlaceTypeAndroid.JEWELRYSTORE.raw.toLong()
-      Place.Type.LAUNDRY -> PlaceTypeAndroid.LAUNDRY.raw.toLong()
-      Place.Type.LAWYER -> PlaceTypeAndroid.LAWYER.raw.toLong()
-      Place.Type.LIBRARY-> PlaceTypeAndroid.LIBRARY.raw.toLong()
-      Place.Type.LIGHT_RAIL_STATION -> PlaceTypeAndroid.LIGHTRAILSTATION.raw.toLong()
-      Place.Type.LIQUOR_STORE -> PlaceTypeAndroid.LIQUORSTORE.raw.toLong()
-      Place.Type.LOCALITY -> PlaceTypeAndroid.LOCALITY.raw.toLong()
-      Place.Type.LOCAL_GOVERNMENT_OFFICE -> PlaceTypeAndroid.LOCALGOVERNMENTOFFICE.raw.toLong()
-      Place.Type.LOCKSMITH -> PlaceTypeAndroid.LOCKSMITH.raw.toLong()
-      Place.Type.LODGING -> PlaceTypeAndroid.LODGING.raw.toLong()
-      Place.Type.MEAL_DELIVERY -> PlaceTypeAndroid.MEALDELIVERY.raw.toLong()
-      Place.Type.MEAL_TAKEAWAY -> PlaceTypeAndroid.MEALTAKEAWAY.raw.toLong()
-      Place.Type.MOSQUE -> PlaceTypeAndroid.MOSQUE.raw.toLong()
-      Place.Type.MOVIE_RENTAL -> PlaceTypeAndroid.MOVIERENTAL.raw.toLong()
-      Place.Type.MOVIE_THEATER -> PlaceTypeAndroid.MOVIETHEATER.raw.toLong()
-      Place.Type.MOVING_COMPANY -> PlaceTypeAndroid.MOVINGCOMPANY.raw.toLong()
-      Place.Type.MUSEUM -> PlaceTypeAndroid.MUSEUM.raw.toLong()
-      Place.Type.NATURAL_FEATURE -> PlaceTypeAndroid.NATURALFEATURE.raw.toLong()
-      Place.Type.NEIGHBORHOOD -> PlaceTypeAndroid.NEIGHBORHOOD.raw.toLong()
-      Place.Type.NIGHT_CLUB -> PlaceTypeAndroid.NIGHTCLUB.raw.toLong()
-      Place.Type.OTHER -> PlaceTypeAndroid.OTHER.raw.toLong()
-      Place.Type.PAINTER -> PlaceTypeAndroid.PAINTER.raw.toLong()
-      Place.Type.PARK -> PlaceTypeAndroid.PARK.raw.toLong()
-      Place.Type.PARKING -> PlaceTypeAndroid.PARKING.raw.toLong()
-      Place.Type.PET_STORE -> PlaceTypeAndroid.PETSTORE.raw.toLong()
-      Place.Type.PHARMACY -> PlaceTypeAndroid.PHARMACY.raw.toLong()
-      Place.Type.PHYSIOTHERAPIST -> PlaceTypeAndroid.PHYSIOTHERAPIST.raw.toLong()
-      Place.Type.PLACE_OF_WORSHIP -> PlaceTypeAndroid.PLACEOFWORSHIP.raw.toLong()
-      Place.Type.PLUMBER -> PlaceTypeAndroid.PLUMBER.raw.toLong()
-      Place.Type.PLUS_CODE -> PlaceTypeAndroid.PLUSCODE.raw.toLong()
-      Place.Type.POINT_OF_INTEREST -> PlaceTypeAndroid.POINTOFINTEREST.raw.toLong()
-      Place.Type.POLICE -> PlaceTypeAndroid.POLICE.raw.toLong()
-      Place.Type.POLITICAL -> PlaceTypeAndroid.POLITICAL.raw.toLong()
-      Place.Type.POSTAL_CODE -> PlaceTypeAndroid.POSTALCODE.raw.toLong()
-      Place.Type.POSTAL_CODE_PREFIX -> PlaceTypeAndroid.POSTALCODEPREFIX.raw.toLong()
-      Place.Type.POSTAL_CODE_SUFFIX -> PlaceTypeAndroid.POSTALCODESUFFIX.raw.toLong()
-      Place.Type.POSTAL_TOWN -> PlaceTypeAndroid.POSTALTOWN.raw.toLong()
-      Place.Type.POST_BOX -> PlaceTypeAndroid.POSTBOX.raw.toLong()
-      Place.Type.POST_OFFICE -> PlaceTypeAndroid.POSTOFFICE.raw.toLong()
-      Place.Type.PREMISE -> PlaceTypeAndroid.PREMISE.raw.toLong()
-      Place.Type.PRIMARY_SCHOOL -> PlaceTypeAndroid.PRIMARYSCHOOL.raw.toLong()
-      Place.Type.REAL_ESTATE_AGENCY -> PlaceTypeAndroid.REALESTATEAGENCY.raw.toLong()
-      Place.Type.RESTAURANT -> PlaceTypeAndroid.RESTAURANT.raw.toLong()
-      Place.Type.ROOFING_CONTRACTOR -> PlaceTypeAndroid.ROOFINGCONTRACTOR.raw.toLong()
-      Place.Type.ROOM -> PlaceTypeAndroid.ROOM.raw.toLong()
-      Place.Type.ROUTE -> PlaceTypeAndroid.ROUTE.raw.toLong()
-      Place.Type.RV_PARK -> PlaceTypeAndroid.RVPARK.raw.toLong()
-      Place.Type.SCHOOL -> PlaceTypeAndroid.SCHOOL.raw.toLong()
-      Place.Type.SECONDARY_SCHOOL -> PlaceTypeAndroid.SECONDARYSCHOOL.raw.toLong()
-      Place.Type.SHOE_STORE -> PlaceTypeAndroid.SHOESTORE.raw.toLong()
-      Place.Type.SHOPPING_MALL -> PlaceTypeAndroid.SHOPPINGMALL.raw.toLong()
-      Place.Type.SPA -> PlaceTypeAndroid.SPA.raw.toLong()
-      Place.Type.STADIUM -> PlaceTypeAndroid.STADIUM.raw.toLong()
-      Place.Type.STORAGE -> PlaceTypeAndroid.STORAGE.raw.toLong()
-      Place.Type.STORE -> PlaceTypeAndroid.STORE.raw.toLong()
-      Place.Type.STREET_ADDRESS -> PlaceTypeAndroid.STREETADDRESS.raw.toLong()
-      Place.Type.STREET_NUMBER -> PlaceTypeAndroid.STREETNUMBER.raw.toLong()
-      Place.Type.SUBLOCALITY -> PlaceTypeAndroid.SUBLOCALITY.raw.toLong()
-      Place.Type.SUBLOCALITY_LEVEL_1 -> PlaceTypeAndroid.SUBLOCALITYLEVEL1.raw.toLong()
-      Place.Type.SUBLOCALITY_LEVEL_2 -> PlaceTypeAndroid.SUBLOCALITYLEVEL2.raw.toLong()
-      Place.Type.SUBLOCALITY_LEVEL_3 -> PlaceTypeAndroid.SUBLOCALITYLEVEL3.raw.toLong()
-      Place.Type.SUBLOCALITY_LEVEL_4 -> PlaceTypeAndroid.SUBLOCALITYLEVEL4.raw.toLong()
-      Place.Type.SUBLOCALITY_LEVEL_5 -> PlaceTypeAndroid.SUBLOCALITYLEVEL5.raw.toLong()
-      Place.Type.SUBPREMISE -> PlaceTypeAndroid.SUBPREMISE.raw.toLong()
-      Place.Type.SUBWAY_STATION -> PlaceTypeAndroid.SUBWAYSTATION.raw.toLong()
-      Place.Type.SUPERMARKET -> PlaceTypeAndroid.SUPERMARKET.raw.toLong()
-      Place.Type.SYNAGOGUE -> PlaceTypeAndroid.SYNAGOGUE.raw.toLong()
-      Place.Type.TAXI_STAND -> PlaceTypeAndroid.TAXISTAND.raw.toLong()
-      Place.Type.TOURIST_ATTRACTION -> PlaceTypeAndroid.TOURISTATTRACTION.raw.toLong()
-      Place.Type.TOWN_SQUARE -> PlaceTypeAndroid.TOWNSQUARE.raw.toLong()
-      Place.Type.TRAIN_STATION -> PlaceTypeAndroid.TRAINSTATION.raw.toLong()
-      Place.Type.TRANSIT_STATION -> PlaceTypeAndroid.TRANSITSTATION.raw.toLong()
-      Place.Type.TRAVEL_AGENCY -> PlaceTypeAndroid.TRAVELAGENCY.raw.toLong()
-      Place.Type.UNIVERSITY -> PlaceTypeAndroid.UNIVERSITY.raw.toLong()
-      Place.Type.VETERINARY_CARE -> PlaceTypeAndroid.VETERINARYCARE.raw.toLong()
-      Place.Type.ZOO -> PlaceTypeAndroid.ZOO.raw.toLong()
+      Place.Type.ACCOUNTING -> PlaceTypeAndroid.ACCOUNTING
+      Place.Type.ADMINISTRATIVE_AREA_LEVEL_1 -> PlaceTypeAndroid.ADMINISTRATIVEAREALEVEL1
+      Place.Type.ADMINISTRATIVE_AREA_LEVEL_2 -> PlaceTypeAndroid.ADMINISTRATIVEAREALEVEL2
+      Place.Type.ADMINISTRATIVE_AREA_LEVEL_3 -> PlaceTypeAndroid.ADMINISTRATIVEAREALEVEL3
+      Place.Type.ADMINISTRATIVE_AREA_LEVEL_4 -> PlaceTypeAndroid.ADMINISTRATIVEAREALEVEL4
+      Place.Type.ADMINISTRATIVE_AREA_LEVEL_5 -> PlaceTypeAndroid.ADMINISTRATIVEAREALEVEL5
+      Place.Type.AIRPORT -> PlaceTypeAndroid.AIRPORT
+      Place.Type.AMUSEMENT_PARK -> PlaceTypeAndroid.AMUSEMENTPARK
+      Place.Type.AQUARIUM -> PlaceTypeAndroid.AQUARIUM
+      Place.Type.ARCHIPELAGO -> PlaceTypeAndroid.ARCHIPELAGO
+      Place.Type.ART_GALLERY -> PlaceTypeAndroid.ARTGALLERY
+      Place.Type.ATM -> PlaceTypeAndroid.ATM
+      Place.Type.BAKERY -> PlaceTypeAndroid.BAKERY
+      Place.Type.BANK -> PlaceTypeAndroid.BANK
+      Place.Type.BAR -> PlaceTypeAndroid.BAR
+      Place.Type.BEAUTY_SALON -> PlaceTypeAndroid.BEAUTYSALON
+      Place.Type.BICYCLE_STORE -> PlaceTypeAndroid.BICYCLESTORE
+      Place.Type.BOOK_STORE -> PlaceTypeAndroid.BOOKSTORE
+      Place.Type.BOWLING_ALLEY -> PlaceTypeAndroid.BOWLINGALLEY
+      Place.Type.BUS_STATION -> PlaceTypeAndroid.BUSSTATION
+      Place.Type.CAFE -> PlaceTypeAndroid.CAFE
+      Place.Type.CAMPGROUND -> PlaceTypeAndroid.CAMPGROUND
+      Place.Type.CAR_DEALER -> PlaceTypeAndroid.CARDEALER
+      Place.Type.CAR_RENTAL -> PlaceTypeAndroid.CARRENTAL
+      Place.Type.CAR_REPAIR -> PlaceTypeAndroid.CARREPAIR
+      Place.Type.CAR_WASH -> PlaceTypeAndroid.CARWASH
+      Place.Type.CASINO -> PlaceTypeAndroid.CASINO
+      Place.Type.CEMETERY -> PlaceTypeAndroid.CEMETERY
+      Place.Type.CHURCH -> PlaceTypeAndroid.CHURCH
+      Place.Type.CITY_HALL -> PlaceTypeAndroid.CITYHALL
+      Place.Type.CLOTHING_STORE -> PlaceTypeAndroid.CLOTHINGSTORE
+      Place.Type.COLLOQUIAL_AREA -> PlaceTypeAndroid.COLLOQUIALAREA
+      Place.Type.CONTINENT -> PlaceTypeAndroid.CONTINENT
+      Place.Type.CONVENIENCE_STORE -> PlaceTypeAndroid.CONVENIENCESTORE
+      Place.Type.COUNTRY -> PlaceTypeAndroid.COUNTRY
+      Place.Type.COURTHOUSE -> PlaceTypeAndroid.COURTHOUSE
+      Place.Type.DENTIST -> PlaceTypeAndroid.DENTIST
+      Place.Type.DEPARTMENT_STORE -> PlaceTypeAndroid.DEPARTMENTSTORE
+      Place.Type.DOCTOR -> PlaceTypeAndroid.DOCTOR
+      Place.Type.DRUGSTORE -> PlaceTypeAndroid.DRUGSTORE
+      Place.Type.ELECTRICIAN -> PlaceTypeAndroid.ELECTRICIAN
+      Place.Type.ELECTRONICS_STORE -> PlaceTypeAndroid.ELECTRONICSSTORE
+      Place.Type.EMBASSY -> PlaceTypeAndroid.EMBASSY
+      Place.Type.ESTABLISHMENT -> PlaceTypeAndroid.ESTABLISHMENT
+      Place.Type.FINANCE -> PlaceTypeAndroid.FINANCE
+      Place.Type.FIRE_STATION -> PlaceTypeAndroid.FIRESTATION
+      Place.Type.FLOOR -> PlaceTypeAndroid.FLOOR
+      Place.Type.FLORIST -> PlaceTypeAndroid.FLORIST
+      Place.Type.FOOD -> PlaceTypeAndroid.FOOD
+      Place.Type.FUNERAL_HOME -> PlaceTypeAndroid.FUNERALHOME
+      Place.Type.FURNITURE_STORE -> PlaceTypeAndroid.FURNITURESTORE
+      Place.Type.GAS_STATION -> PlaceTypeAndroid.GASSTATION
+      Place.Type.GENERAL_CONTRACTOR -> PlaceTypeAndroid.GENERALCONTRACTOR
+      Place.Type.GEOCODE -> PlaceTypeAndroid.GEOCODE
+      Place.Type.GROCERY_OR_SUPERMARKET -> PlaceTypeAndroid.GROCERYORSUPERMARKET
+      Place.Type.GYM -> PlaceTypeAndroid.GYM
+      Place.Type.HAIR_CARE -> PlaceTypeAndroid.HAIRCARE
+      Place.Type.HARDWARE_STORE -> PlaceTypeAndroid.HARDWARESTORE
+      Place.Type.HEALTH -> PlaceTypeAndroid.HEALTH
+      Place.Type.HINDU_TEMPLE -> PlaceTypeAndroid.HINDUTEMPLE
+      Place.Type.HOME_GOODS_STORE -> PlaceTypeAndroid.HOMEGOODSSTORE
+      Place.Type.HOSPITAL -> PlaceTypeAndroid.HOSPITAL
+      Place.Type.INSURANCE_AGENCY -> PlaceTypeAndroid.INSURANCEAGENCY
+      Place.Type.INTERSECTION -> PlaceTypeAndroid.INTERSECTION
+      Place.Type.JEWELRY_STORE -> PlaceTypeAndroid.JEWELRYSTORE
+      Place.Type.LAUNDRY -> PlaceTypeAndroid.LAUNDRY
+      Place.Type.LAWYER -> PlaceTypeAndroid.LAWYER
+      Place.Type.LIBRARY-> PlaceTypeAndroid.LIBRARY
+      Place.Type.LIGHT_RAIL_STATION -> PlaceTypeAndroid.LIGHTRAILSTATION
+      Place.Type.LIQUOR_STORE -> PlaceTypeAndroid.LIQUORSTORE
+      Place.Type.LOCALITY -> PlaceTypeAndroid.LOCALITY
+      Place.Type.LOCAL_GOVERNMENT_OFFICE -> PlaceTypeAndroid.LOCALGOVERNMENTOFFICE
+      Place.Type.LOCKSMITH -> PlaceTypeAndroid.LOCKSMITH
+      Place.Type.LODGING -> PlaceTypeAndroid.LODGING
+      Place.Type.MEAL_DELIVERY -> PlaceTypeAndroid.MEALDELIVERY
+      Place.Type.MEAL_TAKEAWAY -> PlaceTypeAndroid.MEALTAKEAWAY
+      Place.Type.MOSQUE -> PlaceTypeAndroid.MOSQUE
+      Place.Type.MOVIE_RENTAL -> PlaceTypeAndroid.MOVIERENTAL
+      Place.Type.MOVIE_THEATER -> PlaceTypeAndroid.MOVIETHEATER
+      Place.Type.MOVING_COMPANY -> PlaceTypeAndroid.MOVINGCOMPANY
+      Place.Type.MUSEUM -> PlaceTypeAndroid.MUSEUM
+      Place.Type.NATURAL_FEATURE -> PlaceTypeAndroid.NATURALFEATURE
+      Place.Type.NEIGHBORHOOD -> PlaceTypeAndroid.NEIGHBORHOOD
+      Place.Type.NIGHT_CLUB -> PlaceTypeAndroid.NIGHTCLUB
+      Place.Type.OTHER -> PlaceTypeAndroid.OTHER
+      Place.Type.PAINTER -> PlaceTypeAndroid.PAINTER
+      Place.Type.PARK -> PlaceTypeAndroid.PARK
+      Place.Type.PARKING -> PlaceTypeAndroid.PARKING
+      Place.Type.PET_STORE -> PlaceTypeAndroid.PETSTORE
+      Place.Type.PHARMACY -> PlaceTypeAndroid.PHARMACY
+      Place.Type.PHYSIOTHERAPIST -> PlaceTypeAndroid.PHYSIOTHERAPIST
+      Place.Type.PLACE_OF_WORSHIP -> PlaceTypeAndroid.PLACEOFWORSHIP
+      Place.Type.PLUMBER -> PlaceTypeAndroid.PLUMBER
+      Place.Type.PLUS_CODE -> PlaceTypeAndroid.PLUSCODE
+      Place.Type.POINT_OF_INTEREST -> PlaceTypeAndroid.POINTOFINTEREST
+      Place.Type.POLICE -> PlaceTypeAndroid.POLICE
+      Place.Type.POLITICAL -> PlaceTypeAndroid.POLITICAL
+      Place.Type.POSTAL_CODE -> PlaceTypeAndroid.POSTALCODE
+      Place.Type.POSTAL_CODE_PREFIX -> PlaceTypeAndroid.POSTALCODEPREFIX
+      Place.Type.POSTAL_CODE_SUFFIX -> PlaceTypeAndroid.POSTALCODESUFFIX
+      Place.Type.POSTAL_TOWN -> PlaceTypeAndroid.POSTALTOWN
+      Place.Type.POST_BOX -> PlaceTypeAndroid.POSTBOX
+      Place.Type.POST_OFFICE -> PlaceTypeAndroid.POSTOFFICE
+      Place.Type.PREMISE -> PlaceTypeAndroid.PREMISE
+      Place.Type.PRIMARY_SCHOOL -> PlaceTypeAndroid.PRIMARYSCHOOL
+      Place.Type.REAL_ESTATE_AGENCY -> PlaceTypeAndroid.REALESTATEAGENCY
+      Place.Type.RESTAURANT -> PlaceTypeAndroid.RESTAURANT
+      Place.Type.ROOFING_CONTRACTOR -> PlaceTypeAndroid.ROOFINGCONTRACTOR
+      Place.Type.ROOM -> PlaceTypeAndroid.ROOM
+      Place.Type.ROUTE -> PlaceTypeAndroid.ROUTE
+      Place.Type.RV_PARK -> PlaceTypeAndroid.RVPARK
+      Place.Type.SCHOOL -> PlaceTypeAndroid.SCHOOL
+      Place.Type.SECONDARY_SCHOOL -> PlaceTypeAndroid.SECONDARYSCHOOL
+      Place.Type.SHOE_STORE -> PlaceTypeAndroid.SHOESTORE
+      Place.Type.SHOPPING_MALL -> PlaceTypeAndroid.SHOPPINGMALL
+      Place.Type.SPA -> PlaceTypeAndroid.SPA
+      Place.Type.STADIUM -> PlaceTypeAndroid.STADIUM
+      Place.Type.STORAGE -> PlaceTypeAndroid.STORAGE
+      Place.Type.STORE -> PlaceTypeAndroid.STORE
+      Place.Type.STREET_ADDRESS -> PlaceTypeAndroid.STREETADDRESS
+      Place.Type.STREET_NUMBER -> PlaceTypeAndroid.STREETNUMBER
+      Place.Type.SUBLOCALITY -> PlaceTypeAndroid.SUBLOCALITY
+      Place.Type.SUBLOCALITY_LEVEL_1 -> PlaceTypeAndroid.SUBLOCALITYLEVEL1
+      Place.Type.SUBLOCALITY_LEVEL_2 -> PlaceTypeAndroid.SUBLOCALITYLEVEL2
+      Place.Type.SUBLOCALITY_LEVEL_3 -> PlaceTypeAndroid.SUBLOCALITYLEVEL3
+      Place.Type.SUBLOCALITY_LEVEL_4 -> PlaceTypeAndroid.SUBLOCALITYLEVEL4
+      Place.Type.SUBLOCALITY_LEVEL_5 -> PlaceTypeAndroid.SUBLOCALITYLEVEL5
+      Place.Type.SUBPREMISE -> PlaceTypeAndroid.SUBPREMISE
+      Place.Type.SUBWAY_STATION -> PlaceTypeAndroid.SUBWAYSTATION
+      Place.Type.SUPERMARKET -> PlaceTypeAndroid.SUPERMARKET
+      Place.Type.SYNAGOGUE -> PlaceTypeAndroid.SYNAGOGUE
+      Place.Type.TAXI_STAND -> PlaceTypeAndroid.TAXISTAND
+      Place.Type.TOURIST_ATTRACTION -> PlaceTypeAndroid.TOURISTATTRACTION
+      Place.Type.TOWN_SQUARE -> PlaceTypeAndroid.TOWNSQUARE
+      Place.Type.TRAIN_STATION -> PlaceTypeAndroid.TRAINSTATION
+      Place.Type.TRANSIT_STATION -> PlaceTypeAndroid.TRANSITSTATION
+      Place.Type.TRAVEL_AGENCY -> PlaceTypeAndroid.TRAVELAGENCY
+      Place.Type.UNIVERSITY -> PlaceTypeAndroid.UNIVERSITY
+      Place.Type.VETERINARY_CARE -> PlaceTypeAndroid.VETERINARYCARE
+      Place.Type.ZOO -> PlaceTypeAndroid.ZOO
       else -> {throw IllegalArgumentException("Invalid PlaceType: $type")}
     }
   }

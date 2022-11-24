@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_places_platform_interface/google_maps_places_platform_interface.dart';
 
 /// Title
-const title = 'Flutter Google Places iOS SDK Example';
+const String title = 'Flutter Google Places iOS SDK Example';
 
 void main() {
   runApp(MyApp());
@@ -35,7 +35,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _places = GoogleMapsPlacesPlatform.instance;
+  final GoogleMapsPlacesPlatform _places = GoogleMapsPlacesPlatform.instance;
 
   //
   String? _predictLastText;
@@ -91,7 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildBody() {
-    final predictionsWidgets = _buildPredictionWidgets();
+    final List<Widget> predictionsWidgets = _buildPredictionWidgets();
 
     return Padding(
       padding: EdgeInsets.all(30),
@@ -114,14 +114,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return input
         .split(",")
-        .map((part) => part.trim())
-        .map((part) {
+        .map((String part) => part.trim())
+        .map((String part) {
           if (part.length != 2) {
             return "Country part '${part}' must be 2 characters";
           }
           return null;
         })
-        .where((item) => item != null)
+        .where((String? item) => item != null)
         .firstOrNull;
   }
 
@@ -130,7 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ? []
         : countries
             .split(",")
-            .map((item) => item.trim())
+            .map((String item) => item.trim())
             .toList(growable: false);
   }
 
@@ -143,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
-    final hasContent = _predictLastText?.isNotEmpty ?? false;
+    final bool hasContent = _predictLastText?.isNotEmpty ?? false;
 
     setState(() {
       _predicting = hasContent;
@@ -158,6 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
           await _places.findAutocompletePredictions(
               query: _predictLastText!,
               countries: _countries,
+              typeFilter: <TypeFilter>[_placeTypeFilter],
               origin: const LatLng(65.0121, 25.4651),
               locationBias: _locationBias);
 
@@ -194,8 +195,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildErrorWidget(dynamic err) {
-    final theme = Theme.of(context);
-    final errorText = err == null ? '' : err.toString();
+    final ThemeData theme = Theme.of(context);
+    final String errorText = err == null ? '' : err.toString();
     return Text(errorText,
         style: theme.textTheme.caption?.copyWith(color: theme.errorColor));
   }
@@ -217,7 +218,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       DropdownButton<TypeFilter>(
         items: TypeFilter.values
-            .map((item) => DropdownMenuItem<TypeFilter>(
+            .map((TypeFilter item) => DropdownMenuItem<TypeFilter>(
                 child: Text(item.name), value: item))
             .toList(growable: false),
         value: _placeTypeFilter,

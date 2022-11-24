@@ -17,7 +17,9 @@ import io.flutter.plugins.google_maps_places_android.Convert.convertCountries
 import io.flutter.plugins.google_maps_places_android.Convert.convertLatLng
 import io.flutter.plugins.google_maps_places_android.Convert.convertLatLngBounds
 import io.flutter.plugins.google_maps_places_android.Convert.convertResponse
+import io.flutter.plugins.google_maps_places_android.Convert.convertTypeFilter
 import io.flutter.plugins.google_maps_places_android.Convert.convertTypeFilters
+import io.flutter.plugins.google_maps_places_android.Convert.convertTypeFiltersToSingle
 
 
 /** GoogleMapsPlacesAndroidPlugin */
@@ -65,8 +67,11 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
     val placesRequest = FindAutocompletePredictionsRequest.builder()
       .setQuery(query)
       .setLocationBias(convertLatLngBounds(locationBias))
+      .setLocationRestriction(convertLatLngBounds(locationRestriction))
       .setCountries(convertCountries(countries) ?: emptyList())
-      .setTypesFilter(convertTypeFilters(typeFilter) ?: emptyList())
+      .setTypeFilter(convertTypeFiltersToSingle(typeFilter))
+      //Not working at the moment. API return an error when used.
+      //.setTypesFilter(convertTypeFilters(typeFilter) ?: emptyList())
       .setSessionToken(sessionToken)
       .setOrigin(convertLatLng(origin))
       .build()
