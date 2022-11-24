@@ -17,7 +17,6 @@ enum TypeFilterIOS {
   establishment,
   geocode,
   regions,
-  all,
 }
 
 enum PlaceTypeIOS {

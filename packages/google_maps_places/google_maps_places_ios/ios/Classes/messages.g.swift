@@ -22,7 +22,6 @@ enum TypeFilterIOS: Int {
   case establishment = 2
   case geocode = 3
   case regions = 4
-  case all = 5
 }
 
 enum PlaceTypeIOS: Int {
