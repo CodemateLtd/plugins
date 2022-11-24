@@ -70,7 +70,8 @@ class Marker implements MapsObject<Marker> {
   static const bool _defaultConsumeTapEventsValue = false;
   static const bool _defaultDraggableValue = false;
   static const bool _defaultFlatValue = false;
-  static const BitmapDescriptor _defaultIconValue = BitmapDescriptor.defaultMarker;
+  static const BitmapDescriptor _defaultIconValue =
+      BitmapDescriptor.defaultMarker;
   static const InfoWindow _defaultInfoWindowValue = InfoWindow.noText;
   static const LatLng _defaultPositionValue = LatLng(0.0, 0.0);
   static const double _defaultRotationValue = 0.0;
@@ -216,21 +217,27 @@ class Marker implements MapsObject<Marker> {
       markerId: markerId,
       alpha: (defaultAlpha ?? false) ? _defaultAlphaValue : alpha,
       anchor: (defaultAnchor ?? false) ? _defaultAnchorValue : anchor,
-      consumeTapEvents: (defaultConsumeTapEvents ?? false) ? _defaultConsumeTapEventsValue : consumeTapEvents,
-      draggable: (defaultDraggable ?? false) ? _defaultDraggableValue: draggable,
-      flat: (defaultFlat ?? false) ?_defaultFlatValue: flat,
+      consumeTapEvents: (defaultConsumeTapEvents ?? false)
+          ? _defaultConsumeTapEventsValue
+          : consumeTapEvents,
+      draggable:
+          (defaultDraggable ?? false) ? _defaultDraggableValue : draggable,
+      flat: (defaultFlat ?? false) ? _defaultFlatValue : flat,
       icon: (defaultIcon ?? false) ? _defaultIconValue : icon,
-      infoWindow: (defaultInfoWindow ?? false) ? _defaultInfoWindowValue : infoWindow,
+      infoWindow:
+          (defaultInfoWindow ?? false) ? _defaultInfoWindowValue : infoWindow,
       position: (defaultPosition ?? false) ? _defaultPositionValue : position,
       rotation: (defaultRotation ?? false) ? _defaultRotationValue : rotation,
-      visible: (defaultVisible ?? false) ?_defaultVisibleValue: visible,
+      visible: (defaultVisible ?? false) ? _defaultVisibleValue : visible,
       zIndex: (defaultZIndex ?? false) ? _defaultZIndexValue : zIndex,
       onTap: (defaultOnTap ?? false) ? _defaultOnTap : onTap,
-      onDragStart: (defaultOnDragStart ?? false) ? _defaultOnDragStart : onDragStart,
+      onDragStart:
+          (defaultOnDragStart ?? false) ? _defaultOnDragStart : onDragStart,
       onDrag: (defaultOnDrag ?? false) ? _defaultOnDrag : onDrag,
       onDragEnd: (defaultOnDragEnd ?? false) ? _defaultOnDragEnd : onDragEnd,
-      clusterManagerId:
-          (defaultClusterManagerId ?? false) ? _defaultClusterManagerId : clusterManagerId,
+      clusterManagerId: (defaultClusterManagerId ?? false)
+          ? _defaultClusterManagerId
+          : clusterManagerId,
     );
   }
 
