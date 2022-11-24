@@ -18,7 +18,30 @@ import 'package:integration_test/integration_test.dart';
 import 'resources/icon_image_base64.dart';
 
 void main() {
+  const LatLng mapCenter = LatLng(65.011890, 25.468021);
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  // Repeatedly checks an asynchronous value against a test condition, waiting
+  // one frame between each check, returing the value if it passes the predicate
+  // before [maxTries] is reached.
+  //
+  // Returns null if the predicate is never satisfied.
+  //
+  // This is useful for cases where the Maps SDK has some internally
+  // asynchronous operation that we don't have visibility into (e.g., native UI
+  // animations).
+  Future<T?> waitForValueMatchingPredicate<T>(WidgetTester tester,
+      Future<T> Function() getValue, bool Function(T) predicate,
+      {int maxTries = 100}) async {
+    for (int i = 0; i < maxTries; i++) {
+      final T value = await getValue();
+      if (predicate(value)) {
+        return value;
+      }
+      await tester.pump();
+    }
+    return null;
+  }
 
   group('MarkersController', () {
     late StreamController<MapEvent<Object?>> events;
@@ -31,7 +54,10 @@ void main() {
       clusterManagersController = ClusterManagersController(stream: events);
       markersController = MarkersController(
           stream: events, clusterManagersController: clusterManagersController);
-      map = gmaps.GMap(html.DivElement());
+      final gmaps.MapOptions options = gmaps.MapOptions();
+      options.zoom = 4;
+      options.center = gmaps.LatLng(mapCenter.latitude, mapCenter.longitude);
+      map = gmaps.GMap(html.DivElement(), options);
       clusterManagersController.bindToMap(123, map);
       markersController.bindToMap(123, map);
     });
@@ -274,13 +300,23 @@ void main() {
       // Create the marker with clusterManagerId.
       final Set<Marker> markers = <Marker>{
         const Marker(
-            markerId: MarkerId('1'), clusterManagerId: clusterManagerId),
+            markerId: MarkerId('1'),
+            position: mapCenter,
+            clusterManagerId: clusterManagerId),
       };
 
       clusterManagersController.addClusterManagers(clusterManagers);
       markersController.addMarkers(markers);
 
-      expect(clusterManagersController.getClusters(clusterManagerId).length, 1);
+      final List<Cluster> clusters =
+          await waitForValueMatchingPredicate<List<Cluster>>(
+                  tester,
+                  () async =>
+                      clusterManagersController.getClusters(clusterManagerId),
+                  (List<Cluster> clusters) => clusters.isNotEmpty) ??
+              <Cluster>[];
+
+      expect(clusters.length, 1);
 
       // Update the marker with null clusterManagerId.
       final Set<Marker> updatedMarkers = <Marker>{
@@ -290,7 +326,7 @@ void main() {
 
       expect(markersController.markers.length, 1);
 
-      expect(clusterManagersController.getClusters(clusterManagerId).length, 1);
+      expect(clusterManagersController.getClusters(clusterManagerId).length, 0);
     });
   });
 }
