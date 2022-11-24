@@ -23,6 +23,10 @@ class GoogleMapsPlacesIOS extends GoogleMapsPlacesPlatform {
     List<TypeFilter>? typeFilter,
     bool? refreshToken,
   }) async {
+    // Only one type filter is accepted at the moment
+    assert(typeFilter == null || typeFilter.length <= 1);
+    // Only either locationBias or locationRestriction is allowed
+    assert(locationBias == null || locationRestriction == null);
     final List<AutocompletePredictionIOS?>? response =
         await _api.findAutocompletePredictionsIOS(
             query,
