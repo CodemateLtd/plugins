@@ -101,6 +101,7 @@ class MockGoogleMapController extends _i1.Mock
     _i4.CirclesController? circles,
     _i4.PolygonsController? polygons,
     _i4.PolylinesController? polylines,
+    _i4.ClusterManagersController? clusterManagers,
   }) =>
       super.noSuchMethod(
         Invocation.method(
@@ -112,6 +113,7 @@ class MockGoogleMapController extends _i1.Mock
             #circles: circles,
             #polygons: polygons,
             #polylines: polylines,
+            #clusterManagers: clusterManagers,
           },
         ),
         returnValueForMissingStub: null,
@@ -261,6 +263,15 @@ class MockGoogleMapController extends _i1.Mock
         returnValueForMissingStub: null,
       );
   @override
+  void updateClusterManagers(_i3.ClusterManagerUpdates? updates) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #updateClusterManagers,
+          [updates],
+        ),
+        returnValueForMissingStub: null,
+      );
+  @override
   void showInfoWindow(_i3.MarkerId? markerId) => super.noSuchMethod(
         Invocation.method(
           #showInfoWindow,
@@ -285,6 +296,19 @@ class MockGoogleMapController extends _i1.Mock
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
+  @override
+  _i2.Future<List<_i3.Cluster>> getClusters(
+          {required _i3.ClusterManagerId? clusterManagerId}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getClusters,
+          [],
+          {#clusterManagerId: clusterManagerId},
+        ),
+        returnValue: _i2.Future<List<_i3.Cluster>>.value(<_i3.Cluster>[]),
+        returnValueForMissingStub:
+            _i2.Future<List<_i3.Cluster>>.value(<_i3.Cluster>[]),
+      ) as _i2.Future<List<_i3.Cluster>>);
   @override
   void dispose() => super.noSuchMethod(
         Invocation.method(
