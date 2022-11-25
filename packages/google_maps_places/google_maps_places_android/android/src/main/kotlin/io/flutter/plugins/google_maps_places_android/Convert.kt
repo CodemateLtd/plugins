@@ -49,7 +49,9 @@ object Convert {
     if (filters == null) {
       return null
     }
-    return filters.map { filter ->  convertTypeFilter(filter?.toInt()).toString() }
+    @Suppress("UNCHECKED_CAST")
+    val tempFilters = filters as? List<Int> ?: return null
+    return tempFilters.map { filter ->  convertTypeFilter(filter).toString() }
   }
 
   /// Convert list of [TypeFilterAndroid] to [TypeFilter]
@@ -57,13 +59,16 @@ object Convert {
     if (filters == null || filters.isEmpty()) {
       return null
     }
-    val filter = filters.first() ?: return null
-    return convertTypeFilter(filter.toInt())
+
+    @Suppress("UNCHECKED_CAST")
+    val tempFilters = filters as? List<Int> ?: return null
+    val filter = tempFilters.first()
+    return convertTypeFilter(filter)
   }
 
   /// Convert [TypeFilterAndroid] to [TypeFilter]
-  fun convertTypeFilter(filter: Int?): TypeFilter {
-    return when (filter?.let { TypeFilterAndroid.ofRaw(it) }) {
+  fun convertTypeFilter(filter: Int): TypeFilter {
+    return when (TypeFilterAndroid.ofRaw(filter)) {
       TypeFilterAndroid.ADDRESS -> TypeFilter.ADDRESS
       TypeFilterAndroid.CITIES -> TypeFilter.CITIES
       TypeFilterAndroid.ESTABLISHMENT -> TypeFilter.ESTABLISHMENT
