@@ -6,10 +6,10 @@ import UIKit
 import GooglePlaces
 
 
-/// Converters from and to Pigeon generated values
+/// Converters from and to Pigeon generated values.
 class Convert: NSObject {
     
-    /// Convert [LatLngIOS] to [CLLocation]
+    /// Convert [LatLngIOS] to [CLLocation].
     class func convertLatLng(_ latLng:LatLngIOS?) -> CLLocation? {
         guard latLng != nil && latLng?.latitude != nil && latLng?.longitude != nil else {
             return nil
@@ -17,7 +17,7 @@ class Convert: NSObject {
         return CLLocation(latitude: latLng!.latitude!, longitude:  latLng!.longitude!)
     }
     
-    /// Convert [LatLngBoundsIOS] to [GMSPlaceLocationBias]
+    /// Convert [LatLngBoundsIOS] to [GMSPlaceLocationBias].
     class func convertLocationBias(_ bounds:LatLngBoundsIOS?) -> GMSPlaceLocationBias? {
         guard bounds != nil && bounds?.northeast != nil && bounds?.southwest != nil else {
             return nil
@@ -28,7 +28,7 @@ class Convert: NSObject {
                                            southWestBounds);
     }
     
-    /// Convert [LatLngBoundsIOS] to [GMSPlaceLocationRestriction]
+    /// Convert [LatLngBoundsIOS] to [GMSPlaceLocationRestriction].
     class func convertLocationRestrction(_ bounds:LatLngBoundsIOS?) -> GMSPlaceLocationRestriction? {
         guard bounds != nil && bounds?.northeast != nil && bounds?.southwest != nil else {
             return nil
@@ -39,7 +39,7 @@ class Convert: NSObject {
                                            southWestBounds);
     }
     
-    /// Convert array of [TypeFilterIOS] raw value to array of [GMSPlacesAutocompleteTypeFilter]
+    /// Convert array of [TypeFilterIOS] raw value to array of [GMSPlacesAutocompleteTypeFilter].
     class func convertTypeFilters(_ filters:[Int32?]?) -> [GMSPlacesAutocompleteTypeFilter]? {
         guard filters != nil else {
             return nil
@@ -48,7 +48,7 @@ class Convert: NSObject {
             return convertTypeFilter(filter) }
     }
     
-    /// Convert array of [TypeFilterIOS] to single [GMSPlacesAutocompleteTypeFilter]
+    /// Convert array of [TypeFilterIOS] to single [GMSPlacesAutocompleteTypeFilter].
     class func convertTypeFiltersToSingle(_ filters:[Int32?]?) -> GMSPlacesAutocompleteTypeFilter {
         guard filters != nil && !filters!.isEmpty else {
             return .noFilter
@@ -57,7 +57,7 @@ class Convert: NSObject {
         return convertTypeFilter(filter!!)
     }
     
-    /// Convert [TypeFilterIOS] raw value to [GMSPlacesAutocompleteTypeFilter]
+    /// Convert [TypeFilterIOS] raw value to [GMSPlacesAutocompleteTypeFilter].
     class func convertTypeFilter(_ filter:Int32?) -> GMSPlacesAutocompleteTypeFilter {
         guard filter != nil else {
             return GMSPlacesAutocompleteTypeFilter.noFilter
@@ -79,7 +79,7 @@ class Convert: NSObject {
         }
     }
     
-    /// Convert array of [GMSAutocompletePrediction] to array  of [AutocompletePredictionIOS]
+    /// Convert array of [GMSAutocompletePrediction] to array  of [AutocompletePredictionIOS].
     class func convertResults(_ results: [GMSAutocompletePrediction]?) -> [AutocompletePredictionIOS?] {
         guard let results = results else {
             return []
@@ -88,18 +88,18 @@ class Convert: NSObject {
             return convertPrediction(prediction) }
     }
     
-    /// Convert [GMSAutocompletePrediction] to [AutocompletePredictionIOS]
+    /// Convert [GMSAutocompletePrediction] to [AutocompletePredictionIOS].
     class func convertPrediction(_ prediction: GMSAutocompletePrediction) -> AutocompletePredictionIOS? {
         return AutocompletePredictionIOS(fullText: prediction.attributedFullText.string, placeId: prediction.placeID, placeTypes: convertPlaceTypes(prediction.types), primaryText: prediction.attributedPrimaryText.string, secondaryText: prediction.attributedSecondaryText?.string ?? "")
     }
     
-    /// Convert array of [GMSPlaceType] to array  of [PlaceTypeIOS] as raw value
+    /// Convert array of [GMSPlaceType] to array  of [PlaceTypeIOS] as raw value.
     class func convertPlaceTypes(_ placeTypes: [String]) -> [Int32?] {
         return placeTypes.map { (placeType: String) in
             return Int32(convertPlaceType(placeType)?.rawValue ?? -1) }
     }
     
-    /// Convert [GMSPlaceType] to [PlaceTypeIOS]
+    /// Convert [GMSPlaceType] to [PlaceTypeIOS].
     class func convertPlaceType(_ placeType: String) -> PlaceTypeIOS? {
         switch (placeType) {
         case kGMSPlaceTypeAccounting:
@@ -120,7 +120,7 @@ class Convert: NSObject {
             return .amusementPark
         case kGMSPlaceTypeAquarium:
             return .aquarium
-        /// Const for this is not available
+        /// Const for this is not available.
         case "archipelago":
             return .archipelago
         case kGMSPlaceTypeArtGallery:
@@ -167,7 +167,7 @@ class Convert: NSObject {
             return .clothingStore
         case kGMSPlaceTypeColloquialArea:
             return .colloquialArea
-            /// Const for this is not available
+            /// Const for this is not available.
         case "continent":
             return .continent
         case kGMSPlaceTypeConvenienceStore:
@@ -272,7 +272,7 @@ class Convert: NSObject {
             return .neighborhood
         case kGMSPlaceTypeNightClub:
             return .nightClub
-            /// Const for this is not available
+            /// Const for this is not available.
         case "other":
             return .other
         case kGMSPlaceTypePainter:
@@ -291,7 +291,7 @@ class Convert: NSObject {
             return .placeOfWorship
         case kGMSPlaceTypePlumber:
             return .plumber
-            // Const for this is not available
+            // Const for this is not available.
         case "plus_code":
             return .plusCode
         case kGMSPlaceTypePointOfInterest:

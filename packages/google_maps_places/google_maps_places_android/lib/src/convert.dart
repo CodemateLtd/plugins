@@ -4,7 +4,7 @@
 
 part of google_maps_places_android;
 
-/// Converts [LatLng] to [LatLngAndroid]
+/// Converts [LatLng] to [LatLngAndroid].
 LatLngAndroid? convertLatLng(LatLng? latLng) {
   if (latLng == null) {
     return null;
@@ -12,7 +12,7 @@ LatLngAndroid? convertLatLng(LatLng? latLng) {
   return LatLngAndroid(latitude: latLng.latitude, longitude: latLng.longitude);
 }
 
-/// Converts [LatLngBounds] to [LatLngBoundsAndroid]
+/// Converts [LatLngBounds] to [LatLngBoundsAndroid].
 LatLngBoundsAndroid? convertLatLngBounds(LatLngBounds? bounds) {
   if (bounds == null) {
     return null;
@@ -22,21 +22,21 @@ LatLngBoundsAndroid? convertLatLngBounds(LatLngBounds? bounds) {
       southwest: convertLatLng(bounds.southwest));
 }
 
-/// Converts list of [TypeFilter] to list of [int]
+/// Converts list of [TypeFilter] to list of [int].
 List<int>? convertTypeFilter(List<TypeFilter>? filters) => filters
     ?.map<int>((TypeFilter filter) => TypeFilterAndroid.values
         .firstWhere((TypeFilterAndroid element) => element.name == filter.name)
         .index)
     .toList();
 
-/// Converts list of [int] to list of [PlaceType]
+/// Converts list of [int] to list of [PlaceType].
 List<PlaceType> convertPlaceTypes(List<int?> placeTypes) => placeTypes
     .map<PlaceType>((int? placeType) => PlaceType.values.firstWhere(
         (PlaceType element) =>
             element.name == PlaceTypeAndroid.values[placeType!].name))
     .toList();
 
-/// Converts [AutocompletePredictionAndroid] to [AutocompletePrediction]
+/// Converts [AutocompletePredictionAndroid] to [AutocompletePrediction].
 AutocompletePrediction convertPrediction(
     AutocompletePredictionAndroid prediction) {
   return AutocompletePrediction(
@@ -48,7 +48,7 @@ AutocompletePrediction convertPrediction(
       secondaryText: prediction.secondaryText);
 }
 
-/// Converts list of [AutocompletePredictionAndroid] to list of [AutocompletePrediction]
+/// Converts list of [AutocompletePredictionAndroid] to list of [AutocompletePrediction].
 List<AutocompletePrediction> convertReponse(
     List<AutocompletePredictionAndroid?> results) {
   return results

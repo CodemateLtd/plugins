@@ -44,7 +44,7 @@ class GoogleMapsPlaces {
     List<TypeFilter>? typeFilter,
     bool? refreshToken,
   }) async {
-    return await _instance.findAutocompletePredictions(
+    return _instance.findAutocompletePredictions(
         query: query,
         countries: countries,
         origin: origin,

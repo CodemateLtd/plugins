@@ -27,7 +27,7 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
   /// The MethodChannel that will the communication between Flutter and native Android
   ///
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-  /// when the Flutter Engine is detached from the Activity
+  /// when the Flutter Engine is detached from the Activity.
   private lateinit var client: PlacesClient
   private var previousSessionToken: AutocompleteSessionToken? = null
   private lateinit var applicationContext: Context
@@ -51,7 +51,7 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
     setup(binding.binaryMessenger, null);
   }
 
-  /// Find Autocomplete Predictions
+  /// Find Autocomplete Predictions.
   /// ref: https://developers.google.com/maps/documentation/places/android-sdk/autocomplete#get_place_predictions
   override fun findAutocompletePredictionsAndroid(
     query: String,
@@ -65,7 +65,7 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
   ) {
     val sessionToken = initialize(refreshToken == true)
 
-    // LocationBias and LocationRestriction are not allowed at the same time
+    // LocationBias and LocationRestriction are not allowed at the same time.
     val placesRequest = if (locationRestriction != null && locationBias == null) {
       requestWithLocationRestriction(query,
         locationRestriction,
@@ -94,7 +94,7 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
     }
   }
 
-  // Request with locationBias if given
+  // Request with locationBias if given.
   private fun requestWithLocationBias(
     query: String,
     locationBias: LatLngBoundsAndroid?,
@@ -114,7 +114,7 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
       .build()
   }
 
-  // Request with location restriction
+  // Request with location restriction.
   private fun requestWithLocationRestriction(
     query: String,
     locationRestriction: LatLngBoundsAndroid?,
@@ -135,7 +135,7 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
   }
 
 
-  /// Initialize Places client
+  /// Initialize Places client.
   private fun initialize(refreshToken: Boolean): AutocompleteSessionToken  {
     val applicationInfo =
       applicationContext
@@ -150,7 +150,7 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
     return getSessionToken(refreshToken);
   }
 
-  /// Fetch new session token if needed
+  /// Fetch new session token if needed.
   private fun getSessionToken(refreshToken: Boolean): AutocompleteSessionToken {
     val sessionToken = previousSessionToken
     if (refreshToken || sessionToken == null) {

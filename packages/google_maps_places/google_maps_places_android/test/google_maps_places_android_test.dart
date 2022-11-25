@@ -48,8 +48,8 @@ void main() {
     test('passes the accepted type groups correctly', () async {
       await plugin.findAutocompletePredictions(query: 'koulu');
       final VerificationResult result = verify(
-          mockApi.findAutocompletePredictionsAndroid(
-              captureAny, captureAny, captureAny, captureAny, captureAny, captureAny, captureAny));
+          mockApi.findAutocompletePredictionsAndroid(captureAny, captureAny,
+              captureAny, captureAny, captureAny, captureAny, captureAny));
       expect(result.captured[0], 'koulu');
     });
   });

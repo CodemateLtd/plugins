@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/// Available place types
+/// Available place types.
 ///
 /// Ref: https://developers.google.com/maps/documentation/places/android-sdk/supported_types
 enum PlaceType {

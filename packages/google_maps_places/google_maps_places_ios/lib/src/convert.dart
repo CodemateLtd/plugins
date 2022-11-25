@@ -4,7 +4,7 @@
 
 part of google_maps_places_ios;
 
-/// Converts [LatLng] to [LatLngIOS]
+/// Converts [LatLng] to [LatLngIOS].
 LatLngIOS? convertLatLng(LatLng? latLng) {
   if (latLng == null) {
     return null;
@@ -12,7 +12,7 @@ LatLngIOS? convertLatLng(LatLng? latLng) {
   return LatLngIOS(latitude: latLng.latitude, longitude: latLng.longitude);
 }
 
-/// Converts [LatLngBounds] to [LatLngBoundsIOS]
+/// Converts [LatLngBounds] to [LatLngBoundsIOS].
 LatLngBoundsIOS? convertLatLngBounds(LatLngBounds? bounds) {
   if (bounds == null) {
     return null;
@@ -22,7 +22,7 @@ LatLngBoundsIOS? convertLatLngBounds(LatLngBounds? bounds) {
       southwest: convertLatLng(bounds.southwest));
 }
 
-/// Converts list of [AutocompletePredictionIOS] to list of [AutocompletePrediction]
+/// Converts list of [AutocompletePredictionIOS] to list of [AutocompletePrediction].
 List<AutocompletePrediction> convertReponse(
     List<AutocompletePredictionIOS?> results) {
   return results
@@ -30,21 +30,21 @@ List<AutocompletePrediction> convertReponse(
       .toList();
 }
 
-
-/// Converts list of [TypeFilter] to list of [int]
+/// Converts list of [TypeFilter] to list of [int].
 List<int>? convertTypeFilter(List<TypeFilter>? filters) => filters
     ?.map<int>((TypeFilter filter) => TypeFilterIOS.values
         .firstWhere((TypeFilterIOS element) => element.name == filter.name)
         .index)
     .toList();
 
-/// Converts list of [int] to list of [PlaceType]
+/// Converts list of [int] to list of [PlaceType].
 List<PlaceType> convertPlaceTypes(List<int?> placeTypes) => placeTypes
-    .map<PlaceType>((int? placeType) => PlaceType.values
-        .firstWhere((PlaceType element) => element.name == PlaceTypeIOS.values[placeType!].name))
+    .map<PlaceType>((int? placeType) => PlaceType.values.firstWhere(
+        (PlaceType element) =>
+            element.name == PlaceTypeIOS.values[placeType!].name))
     .toList();
 
-/// Converts [AutocompletePredictionIOS] to [AutocompletePrediction]
+/// Converts [AutocompletePredictionIOS] to [AutocompletePrediction].
 AutocompletePrediction convertPrediction(AutocompletePredictionIOS prediction) {
   return AutocompletePrediction(
       distanceMeters: prediction.distanceMeters,

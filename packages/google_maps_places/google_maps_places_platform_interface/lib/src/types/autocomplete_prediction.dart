@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/foundation.dart'
-    show immutable, objectRuntimeType, visibleForTesting;
+import 'package:flutter/foundation.dart' show immutable, objectRuntimeType;
 
 import 'place_type.dart';
 
-/// Represents an autocomplete suggestion of a place, based on a particular text query
+/// Represents an autocomplete suggestion of a place, based on a particular text query.
 ///
 /// ref: https://developers.google.com/maps/documentation/places/android-sdk/reference/com/google/android/libraries/places/api/model/AutocompletePrediction
 @immutable
 class AutocompletePrediction {
-  /// Creates new represation of [AutocompletePrediction]
+  /// Creates new represation of [AutocompletePrediction].
   const AutocompletePrediction({
     this.distanceMeters,
     required this.fullText,
@@ -26,14 +25,14 @@ class AutocompletePrediction {
   /// if a valid origin is in the request.
   final int? distanceMeters;
 
-  /// The full description of the prediction as string
+  /// The full description of the prediction as string.
   final String fullText;
 
   /// A property representing the place ID of the prediction, suitable for use
   /// in a place details request.
   final String placeId;
 
-  /// The list of place types associated with this place
+  /// The list of place types associated with this place.
   final List<PlaceType> placeTypes;
 
   /// The main text of a prediction as a String, usually the name of the place.
@@ -68,7 +67,7 @@ class AutocompletePrediction {
     );
   }
 
-  /// Converts list [int] to list of [PlaceType]
+  /// Converts list [int] to list of [PlaceType].
   static List<PlaceType> convertPlaceTypes(List<int?> placeTypes) => placeTypes
       .map<PlaceType>((int? placeType) => PlaceType.values.firstWhere(
           (PlaceType element) =>
