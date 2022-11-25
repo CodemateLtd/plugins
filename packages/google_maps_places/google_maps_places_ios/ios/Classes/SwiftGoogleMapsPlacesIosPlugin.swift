@@ -46,7 +46,8 @@ public class SwiftGoogleMapsPlacesIosPlugin: NSObject, FlutterPlugin, GoogleMaps
             callback: { (results, error) in
                 if let error = error {
                     print("findPlacesAutoComplete error: \(error)")
-                    // Pigeon does not generate flutter error callback at the moment so returning nil
+                    // Pigeon does not generate flutter error callback at the moment so returning nil.
+                    // TODO(TimoPieti): Fix to return flutter error https://github.com/flutter/flutter/issues/112483 is fixed in stable.
                     /*completion(FlutterError(
                      code: "API_ERROR",
                      message: error.localizedDescription,
