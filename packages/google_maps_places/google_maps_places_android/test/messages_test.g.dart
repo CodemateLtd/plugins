@@ -11,7 +11,7 @@ import 'package:flutter/foundation.dart' show ReadBuffer, WriteBuffer;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:google_maps_places_android/messages.g.dart';
+import 'package:google_maps_places_android/src/messages.g.dart';
 
 class _TestGoogleMapsPlacesApiCodec extends StandardMessageCodec{
   const _TestGoogleMapsPlacesApiCodec();

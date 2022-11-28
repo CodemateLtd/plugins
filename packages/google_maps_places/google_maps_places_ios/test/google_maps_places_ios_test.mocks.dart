@@ -5,7 +5,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i3;
 
-import 'package:google_maps_places_ios/messages.g.dart' as _i4;
+import 'package:google_maps_places_ios/src/messages.g.dart' as _i4;
 import 'package:mockito/mockito.dart' as _i1;
 
 import 'messages_test.g.dart' as _i2;

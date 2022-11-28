@@ -13,15 +13,6 @@ import 'google_maps_places_ios_test.mocks.dart';
 
 import 'messages_test.g.dart';
 
-final AutocompletePredictionIOS mockPrediction = AutocompletePredictionIOS(
-    distanceMeters: 200,
-    fullText: 'Koulukatu, Tampere, Finland, placeId',
-    placeId:
-        'EhtLb3VsdWthdHUsIFRhbXBlcmUsIEZpbmxhbmQiLiosChQKEgmNKrw3sNiORhGUm8jmSvlI4RIUChIJVVwAnVEkj0YRhhoEA3s-vUQ',
-    placeTypes: <int?>[110, 54],
-    primaryText: 'Koulukatu',
-    secondaryText: 'Tampere, Finland');
-
 @GenerateMocks(<Type>[TestGoogleMapsPlacesApi])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -43,13 +34,15 @@ void main() {
     setUp(() {
       when(mockApi.findAutocompletePredictionsIOS(
               any, any, any, any, any, any, any))
-          .thenAnswer((Invocation _) async => []);
+          .thenAnswer((Invocation _) async =>
+              Future<List<AutocompletePredictionIOS?>?>.value(
+                  <AutocompletePredictionIOS?>[mockPrediction]));
     });
     test('passes the accepted type groups correctly', () async {
       await plugin.findAutocompletePredictions(query: 'koulu');
       final VerificationResult result = verify(
-          mockApi.findAutocompletePredictionsIOS(
-              captureAny, captureAny, captureAny, captureAny, captureAny, captureAny, captureAny));
+          mockApi.findAutocompletePredictionsIOS(captureAny, captureAny,
+              captureAny, captureAny, captureAny, captureAny, captureAny));
       expect(result.captured[0], 'koulu');
     });
   });
@@ -117,3 +110,12 @@ void main() {
     });
   });
 }
+
+final AutocompletePredictionIOS mockPrediction = AutocompletePredictionIOS(
+    distanceMeters: 200,
+    fullText: 'Koulukatu, Tampere, Finland, placeId',
+    placeId:
+        'EhtLb3VsdWthdHUsIFRhbXBlcmUsIEZpbmxhbmQiLiosChQKEgmNKrw3sNiORhGUm8jmSvlI4RIUChIJVVwAnVEkj0YRhhoEA3s-vUQ',
+    placeTypes: <int?>[110, 54],
+    primaryText: 'Koulukatu',
+    secondaryText: 'Tampere, Finland');

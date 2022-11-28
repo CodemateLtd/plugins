@@ -7,7 +7,7 @@ import 'package:pigeon/pigeon.dart';
 @ConfigurePigeon(PigeonOptions(
   input: 'pigeons/messages.dart',
   swiftOut: 'ios/Classes/messages.g.swift',
-  dartOut: 'lib/messages.g.dart',
+  dartOut: 'lib/src/messages.g.dart',
   dartTestOut: 'test/messages_test.g.dart',
   copyrightHeader: 'pigeons/copyright.txt',
 ))

@@ -10,7 +10,7 @@ import 'package:pigeon/pigeon.dart';
       'android/src/main/kotlin/io/flutter/plugins/google_maps_places_android/messages.g.kt',
   kotlinOptions:
       KotlinOptions(package: 'io.flutter.plugins.google_maps_places_android'),
-  dartOut: 'lib/messages.g.dart',
+  dartOut: 'lib/src/messages.g.dart',
   dartTestOut: 'test/messages_test.g.dart',
   copyrightHeader: 'pigeons/copyright.txt',
 ))
