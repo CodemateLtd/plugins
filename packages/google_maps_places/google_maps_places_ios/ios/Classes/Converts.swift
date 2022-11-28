@@ -7,19 +7,20 @@ import GooglePlaces
 
 
 /// Converters from and to Pigeon generated values.
-class Convert: NSObject {
+class Converts: NSObject {
     
-    /// Convert [LatLngIOS] to [CLLocation].
-    class func convertLatLng(_ latLng:LatLngIOS?) -> CLLocation? {
+    /// Converts [LatLngIOS] to [CLLocation].
+    class func convertsLatLng(_ latLng:LatLngIOS?) -> CLLocation? {
         guard latLng != nil && latLng?.latitude != nil && latLng?.longitude != nil else {
             return nil
         }
         return CLLocation(latitude: latLng!.latitude!, longitude:  latLng!.longitude!)
     }
     
-    /// Convert [LatLngBoundsIOS] to [GMSPlaceLocationBias].
-    class func convertLocationBias(_ bounds:LatLngBoundsIOS?) -> GMSPlaceLocationBias? {
-        guard bounds != nil && bounds?.northeast != nil && bounds?.southwest != nil else {
+    /// Converts [LatLngBoundsIOS] to [GMSPlaceLocationBias].
+    class func convertsLocationBias(_ bounds:LatLngBoundsIOS?) -> GMSPlaceLocationBias? {
+        guard bounds != nil && bounds?.northeast != nil && bounds?.southwest != nil &&
+                bounds?.northeast?.latitude != nil && bounds?.northeast?.longitude != nil && bounds?.southwest?.latitude != nil && bounds?.southwest?.longitude != nil else {
             return nil
         }
         let northEastBounds = CLLocationCoordinate2D(latitude: bounds!.northeast!.longitude!, longitude: bounds!.northeast!.longitude!)
@@ -28,9 +29,9 @@ class Convert: NSObject {
                                            southWestBounds);
     }
     
-    /// Convert [LatLngBoundsIOS] to [GMSPlaceLocationRestriction].
-    class func convertLocationRestrction(_ bounds:LatLngBoundsIOS?) -> GMSPlaceLocationRestriction? {
-        guard bounds != nil && bounds?.northeast != nil && bounds?.southwest != nil else {
+    /// Converts [LatLngBoundsIOS] to [GMSPlaceLocationRestriction].
+    class func convertsLocationRestrction(_ bounds:LatLngBoundsIOS?) -> GMSPlaceLocationRestriction? {
+        guard bounds != nil && bounds?.northeast != nil && bounds?.southwest != nil && bounds?.northeast?.latitude != nil && bounds?.northeast?.longitude != nil && bounds?.southwest?.latitude != nil && bounds?.southwest?.longitude != nil else {
             return nil
         }
         let northEastBounds = CLLocationCoordinate2D(latitude: bounds!.northeast!.longitude!, longitude: bounds!.northeast!.longitude!)
@@ -39,26 +40,26 @@ class Convert: NSObject {
                                            southWestBounds);
     }
     
-    /// Convert array of [TypeFilterIOS] raw value to array of [GMSPlacesAutocompleteTypeFilter].
-    class func convertTypeFilters(_ filters:[Int32?]?) -> [GMSPlacesAutocompleteTypeFilter]? {
+    /// Converts array of [TypeFilterIOS] raw value to array of [GMSPlacesAutocompleteTypeFilter].
+    class func convertsTypeFilters(_ filters:[Int32?]?) -> [GMSPlacesAutocompleteTypeFilter]? {
         guard filters != nil else {
             return nil
         }
         return filters!.map { (filter: Int32?) in
-            return convertTypeFilter(filter) }
+            return convertsTypeFilter(filter) }
     }
     
-    /// Convert array of [TypeFilterIOS] to single [GMSPlacesAutocompleteTypeFilter].
-    class func convertTypeFiltersToSingle(_ filters:[Int32?]?) -> GMSPlacesAutocompleteTypeFilter {
+    /// Converts array of [TypeFilterIOS] to single [GMSPlacesAutocompleteTypeFilter].
+    class func convertsTypeFiltersToSingle(_ filters:[Int32?]?) -> GMSPlacesAutocompleteTypeFilter {
         guard filters != nil && !filters!.isEmpty else {
             return .noFilter
         }
         let filter = filters!.first
-        return convertTypeFilter(filter!!)
+        return convertsTypeFilter(filter!!)
     }
     
-    /// Convert [TypeFilterIOS] raw value to [GMSPlacesAutocompleteTypeFilter].
-    class func convertTypeFilter(_ filter:Int32?) -> GMSPlacesAutocompleteTypeFilter {
+    /// Converts [TypeFilterIOS] raw value to [GMSPlacesAutocompleteTypeFilter].
+    class func convertsTypeFilter(_ filter:Int32?) -> GMSPlacesAutocompleteTypeFilter {
         guard filter != nil else {
             return GMSPlacesAutocompleteTypeFilter.noFilter
         }
@@ -79,28 +80,28 @@ class Convert: NSObject {
         }
     }
     
-    /// Convert array of [GMSAutocompletePrediction] to array  of [AutocompletePredictionIOS].
-    class func convertResults(_ results: [GMSAutocompletePrediction]?) -> [AutocompletePredictionIOS?] {
+    /// Converts array of [GMSAutocompletePrediction] to array  of [AutocompletePredictionIOS].
+    class func convertsResults(_ results: [GMSAutocompletePrediction]?) -> [AutocompletePredictionIOS?] {
         guard let results = results else {
             return []
         }
         return results.map { (prediction: GMSAutocompletePrediction) in
-            return convertPrediction(prediction) }
+            return convertsPrediction(prediction) }
     }
     
-    /// Convert [GMSAutocompletePrediction] to [AutocompletePredictionIOS].
-    class func convertPrediction(_ prediction: GMSAutocompletePrediction) -> AutocompletePredictionIOS? {
-        return AutocompletePredictionIOS(fullText: prediction.attributedFullText.string, placeId: prediction.placeID, placeTypes: convertPlaceTypes(prediction.types), primaryText: prediction.attributedPrimaryText.string, secondaryText: prediction.attributedSecondaryText?.string ?? "")
+    /// Converts [GMSAutocompletePrediction] to [AutocompletePredictionIOS].
+    class func convertsPrediction(_ prediction: GMSAutocompletePrediction) -> AutocompletePredictionIOS? {
+        return AutocompletePredictionIOS(fullText: prediction.attributedFullText.string, placeId: prediction.placeID, placeTypes: convertsPlaceTypes(prediction.types), primaryText: prediction.attributedPrimaryText.string, secondaryText: prediction.attributedSecondaryText?.string ?? "")
     }
     
-    /// Convert array of [GMSPlaceType] to array  of [PlaceTypeIOS] as raw value.
-    class func convertPlaceTypes(_ placeTypes: [String]) -> [Int32?] {
+    /// Converts array of [GMSPlaceType] to array  of [PlaceTypeIOS] as raw value.
+    class func convertsPlaceTypes(_ placeTypes: [String]) -> [Int32?] {
         return placeTypes.map { (placeType: String) in
-            return Int32(convertPlaceType(placeType)?.rawValue ?? -1) }
+            return Int32(convertsPlaceType(placeType)?.rawValue ?? -1) }
     }
     
-    /// Convert [GMSPlaceType] to [PlaceTypeIOS].
-    class func convertPlaceType(_ placeType: String) -> PlaceTypeIOS? {
+    /// Converts [GMSPlaceType] to [PlaceTypeIOS].
+    class func convertsPlaceType(_ placeType: String) -> PlaceTypeIOS? {
         switch (placeType) {
         case kGMSPlaceTypeAccounting:
             return .accounting
@@ -120,7 +121,7 @@ class Convert: NSObject {
             return .amusementPark
         case kGMSPlaceTypeAquarium:
             return .aquarium
-        /// Const for this is not available.
+        /// No const value available for this.
         case "archipelago":
             return .archipelago
         case kGMSPlaceTypeArtGallery:
@@ -167,7 +168,7 @@ class Convert: NSObject {
             return .clothingStore
         case kGMSPlaceTypeColloquialArea:
             return .colloquialArea
-            /// Const for this is not available.
+        /// No const value available for this.
         case "continent":
             return .continent
         case kGMSPlaceTypeConvenienceStore:
@@ -272,7 +273,7 @@ class Convert: NSObject {
             return .neighborhood
         case kGMSPlaceTypeNightClub:
             return .nightClub
-            /// Const for this is not available.
+        /// No const value available for this.
         case "other":
             return .other
         case kGMSPlaceTypePainter:
@@ -291,7 +292,7 @@ class Convert: NSObject {
             return .placeOfWorship
         case kGMSPlaceTypePlumber:
             return .plumber
-            // Const for this is not available.
+        /// No const value available for this.
         case "plus_code":
             return .plusCode
         case kGMSPlaceTypePointOfInterest:

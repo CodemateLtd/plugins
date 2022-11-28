@@ -23,16 +23,21 @@ public class SwiftGoogleMapsPlacesIosPlugin: NSObject, FlutterPlugin, GoogleMaps
     /// ref: https://developers.google.com/maps/documentation/places/ios-sdk/autocomplete#get_place_predictions
     func findAutocompletePredictionsIOS(query: String, locationBias: LatLngBoundsIOS?, locationRestriction: LatLngBoundsIOS?, origin: LatLngIOS?, countries: [String?]?, typeFilter: [Int32?]?, refreshToken: Bool?, completion: @escaping ([AutocompletePredictionIOS?]?) -> Void) {
         
+        guard !query.isEmpty else {
+            completion(nil)
+            return
+        }
+        
         let filter = GMSAutocompleteFilter()
-        filter.type = Convert.convertTypeFiltersToSingle(typeFilter);
+        filter.type = Converts.convertsTypeFiltersToSingle(typeFilter);
         filter.countries = countries as? [String]
-        filter.origin = Convert.convertLatLng(origin)
+        filter.origin = Converts.convertsLatLng(origin)
         
         // Only locationBias or locationRestriction is allowed
         if (locationBias != nil && locationRestriction == nil) {
-            filter.locationBias = Convert.convertLocationBias(locationBias)
+            filter.locationBias = Converts.convertsLocationBias(locationBias)
         } else if (locationBias == nil && locationRestriction != nil) {
-            filter.locationRestriction = Convert.convertLocationRestrction(locationRestriction)
+            filter.locationRestriction = Converts.convertsLocationRestrction(locationRestriction)
         }
         
         let sessionToken = initialize(refreshToken == true)
@@ -56,7 +61,7 @@ public class SwiftGoogleMapsPlacesIosPlugin: NSObject, FlutterPlugin, GoogleMaps
                     completion(nil)
                 } else {
                     self.previousSessionToken = sessionToken
-                    completion(Convert.convertResults(results))
+                    completion(Converts.convertsResults(results))
                 }
             })
         
