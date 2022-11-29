@@ -256,41 +256,38 @@ class AutocompletePredictionIOS {
   }
 }
 
-class _GoogleMapsPlacesApiIOSCodec extends StandardMessageCodec{
+class _GoogleMapsPlacesApiIOSCodec extends StandardMessageCodec {
   const _GoogleMapsPlacesApiIOSCodec();
   @override
   void writeValue(WriteBuffer buffer, Object? value) {
     if (value is AutocompletePredictionIOS) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is LatLngBoundsIOS) {
+    } else if (value is LatLngBoundsIOS) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is LatLngIOS) {
+    } else if (value is LatLngIOS) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else 
-{
+    } else {
       super.writeValue(buffer, value);
     }
   }
+
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:       
+      case 128:
         return AutocompletePredictionIOS.decode(readValue(buffer)!);
-      
-      case 129:       
+
+      case 129:
         return LatLngBoundsIOS.decode(readValue(buffer)!);
-      
-      case 130:       
+
+      case 130:
         return LatLngIOS.decode(readValue(buffer)!);
-      
-      default:      
+
+      default:
         return super.readValueOfType(type, buffer);
-      
     }
   }
 }
@@ -299,30 +296,49 @@ class GoogleMapsPlacesApiIOS {
   /// Constructor for [GoogleMapsPlacesApiIOS].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  GoogleMapsPlacesApiIOS({BinaryMessenger? binaryMessenger}) : _binaryMessenger = binaryMessenger;
+  GoogleMapsPlacesApiIOS({BinaryMessenger? binaryMessenger})
+      : _binaryMessenger = binaryMessenger;
   final BinaryMessenger? _binaryMessenger;
 
   static const MessageCodec<Object?> codec = _GoogleMapsPlacesApiIOSCodec();
 
-  Future<List<AutocompletePredictionIOS?>?> findAutocompletePredictionsIOS(String arg_query, LatLngBoundsIOS? arg_locationBias, LatLngBoundsIOS? arg_locationRestriction, LatLngIOS? arg_origin, List<String?>? arg_countries, List<int?>? arg_typeFilter, bool? arg_refreshToken) async {
+  Future<List<AutocompletePredictionIOS?>?> findAutocompletePredictionsIOS(
+      String arg_query,
+      LatLngBoundsIOS? arg_locationBias,
+      LatLngBoundsIOS? arg_locationRestriction,
+      LatLngIOS? arg_origin,
+      List<String?>? arg_countries,
+      List<int?>? arg_typeFilter,
+      bool? arg_refreshToken) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.GoogleMapsPlacesApiIOS.findAutocompletePredictionsIOS', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object?>[arg_query, arg_locationBias, arg_locationRestriction, arg_origin, arg_countries, arg_typeFilter, arg_refreshToken]) as Map<Object?, Object?>?;
+        'dev.flutter.pigeon.GoogleMapsPlacesApiIOS.findAutocompletePredictionsIOS',
+        codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap = await channel.send(<Object?>[
+      arg_query,
+      arg_locationBias,
+      arg_locationRestriction,
+      arg_origin,
+      arg_countries,
+      arg_typeFilter,
+      arg_refreshToken
+    ]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
         message: 'Unable to establish connection on channel.',
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
         details: error['details'],
       );
     } else {
-      return (replyMap['result'] as List<Object?>?)?.cast<AutocompletePredictionIOS?>();
+      return (replyMap['result'] as List<Object?>?)
+          ?.cast<AutocompletePredictionIOS?>();
     }
   }
 }

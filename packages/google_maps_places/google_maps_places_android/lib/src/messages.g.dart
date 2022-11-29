@@ -256,41 +256,38 @@ class AutocompletePredictionAndroid {
   }
 }
 
-class _GoogleMapsPlacesApiAndroidCodec extends StandardMessageCodec{
+class _GoogleMapsPlacesApiAndroidCodec extends StandardMessageCodec {
   const _GoogleMapsPlacesApiAndroidCodec();
   @override
   void writeValue(WriteBuffer buffer, Object? value) {
     if (value is AutocompletePredictionAndroid) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is LatLngAndroid) {
+    } else if (value is LatLngAndroid) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is LatLngBoundsAndroid) {
+    } else if (value is LatLngBoundsAndroid) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else 
-{
+    } else {
       super.writeValue(buffer, value);
     }
   }
+
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:       
+      case 128:
         return AutocompletePredictionAndroid.decode(readValue(buffer)!);
-      
-      case 129:       
+
+      case 129:
         return LatLngAndroid.decode(readValue(buffer)!);
-      
-      case 130:       
+
+      case 130:
         return LatLngBoundsAndroid.decode(readValue(buffer)!);
-      
-      default:      
+
+      default:
         return super.readValueOfType(type, buffer);
-      
     }
   }
 }
@@ -299,23 +296,42 @@ class GoogleMapsPlacesApiAndroid {
   /// Constructor for [GoogleMapsPlacesApiAndroid].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  GoogleMapsPlacesApiAndroid({BinaryMessenger? binaryMessenger}) : _binaryMessenger = binaryMessenger;
+  GoogleMapsPlacesApiAndroid({BinaryMessenger? binaryMessenger})
+      : _binaryMessenger = binaryMessenger;
   final BinaryMessenger? _binaryMessenger;
 
   static const MessageCodec<Object?> codec = _GoogleMapsPlacesApiAndroidCodec();
 
-  Future<List<AutocompletePredictionAndroid?>> findAutocompletePredictionsAndroid(String arg_query, LatLngBoundsAndroid? arg_locationBias, LatLngBoundsAndroid? arg_locationRestriction, LatLngAndroid? arg_origin, List<String?>? arg_countries, List<int?>? arg_typeFilter, bool? arg_refreshToken) async {
+  Future<List<AutocompletePredictionAndroid?>>
+      findAutocompletePredictionsAndroid(
+          String arg_query,
+          LatLngBoundsAndroid? arg_locationBias,
+          LatLngBoundsAndroid? arg_locationRestriction,
+          LatLngAndroid? arg_origin,
+          List<String?>? arg_countries,
+          List<int?>? arg_typeFilter,
+          bool? arg_refreshToken) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.GoogleMapsPlacesApiAndroid.findAutocompletePredictionsAndroid', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object?>[arg_query, arg_locationBias, arg_locationRestriction, arg_origin, arg_countries, arg_typeFilter, arg_refreshToken]) as Map<Object?, Object?>?;
+        'dev.flutter.pigeon.GoogleMapsPlacesApiAndroid.findAutocompletePredictionsAndroid',
+        codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap = await channel.send(<Object?>[
+      arg_query,
+      arg_locationBias,
+      arg_locationRestriction,
+      arg_origin,
+      arg_countries,
+      arg_typeFilter,
+      arg_refreshToken
+    ]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
         message: 'Unable to establish connection on channel.',
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -327,7 +343,8 @@ class GoogleMapsPlacesApiAndroid {
         message: 'Host platform returned null value for non-null return value.',
       );
     } else {
-      return (replyMap['result'] as List<Object?>?)!.cast<AutocompletePredictionAndroid?>();
+      return (replyMap['result'] as List<Object?>?)!
+          .cast<AutocompletePredictionAndroid?>();
     }
   }
 }

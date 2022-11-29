@@ -24,7 +24,7 @@ enum TypeFilter {
   geocode,
 
   /// Return any result matching the following place types:
-  /// 
+  ///
   /// LOCALITY
   /// SUBLOCALITY
   /// POSTAL_CODE

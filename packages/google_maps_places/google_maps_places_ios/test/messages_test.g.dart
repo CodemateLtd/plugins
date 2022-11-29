@@ -13,67 +13,89 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:google_maps_places_ios/src/messages.g.dart';
 
-class _TestGoogleMapsPlacesApiCodec extends StandardMessageCodec{
+class _TestGoogleMapsPlacesApiCodec extends StandardMessageCodec {
   const _TestGoogleMapsPlacesApiCodec();
   @override
   void writeValue(WriteBuffer buffer, Object? value) {
     if (value is AutocompletePredictionIOS) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is LatLngBoundsIOS) {
+    } else if (value is LatLngBoundsIOS) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else 
-    if (value is LatLngIOS) {
+    } else if (value is LatLngIOS) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else 
-{
+    } else {
       super.writeValue(buffer, value);
     }
   }
+
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:       
+      case 128:
         return AutocompletePredictionIOS.decode(readValue(buffer)!);
-      
-      case 129:       
+
+      case 129:
         return LatLngBoundsIOS.decode(readValue(buffer)!);
-      
-      case 130:       
+
+      case 130:
         return LatLngIOS.decode(readValue(buffer)!);
-      
-      default:      
+
+      default:
         return super.readValueOfType(type, buffer);
-      
     }
   }
 }
+
 abstract class TestGoogleMapsPlacesApi {
   static const MessageCodec<Object?> codec = _TestGoogleMapsPlacesApiCodec();
 
-  Future<List<AutocompletePredictionIOS?>?> findAutocompletePredictionsIOS(String query, LatLngBoundsIOS? locationBias, LatLngBoundsIOS? locationRestriction, LatLngIOS? origin, List<String?>? countries, List<int?>? typeFilter, bool? refreshToken);
-  static void setup(TestGoogleMapsPlacesApi? api, {BinaryMessenger? binaryMessenger}) {
+  Future<List<AutocompletePredictionIOS?>?> findAutocompletePredictionsIOS(
+      String query,
+      LatLngBoundsIOS? locationBias,
+      LatLngBoundsIOS? locationRestriction,
+      LatLngIOS? origin,
+      List<String?>? countries,
+      List<int?>? typeFilter,
+      bool? refreshToken);
+  static void setup(TestGoogleMapsPlacesApi? api,
+      {BinaryMessenger? binaryMessenger}) {
     {
       final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.GoogleMapsPlacesApiIOS.findAutocompletePredictionsIOS', codec, binaryMessenger: binaryMessenger);
+          'dev.flutter.pigeon.GoogleMapsPlacesApiIOS.findAutocompletePredictionsIOS',
+          codec,
+          binaryMessenger: binaryMessenger);
       if (api == null) {
         channel.setMockMessageHandler(null);
       } else {
         channel.setMockMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.GoogleMapsPlacesApiIOS.findAutocompletePredictionsIOS was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.GoogleMapsPlacesApiIOS.findAutocompletePredictionsIOS was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_query = (args[0] as String?);
-          assert(arg_query != null, 'Argument for dev.flutter.pigeon.GoogleMapsPlacesApiIOS.findAutocompletePredictionsIOS was null, expected non-null String.');
-          final LatLngBoundsIOS? arg_locationBias = (args[1] as LatLngBoundsIOS?);
-          final LatLngBoundsIOS? arg_locationRestriction = (args[2] as LatLngBoundsIOS?);
+          assert(arg_query != null,
+              'Argument for dev.flutter.pigeon.GoogleMapsPlacesApiIOS.findAutocompletePredictionsIOS was null, expected non-null String.');
+          final LatLngBoundsIOS? arg_locationBias =
+              (args[1] as LatLngBoundsIOS?);
+          final LatLngBoundsIOS? arg_locationRestriction =
+              (args[2] as LatLngBoundsIOS?);
           final LatLngIOS? arg_origin = (args[3] as LatLngIOS?);
-          final List<String?>? arg_countries = (args[4] as List<Object?>?)?.cast<String?>();
-          final List<int?>? arg_typeFilter = (args[5] as List<Object?>?)?.cast<int?>();
+          final List<String?>? arg_countries =
+              (args[4] as List<Object?>?)?.cast<String?>();
+          final List<int?>? arg_typeFilter =
+              (args[5] as List<Object?>?)?.cast<int?>();
           final bool? arg_refreshToken = (args[6] as bool?);
-          final List<AutocompletePredictionIOS?>? output = await api.findAutocompletePredictionsIOS(arg_query!, arg_locationBias, arg_locationRestriction, arg_origin, arg_countries, arg_typeFilter, arg_refreshToken);
+          final List<AutocompletePredictionIOS?>? output =
+              await api.findAutocompletePredictionsIOS(
+                  arg_query!,
+                  arg_locationBias,
+                  arg_locationRestriction,
+                  arg_origin,
+                  arg_countries,
+                  arg_typeFilter,
+                  arg_refreshToken);
           return <Object?, Object?>{'result': output};
         });
       }
