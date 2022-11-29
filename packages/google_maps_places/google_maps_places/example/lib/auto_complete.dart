@@ -4,8 +4,6 @@
 
 // ignore_for_file: public_member_api_docs
 
-import 'package:collection/collection.dart';
-
 import 'package:flutter/material.dart';
 import 'package:google_maps_places/google_maps_places.dart';
 import 'page.dart';
@@ -70,18 +68,16 @@ class _MyAutoCompleteBodyState extends State<AutoCompleteBody> {
     if (input == null || input.isEmpty) {
       return null;
     }
-
-    return input
+    final Iterable<String?> result = input
         .split(',')
         .map((String countryPart) => countryPart.trim())
         .map((String countryPart) {
-          if (countryPart.length != 2) {
-            return "Use two-letter country codes splitted by ','";
-          }
-          return null;
-        })
-        .where((String? item) => item != null)
-        .firstOrNull;
+      if (countryPart.length != 2) {
+        return "Use two-letter country codes splitted by ','";
+      }
+      return null;
+    }).where((String? item) => item != null);
+    return result != null && result.isNotEmpty ? result.first : null;
   }
 
   void _onCountriesTextChanged(String countries) {
