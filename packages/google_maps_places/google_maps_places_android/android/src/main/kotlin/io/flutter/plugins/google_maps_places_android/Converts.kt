@@ -45,13 +45,13 @@ object Converts {
   }
 
   /// Converts list of [TypeFilterAndroid] to list of [String].
-  fun convertsTypeFilters(filters: List<Long?>?): List<String?>? {
+  internal fun convertsTypeFilters(filters: List<Long?>?): List<String?>? {
     if (filters == null) {
       return null
     }
     @Suppress("UNCHECKED_CAST")
-    val tempFilters = filters as? List<Int> ?: return null
-    return tempFilters.map { filter ->  convertsTypeFilter(filter).toString() }
+    val nonNullFilters = filters.filterNotNull() as? List<Int> ?: return null
+    return nonNullFilters.map { filter ->  convertsTypeFilter(filter).toString() }
   }
 
   /// Converts list of [TypeFilterAndroid] to [TypeFilter].
@@ -61,13 +61,16 @@ object Converts {
     }
 
     @Suppress("UNCHECKED_CAST")
-    val tempFilters = filters as? List<Int> ?: return null
-    val filter = tempFilters.first()
+    val nonNullFilters = filters.filterNotNull() as? List<Int> ?: return null
+    if (nonNullFilters.isEmpty()) {
+      return null
+    }
+    val filter = nonNullFilters.first()
     return convertsTypeFilter(filter)
   }
 
   /// Converts [TypeFilterAndroid] to [TypeFilter].
-  private fun convertsTypeFilter(filter: Int): TypeFilter {
+  internal fun convertsTypeFilter(filter: Int): TypeFilter {
     return when (TypeFilterAndroid.ofRaw(filter)) {
       TypeFilterAndroid.ADDRESS -> TypeFilter.ADDRESS
       TypeFilterAndroid.CITIES -> TypeFilter.CITIES
@@ -96,12 +99,12 @@ object Converts {
   }
 
   /// Converts list of [Place.Type] to list of [Long].
-  private fun convertsPlaceTypes(types: List<Place.Type>): List<Long?> {
+  internal fun convertsPlaceTypes(types: List<Place.Type>): List<Long> {
     return types.map { type -> convertsPlaceType(type).raw.toLong() }
   }
 
   /// Converts [Place.Type] to [Long] value of [PlaceTypeAndroid].
-  private fun convertsPlaceType(type: Place.Type): PlaceTypeAndroid {
+  internal fun convertsPlaceType(type: Place.Type): PlaceTypeAndroid {
     return when (type) {
       Place.Type.ACCOUNTING -> PlaceTypeAndroid.ACCOUNTING
       Place.Type.ADMINISTRATIVE_AREA_LEVEL_1 -> PlaceTypeAndroid.ADMINISTRATIVEAREALEVEL1

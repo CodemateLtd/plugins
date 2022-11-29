@@ -3,7 +3,6 @@ version '1.0-SNAPSHOT'
 
 buildscript {
     ext.kotlin_version = '1.6.10'
-    ext.google_places_version = '2.7.0'
     repositories {
         google()
         mavenCentral()
@@ -47,5 +46,12 @@ android {
 }
 
 dependencies {
-    implementation "com.google.android.libraries.places:places:$google_places_version"
+    implementation "com.google.android.libraries.places:places:2.7.0"
+    androidTestImplementation 'androidx.test:runner:1.5.1'
+    androidTestImplementation 'androidx.test:rules:1.5.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:4.7.0'
+    testImplementation 'androidx.test:core:1.5.0'
+    testImplementation "org.robolectric:robolectric:4.3.1"
 }
