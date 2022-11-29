@@ -91,7 +91,7 @@ class Converts: NSObject {
     
     /// Converts [GMSAutocompletePrediction] to [AutocompletePredictionIOS].
     class func convertsPrediction(_ prediction: GMSAutocompletePrediction) -> AutocompletePredictionIOS? {
-        return AutocompletePredictionIOS(fullText: prediction.attributedFullText.string, placeId: prediction.placeID, placeTypes: convertsPlaceTypes(prediction.types), primaryText: prediction.attributedPrimaryText.string, secondaryText: prediction.attributedSecondaryText?.string ?? "")
+        return AutocompletePredictionIOS(distanceMeters: prediction.distanceMeters as? Int32, fullText: prediction.attributedFullText.string, placeId: prediction.placeID, placeTypes: convertsPlaceTypes(prediction.types), primaryText: prediction.attributedPrimaryText.string, secondaryText: prediction.attributedSecondaryText?.string ?? "")
     }
     
     /// Converts array of [GMSPlaceType] to array  of [PlaceTypeIOS] as raw value.
@@ -121,7 +121,7 @@ class Converts: NSObject {
             return .amusementPark
         case kGMSPlaceTypeAquarium:
             return .aquarium
-        /// No const value available for this.
+        // No const value available for this.
         case "archipelago":
             return .archipelago
         case kGMSPlaceTypeArtGallery:
@@ -168,7 +168,7 @@ class Converts: NSObject {
             return .clothingStore
         case kGMSPlaceTypeColloquialArea:
             return .colloquialArea
-        /// No const value available for this.
+        // No const value available for this.
         case "continent":
             return .continent
         case kGMSPlaceTypeConvenienceStore:
@@ -273,7 +273,7 @@ class Converts: NSObject {
             return .neighborhood
         case kGMSPlaceTypeNightClub:
             return .nightClub
-        /// No const value available for this.
+        // No const value available for this.
         case "other":
             return .other
         case kGMSPlaceTypePainter:
@@ -292,7 +292,7 @@ class Converts: NSObject {
             return .placeOfWorship
         case kGMSPlaceTypePlumber:
             return .plumber
-        /// No const value available for this.
+        // No const value available for this.
         case "plus_code":
             return .plusCode
         case kGMSPlaceTypePointOfInterest:

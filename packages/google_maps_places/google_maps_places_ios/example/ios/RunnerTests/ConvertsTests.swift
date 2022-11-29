@@ -16,6 +16,10 @@ final class ConvertsTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
     
+    let plugin = SwiftGoogleMapsPlacesIosPlugin()
+    let queryString:String = "Koulu"
+    let hasApiKey:Bool = ProcessInfo.processInfo.environment["MAPS_API_KEY"] != nil
+    
     func testConvertsLatLng() {
         let data:LatLngIOS = LatLngIOS(latitude: 65.0121, longitude: 25.4651)
         let converted = Converts.convertsLatLng(data)
@@ -99,6 +103,40 @@ final class ConvertsTests: XCTestCase {
         XCTAssertEqual(Converts.convertsTypeFilter(Int32(TypeFilterIOS.geocode.rawValue)), GMSPlacesAutocompleteTypeFilter.geocode)
         XCTAssertEqual(Converts.convertsTypeFilter(Int32(TypeFilterIOS.regions.rawValue)), GMSPlacesAutocompleteTypeFilter.region)
         XCTAssertEqual(Converts.convertsTypeFilter(nil), GMSPlacesAutocompleteTypeFilter.noFilter)
+    }
+    
+    func testConversAutocompleteResults() throws {
+        
+        try XCTSkipIf(!hasApiKey)
+        
+        let expectation = XCTestExpectation(description: "Converts find autocomplete predictions response to pigeon generated values")
+        plugin.findAutocompletePredictions(query: queryString, filter: GMSAutocompleteFilter(), refreshToken: true, callback: { (results, error) in
+            if let error = error {
+                XCTAssertNotNil(error)
+            } else {
+                XCTAssertNotNil(results)
+                if (results!.count > 0) {
+                    XCTAssertEqual(Converts.convertsResults(results).count, results!.count)
+                    let result = results?.first
+                    XCTAssertNotNil(result)
+                    let converted = Converts.convertsPrediction(result!)
+                    XCTAssertNotNil(converted)
+                    if (result!.distanceMeters == nil) {
+                        XCTAssertNil(converted!.distanceMeters)
+                    } else {
+                        XCTAssertEqual(converted!.distanceMeters, Int32(truncating: result!.distanceMeters!))
+                    }
+                    XCTAssertEqual(converted!.fullText, result!.attributedFullText.string)
+                    XCTAssertEqual(converted!.primaryText, result!.attributedPrimaryText.string)
+                    XCTAssertEqual(converted!.secondaryText, result!.attributedSecondaryText?.string)
+                    XCTAssertEqual(converted!.placeId, result!.placeID)
+                    XCTAssertEqual(converted!.placeTypes.count, result!.types.count)
+                }
+            }
+
+            expectation.fulfill()
+        })
+        wait(for: [expectation], timeout: 10.0)
     }
     
     func testConvertsPlaceTypes() {

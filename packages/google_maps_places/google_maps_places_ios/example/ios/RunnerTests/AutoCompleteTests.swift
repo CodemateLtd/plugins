@@ -16,69 +16,109 @@ final class AutoCompleteTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
     
-    func testFindAutoCompletePredictionsWithEmptyDataSet() {
+    let plugin = SwiftGoogleMapsPlacesIosPlugin()
+    let queryString:String = "Koulu"
+    let hasApiKey:Bool = ProcessInfo.processInfo.environment["MAPS_API_KEY"] != nil
+    
+    func testFindAutoCompletePredictionsWithEmptyDataSet() throws {
+        
+        try XCTSkipIf(!hasApiKey)
+        
         let expectation = XCTestExpectation(description: "Run find auto complete predictions with empty data set")
-        SwiftGoogleMapsPlacesIosPlugin().findAutocompletePredictionsIOS(query: "", locationBias: nil, locationRestriction: nil, origin: nil, countries: nil, typeFilter: nil, refreshToken: nil, completion: { (result) in
+        plugin.findAutocompletePredictionsIOS(query: "", locationBias: nil, locationRestriction: nil, origin: nil, countries: nil, typeFilter: nil, refreshToken: nil, completion: { (result) in
             XCTAssertNil(result)
             expectation.fulfill()
         })
-        wait(for: [expectation], timeout: 30.0)
+        wait(for: [expectation], timeout: 10.0)
     }
     
-    func testFindAutoCompletePredictionsOnlyWithQuery() {
+    func testFindAutoCompletePredictionsOnlyWithQuery() throws {
+        
+        try XCTSkipIf(!hasApiKey)
+        
         let expectation = XCTestExpectation(description: "Run find auto complete predictions with minimum data set")
-        SwiftGoogleMapsPlacesIosPlugin().findAutocompletePredictionsIOS(query: "Koulu", locationBias: nil, locationRestriction: nil, origin: nil, countries: nil, typeFilter: nil, refreshToken: nil, completion: { (result) in
+        plugin.findAutocompletePredictionsIOS(query: queryString, locationBias: nil, locationRestriction: nil, origin: nil, countries: nil, typeFilter: nil, refreshToken: nil, completion: { (result) in
             XCTAssertNotNil(result)
             expectation.fulfill()
         })
-        wait(for: [expectation], timeout: 30.0)
+        wait(for: [expectation], timeout: 10.0)
     }
     
-    func testFindAutoCompelePredictionsWithLocationBias() {
+    func testFindAutoCompelePredictionsWithLocationBias() throws {
+        
+        try XCTSkipIf(!hasApiKey)
+        
         let expectation = XCTestExpectation(description: "Run find auto complete predictions with location bias")
-        SwiftGoogleMapsPlacesIosPlugin().findAutocompletePredictionsIOS(query: "Koulu", locationBias: LatLngBoundsIOS(
+        plugin.findAutocompletePredictionsIOS(query: queryString, locationBias: LatLngBoundsIOS(
             southwest: LatLngIOS(latitude: 60.4518, longitude: 22.2666),
             northeast: LatLngIOS(latitude: 70.0821, longitude: 27.8718)
         ), locationRestriction: nil, origin: LatLngIOS(latitude: 65.0121, longitude: 25.4651), countries: nil, typeFilter: nil, refreshToken: nil, completion: { (result) in
             XCTAssertNotNil(result)
             expectation.fulfill()
         })
-        wait(for: [expectation], timeout: 30.0)
+        wait(for: [expectation], timeout: 10.0)
     }
     
-    func testFindAutoCompelePredictionsWithLocationRestriction() {
+    func testFindAutoCompelePredictionsWithLocationRestriction() throws {
+        
+        try XCTSkipIf(!hasApiKey)
+        
         let expectation = XCTestExpectation(description: "Run find auto complete predictions with location restriction")
-        SwiftGoogleMapsPlacesIosPlugin().findAutocompletePredictionsIOS(query: "Koulu", locationBias: nil, locationRestriction: LatLngBoundsIOS(
+        plugin.findAutocompletePredictionsIOS(query: queryString, locationBias: nil, locationRestriction: LatLngBoundsIOS(
             southwest: LatLngIOS(latitude: 60.4518, longitude: 22.2666),
             northeast: LatLngIOS(latitude: 70.0821, longitude: 27.8718)
         ), origin: LatLngIOS(latitude: 65.0121, longitude: 25.4651), countries: nil, typeFilter: nil, refreshToken: nil, completion: { (result) in
             XCTAssertNotNil(result)
             expectation.fulfill()
         })
-        wait(for: [expectation], timeout: 30.0)
+        wait(for: [expectation], timeout: 10.0)
     }
     
-    func testFindAutoCompelePredictionsWithCountriesAndTypeFilter() {
+    func testFindAutoCompelePredictionsWithLocationBiasAndRestriction() throws {
+        
+        try XCTSkipIf(!hasApiKey)
+        
+        let expectation = XCTestExpectation(description: "Run find auto complete predictions with location bias and restriction")
+        plugin.findAutocompletePredictionsIOS(query: queryString, locationBias: LatLngBoundsIOS(
+            southwest: LatLngIOS(latitude: 60.4518, longitude: 22.2666),
+            northeast: LatLngIOS(latitude: 70.0821, longitude: 27.8718)
+        ), locationRestriction: LatLngBoundsIOS(
+            southwest: LatLngIOS(latitude: 60.4518, longitude: 22.2666),
+            northeast: LatLngIOS(latitude: 70.0821, longitude: 27.8718)
+        ), origin: LatLngIOS(latitude: 65.0121, longitude: 25.4651), countries: nil, typeFilter: nil, refreshToken: nil, completion: { (result) in
+            XCTAssertNil(result)
+            expectation.fulfill()
+        })
+        wait(for: [expectation], timeout: 10.0)
+    }
+    
+    func testFindAutoCompelePredictionsWithCountriesAndTypeFilter() throws {
+        
+        try XCTSkipIf(!hasApiKey)
+        
         let expectation = XCTestExpectation(description: "Run find auto complete predictions with country and type filter")
-        SwiftGoogleMapsPlacesIosPlugin().findAutocompletePredictionsIOS(query: "Koulu", locationBias: LatLngBoundsIOS(
+        plugin.findAutocompletePredictionsIOS(query: queryString, locationBias: LatLngBoundsIOS(
             southwest: LatLngIOS(latitude: 60.4518, longitude: 22.2666),
             northeast: LatLngIOS(latitude: 70.0821, longitude: 27.8718)
         ), locationRestriction: nil, origin: LatLngIOS(latitude: 65.0121, longitude: 25.4651), countries: ["fi"], typeFilter: [Int32(TypeFilterIOS.establishment.rawValue)], refreshToken: nil, completion: { (result) in
             XCTAssertNotNil(result)
             expectation.fulfill()
         })
-        wait(for: [expectation], timeout: 30.0)
+        wait(for: [expectation], timeout: 10.0)
     }
     
-    func testFindAutoCompletePredictionsWithTokenRefresh() {
+    func testFindAutoCompletePredictionsWithTokenRefresh() throws {
+        
+        try XCTSkipIf(!hasApiKey)
+        
         let expectation = XCTestExpectation(description: "Run find auto complete predictions with token refresh")
-        SwiftGoogleMapsPlacesIosPlugin().findAutocompletePredictionsIOS(query: "Koulu", locationBias: nil, locationRestriction: nil, origin: nil, countries: nil, typeFilter: nil, refreshToken: nil, completion: { (result) in
+        plugin.findAutocompletePredictionsIOS(query: queryString, locationBias: nil, locationRestriction: nil, origin: nil, countries: nil, typeFilter: nil, refreshToken: nil, completion: { (result) in
             XCTAssertNotNil(result)
             SwiftGoogleMapsPlacesIosPlugin().findAutocompletePredictionsIOS(query: "Koulu", locationBias: nil, locationRestriction: nil, origin: nil, countries: nil, typeFilter: nil, refreshToken: true, completion: { (result) in
                 XCTAssertNotNil(result)
                 expectation.fulfill()
             })
         })
-        wait(for: [expectation], timeout: 30.0)
+        wait(for: [expectation], timeout: 10.0)
     }
 }

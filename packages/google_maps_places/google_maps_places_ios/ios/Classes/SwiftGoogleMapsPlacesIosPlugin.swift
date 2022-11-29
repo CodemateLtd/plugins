@@ -6,7 +6,7 @@ import Flutter
 import UIKit
 import GooglePlaces
 
-/** GoogleMapsPlacesIOSPlugin */
+/// GoogleMapsPlacesIOSPlugin
 public class SwiftGoogleMapsPlacesIosPlugin: NSObject, FlutterPlugin, GoogleMapsPlacesApiIOS {
     
     private var placesClient: GMSPlacesClient!
@@ -19,11 +19,17 @@ public class SwiftGoogleMapsPlacesIosPlugin: NSObject, FlutterPlugin, GoogleMaps
         GoogleMapsPlacesApiIOSSetup.setUp(binaryMessenger: messenger, api: api)
     }
     
-    /// Find Autocomplete Predictions
-    /// ref: https://developers.google.com/maps/documentation/places/ios-sdk/autocomplete#get_place_predictions
+    /// Find Autocomplete Predictions API call
     func findAutocompletePredictionsIOS(query: String, locationBias: LatLngBoundsIOS?, locationRestriction: LatLngBoundsIOS?, origin: LatLngIOS?, countries: [String?]?, typeFilter: [Int32?]?, refreshToken: Bool?, completion: @escaping ([AutocompletePredictionIOS?]?) -> Void) {
         
         guard !query.isEmpty else {
+            print("Missing required field query")
+            completion(nil)
+            return
+        }
+        
+        guard locationBias == nil || locationRestriction == nil else {
+            print("Only locationBias or locationRestriction is allowed")
             completion(nil)
             return
         }
@@ -33,42 +39,49 @@ public class SwiftGoogleMapsPlacesIosPlugin: NSObject, FlutterPlugin, GoogleMaps
         filter.countries = countries as? [String]
         filter.origin = Converts.convertsLatLng(origin)
         
-        // Only locationBias or locationRestriction is allowed
-        if (locationBias != nil && locationRestriction == nil) {
+        if (locationBias != nil) {
             filter.locationBias = Converts.convertsLocationBias(locationBias)
-        } else if (locationBias == nil && locationRestriction != nil) {
+        } else if (locationRestriction != nil) {
             filter.locationRestriction = Converts.convertsLocationRestrction(locationRestriction)
         }
-        
-        let sessionToken = initialize(refreshToken == true)
+        findAutocompletePredictions(query: query, filter: filter, refreshToken: refreshToken == true, callback: { (results, error) in
+            if let error = error {
+                print("findPlacesAutoComplete error: \(error)")
+                // Pigeon does not generate flutter error callback at the moment so returning nil.
+                // TODO(TimoPieti): Fix to return flutter error https://github.com/flutter/flutter/issues/112483 is fixed in stable.
+                /*completion(FlutterError(
+                 code: "API_ERROR",
+                 message: error.localizedDescription,
+                 details: nil
+                 ))*/
+                completion(nil)
+            } else {
+                completion(Converts.convertsResults(results))
+            }
+        })
+    }
+    
+    /// Find Autocomplete Predictions
+    /// ref: https://developers.google.com/maps/documentation/places/ios-sdk/autocomplete#get_place_predictions
+    internal func findAutocompletePredictions(query: String, filter: GMSAutocompleteFilter, refreshToken: Bool, callback: @escaping (GMSAutocompletePredictionsCallback)) {
+        let sessionToken = initialize(refreshToken)
         guard sessionToken != nil else {
             print("failed to initialize API CLIENT")
-            completion(nil)
+            callback(nil, NSErrorDomain(string: "failed to initialize API CLIENT") as? Error)
             return
         }
         placesClient.findAutocompletePredictions(
             fromQuery: query, filter: filter, sessionToken: sessionToken,
             callback: { (results, error) in
-                if let error = error {
-                    print("findPlacesAutoComplete error: \(error)")
-                    // Pigeon does not generate flutter error callback at the moment so returning nil.
-                    // TODO(TimoPieti): Fix to return flutter error https://github.com/flutter/flutter/issues/112483 is fixed in stable.
-                    /*completion(FlutterError(
-                     code: "API_ERROR",
-                     message: error.localizedDescription,
-                     details: nil
-                     ))*/
-                    completion(nil)
-                } else {
+                if (error != nil) {
                     self.previousSessionToken = sessionToken
-                    completion(Converts.convertsResults(results))
                 }
+                callback(results, error)
             })
-        
     }
     
     /// Initialize Places client
-    private func initialize(_ refresh: Bool) -> GMSAutocompleteSessionToken? {
+    internal func initialize(_ refresh: Bool) -> GMSAutocompleteSessionToken? {
         guard (placesClient == nil) else {
             return getSessionToken(refresh)
         }
