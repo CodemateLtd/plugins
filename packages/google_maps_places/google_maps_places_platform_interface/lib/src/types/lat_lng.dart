@@ -35,7 +35,7 @@ class LatLng {
     return <double>[latitude, longitude];
   }
 
-  /// Initialize a LatLng from an \[lat, lng\] array.
+  /// Initializes a LatLng from an \[lat, lng\] array.
   static LatLng? fromJson(Object? json) {
     if (json == null) {
       return null;

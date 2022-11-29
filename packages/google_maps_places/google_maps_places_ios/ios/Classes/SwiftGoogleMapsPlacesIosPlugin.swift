@@ -19,7 +19,7 @@ public class SwiftGoogleMapsPlacesIosPlugin: NSObject, FlutterPlugin, GoogleMaps
         GoogleMapsPlacesApiIOSSetup.setUp(binaryMessenger: messenger, api: api)
     }
     
-    /// Find Autocomplete Predictions API call
+    /// Finds Autocomplete Predictions API call
     func findAutocompletePredictionsIOS(query: String, locationBias: LatLngBoundsIOS?, locationRestriction: LatLngBoundsIOS?, origin: LatLngIOS?, countries: [String?]?, typeFilter: [Int32?]?, refreshToken: Bool?, completion: @escaping ([AutocompletePredictionIOS?]?) -> Void) {
         
         guard !query.isEmpty else {
@@ -61,7 +61,7 @@ public class SwiftGoogleMapsPlacesIosPlugin: NSObject, FlutterPlugin, GoogleMaps
         })
     }
     
-    /// Find Autocomplete Predictions
+    /// Finds Autocomplete Predictions
     /// ref: https://developers.google.com/maps/documentation/places/ios-sdk/autocomplete#get_place_predictions
     internal func findAutocompletePredictions(query: String, filter: GMSAutocompleteFilter, refreshToken: Bool, callback: @escaping (GMSAutocompletePredictionsCallback)) {
         let sessionToken = initialize(refreshToken)
@@ -80,7 +80,7 @@ public class SwiftGoogleMapsPlacesIosPlugin: NSObject, FlutterPlugin, GoogleMaps
             })
     }
     
-    /// Initialize Places client
+    /// Initializes Places client
     internal func initialize(_ refresh: Bool) -> GMSAutocompleteSessionToken? {
         guard (placesClient == nil) else {
             return getSessionToken(refresh)
@@ -89,7 +89,7 @@ public class SwiftGoogleMapsPlacesIosPlugin: NSObject, FlutterPlugin, GoogleMaps
         return getSessionToken(refresh)
     }
     
-    /// Fetch new session token if needed
+    /// Fetches new session token if needed
     private func getSessionToken(_ refresh: Bool) -> GMSAutocompleteSessionToken? {
         let localToken = previousSessionToken
         if (refresh || localToken == nil) {

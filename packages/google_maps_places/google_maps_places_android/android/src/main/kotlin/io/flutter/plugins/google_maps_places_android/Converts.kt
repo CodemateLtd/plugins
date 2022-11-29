@@ -11,24 +11,24 @@ import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.libraries.places.api.model.TypeFilter
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse
 
-/** Convert */
-object Convert {
+/// Converters from and to Pigeon generated values.
+object Converts {
 
-  /// Convert [LatLngAndroid] to [LatLng].
-  fun convertLatLng(latLng: LatLngAndroid?): LatLng? {
+  /// Converts [LatLngAndroid] to [LatLng].
+  fun convertsLatLng(latLng: LatLngAndroid?): LatLng? {
     if (latLng?.latitude == null || latLng.longitude == null) {
       return null
     }
     return LatLng(latLng.latitude, latLng.longitude)
   }
 
-  /// Convert [LatLngBoundsAndroid] to [RectangularBounds].
-  fun convertLatLngBounds(latLngBounds: LatLngBoundsAndroid?): RectangularBounds? {
+  /// Converts [LatLngBoundsAndroid] to [RectangularBounds].
+  fun convertsLatLngBounds(latLngBounds: LatLngBoundsAndroid?): RectangularBounds? {
     if (latLngBounds?.northeast == null || latLngBounds.southwest == null) {
       return null
     }
-    val northeast = convertLatLng(latLngBounds.northeast)
-    val southwest = convertLatLng(latLngBounds.southwest)
+    val northeast = convertsLatLng(latLngBounds.northeast)
+    val southwest = convertsLatLng(latLngBounds.southwest)
     if (northeast == null || southwest == null) {
       return null
     }
@@ -36,26 +36,26 @@ object Convert {
   }
 
 
-  /// Convert list of [String?] to list of [String].
-  fun convertCountries(countries: List<String?>?): List<String>? {
+  /// Converts list of [String?] to list of [String].
+  fun convertsCountries(countries: List<String?>?): List<String>? {
     if (countries == null) {
       return null
     }
     return countries.map { country ->  country.toString() }
   }
 
-  /// Convert list of [TypeFilterAndroid] to list of [String].
-  fun convertTypeFilters(filters: List<Long?>?): List<String?>? {
+  /// Converts list of [TypeFilterAndroid] to list of [String].
+  fun convertsTypeFilters(filters: List<Long?>?): List<String?>? {
     if (filters == null) {
       return null
     }
     @Suppress("UNCHECKED_CAST")
     val tempFilters = filters as? List<Int> ?: return null
-    return tempFilters.map { filter ->  convertTypeFilter(filter).toString() }
+    return tempFilters.map { filter ->  convertsTypeFilter(filter).toString() }
   }
 
-  /// Convert list of [TypeFilterAndroid] to [TypeFilter].
-  fun convertTypeFiltersToSingle(filters: List<Long?>?): TypeFilter? {
+  /// Converts list of [TypeFilterAndroid] to [TypeFilter].
+  fun convertsTypeFiltersToSingle(filters: List<Long?>?): TypeFilter? {
     if (filters == null || filters.isEmpty()) {
       return null
     }
@@ -63,11 +63,11 @@ object Convert {
     @Suppress("UNCHECKED_CAST")
     val tempFilters = filters as? List<Int> ?: return null
     val filter = tempFilters.first()
-    return convertTypeFilter(filter)
+    return convertsTypeFilter(filter)
   }
 
-  /// Convert [TypeFilterAndroid] to [TypeFilter].
-  fun convertTypeFilter(filter: Int): TypeFilter {
+  /// Converts [TypeFilterAndroid] to [TypeFilter].
+  private fun convertsTypeFilter(filter: Int): TypeFilter {
     return when (TypeFilterAndroid.ofRaw(filter)) {
       TypeFilterAndroid.ADDRESS -> TypeFilter.ADDRESS
       TypeFilterAndroid.CITIES -> TypeFilter.CITIES
@@ -79,29 +79,29 @@ object Convert {
   }
 
   /// Converts [FindAutocompletePredictionsResponse] to list of [AutocompletePredictionAndroid].
-  fun convertResponse(result: FindAutocompletePredictionsResponse): List<AutocompletePredictionAndroid?> {
-    return result.autocompletePredictions.map { item -> convertPrediction(item) }
+  fun convertsResponse(result: FindAutocompletePredictionsResponse): List<AutocompletePredictionAndroid?> {
+    return result.autocompletePredictions.map { item -> convertsPrediction(item) }
   }
 
   /// Converts [AutocompletePrediction] to of [AutocompletePredictionAndroid].
-  private fun convertPrediction(prediction: AutocompletePrediction): AutocompletePredictionAndroid {
+  private fun convertsPrediction(prediction: AutocompletePrediction): AutocompletePredictionAndroid {
     return AutocompletePredictionAndroid(
       prediction.distanceMeters?.toLong(),
       prediction.getFullText(null).toString(),
       prediction.placeId,
-      convertPlaceTypes(prediction.placeTypes),
+      convertsPlaceTypes(prediction.placeTypes),
       prediction.getPrimaryText(null).toString(),
       prediction.getSecondaryText(null).toString()
     )
   }
 
   /// Converts list of [Place.Type] to list of [Long].
-  private fun convertPlaceTypes(types: List<Place.Type>): List<Long?> {
-    return types.map { type -> convertPlaceType(type).raw.toLong() }
+  private fun convertsPlaceTypes(types: List<Place.Type>): List<Long?> {
+    return types.map { type -> convertsPlaceType(type).raw.toLong() }
   }
 
-  /// Convert [Place.Type] to [Long] value of [PlaceTypeAndroid].
-  private fun convertPlaceType(type: Place.Type): PlaceTypeAndroid {
+  /// Converts [Place.Type] to [Long] value of [PlaceTypeAndroid].
+  private fun convertsPlaceType(type: Place.Type): PlaceTypeAndroid {
     return when (type) {
       Place.Type.ACCOUNTING -> PlaceTypeAndroid.ACCOUNTING
       Place.Type.ADMINISTRATIVE_AREA_LEVEL_1 -> PlaceTypeAndroid.ADMINISTRATIVEAREALEVEL1

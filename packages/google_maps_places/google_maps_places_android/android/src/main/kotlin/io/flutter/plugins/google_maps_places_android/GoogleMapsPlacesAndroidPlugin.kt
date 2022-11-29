@@ -13,16 +13,14 @@ import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRe
 import com.google.android.libraries.places.api.net.PlacesClient
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
-import io.flutter.plugins.google_maps_places_android.Convert.convertCountries
-import io.flutter.plugins.google_maps_places_android.Convert.convertLatLng
-import io.flutter.plugins.google_maps_places_android.Convert.convertLatLngBounds
-import io.flutter.plugins.google_maps_places_android.Convert.convertResponse
-import io.flutter.plugins.google_maps_places_android.Convert.convertTypeFilter
-import io.flutter.plugins.google_maps_places_android.Convert.convertTypeFilters
-import io.flutter.plugins.google_maps_places_android.Convert.convertTypeFiltersToSingle
+import io.flutter.plugins.google_maps_places_android.Converts.convertsCountries
+import io.flutter.plugins.google_maps_places_android.Converts.convertsLatLng
+import io.flutter.plugins.google_maps_places_android.Converts.convertsLatLngBounds
+import io.flutter.plugins.google_maps_places_android.Converts.convertsResponse
+import io.flutter.plugins.google_maps_places_android.Converts.convertsTypeFiltersToSingle
 
 
-/** GoogleMapsPlacesAndroidPlugin */
+/// GoogleMapsPlacesAndroidPlugin
 class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
   /// The MethodChannel that will the communication between Flutter and native Android
   ///
@@ -51,7 +49,7 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
     setup(binding.binaryMessenger, null);
   }
 
-  /// Find Autocomplete Predictions.
+  /// Finds Autocomplete Predictions.
   /// ref: https://developers.google.com/maps/documentation/places/android-sdk/autocomplete#get_place_predictions
   override fun findAutocompletePredictionsAndroid(
     query: String,
@@ -85,7 +83,7 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
       if (task.isSuccessful) {
         previousSessionToken = placesRequest.sessionToken
         print("findAutocompletePredictionsAndroid Result: ${task.result}")
-        callback(convertResponse(task.result))
+        callback(convertsResponse(task.result))
       } else {
         val exception = task.exception
         print("findAutocompletePredictionsAndroid Exception: $exception")
@@ -94,7 +92,7 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
     }
   }
 
-  // Request with locationBias if given.
+  /// Requests autocomplete predictions with locationBias if given.
   private fun requestWithLocationBias(
     query: String,
     locationBias: LatLngBoundsAndroid?,
@@ -104,17 +102,17 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
     sessionToken: AutocompleteSessionToken):FindAutocompletePredictionsRequest  {
     return FindAutocompletePredictionsRequest.builder()
       .setQuery(query)
-      .setLocationBias(convertLatLngBounds(locationBias))
-      .setCountries(convertCountries(countries) ?: emptyList())
-      .setTypeFilter(convertTypeFiltersToSingle(typeFilter))
+      .setLocationBias(convertsLatLngBounds(locationBias))
+      .setCountries(convertsCountries(countries) ?: emptyList())
+      .setTypeFilter(convertsTypeFiltersToSingle(typeFilter))
       //Not working at the moment. API return an error when used.
       //.setTypesFilter(convertTypeFilters(typeFilter) ?: emptyList())
       .setSessionToken(sessionToken)
-      .setOrigin(convertLatLng(origin))
+      .setOrigin(convertsLatLng(origin))
       .build()
   }
 
-  // Request with location restriction.
+  /// Requests autocomplete predictions with location restriction.
   private fun requestWithLocationRestriction(
     query: String,
     locationRestriction: LatLngBoundsAndroid?,
@@ -124,18 +122,18 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
     sessionToken: AutocompleteSessionToken):FindAutocompletePredictionsRequest  {
     return FindAutocompletePredictionsRequest.builder()
       .setQuery(query)
-      .setLocationRestriction(convertLatLngBounds(locationRestriction))
-      .setCountries(convertCountries(countries) ?: emptyList())
-      .setTypeFilter(convertTypeFiltersToSingle(typeFilter))
+      .setLocationRestriction(convertsLatLngBounds(locationRestriction))
+      .setCountries(convertsCountries(countries) ?: emptyList())
+      .setTypeFilter(convertsTypeFiltersToSingle(typeFilter))
       //Not working at the moment. API return an error when used.
       //.setTypesFilter(convertTypeFilters(typeFilter) ?: emptyList())
       .setSessionToken(sessionToken)
-      .setOrigin(convertLatLng(origin))
+      .setOrigin(convertsLatLng(origin))
       .build()
   }
 
 
-  /// Initialize Places client.
+  /// Initializes Places client.
   private fun initialize(refreshToken: Boolean): AutocompleteSessionToken  {
     val applicationInfo =
       applicationContext
@@ -150,7 +148,7 @@ class GoogleMapsPlacesAndroidPlugin: FlutterPlugin, GoogleMapsPlacesApiAndroid {
     return getSessionToken(refreshToken);
   }
 
-  /// Fetch new session token if needed.
+  /// Fetches new session token if needed.
   private fun getSessionToken(refreshToken: Boolean): AutocompleteSessionToken {
     val sessionToken = previousSessionToken
     if (refreshToken || sessionToken == null) {

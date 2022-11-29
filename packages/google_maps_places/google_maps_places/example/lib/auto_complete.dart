@@ -143,22 +143,20 @@ class _MyAutoCompleteBodyState extends State<AutoCompleteBody> {
     if (item == null) {
       return Container();
     }
-    return Padding(
-        padding: const EdgeInsets.only(right: 8),
-        child: Column(children: <Widget>[
-          _buildPredictionRow('FullText:   ', item.fullText),
-          _buildPredictionRow('PrimaryText:   ', item.primaryText),
-          _buildPredictionRow('SecondaryText:   ', item.secondaryText),
-          _buildPredictionRow(
-              'Distance:   ', '${(item.distanceMeters ?? 0) / 1000} km'),
-          _buildPredictionRow('PlaceId:   ', item.placeId),
-          _buildPredictionRow(
-              'PlaceTypes:   ',
-              item.placeTypes
-                  .map((PlaceType placeType) => placeType.name)
-                  .join(', ')),
-          const Divider(thickness: 2),
-        ]));
+    return Column(children: <Widget>[
+      _buildPredictionRow('FullText: ', item.fullText),
+      _buildPredictionRow('PrimaryText: ', item.primaryText),
+      _buildPredictionRow('SecondaryText: ', item.secondaryText),
+      _buildPredictionRow(
+          'Distance: ', '${(item.distanceMeters ?? 0) / 1000} km'),
+      _buildPredictionRow('PlaceId: ', item.placeId),
+      _buildPredictionRow(
+          'PlaceTypes: ',
+          item.placeTypes
+              .map((PlaceType placeType) => placeType.name)
+              .join(', ')),
+      const Divider(thickness: 2),
+    ]);
   }
 
   Widget _buildErrorWidget() {
