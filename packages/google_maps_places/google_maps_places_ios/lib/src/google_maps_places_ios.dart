@@ -31,7 +31,7 @@ class GoogleMapsPlacesIOS extends GoogleMapsPlacesPlatform {
         await _api.findAutocompletePredictionsIOS(
             query,
             convertLatLngBounds(locationBias),
-            convertLatLngBounds(locationBias),
+            convertLatLngBounds(locationRestriction),
             convertLatLng(origin),
             countries,
             convertTypeFilter(typeFilter),
