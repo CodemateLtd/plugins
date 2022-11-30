@@ -114,7 +114,7 @@ class PlacesSample extends StatefulWidget {
 }
 
 class PlacesSampleState extends State<PlacesSample> {
-  String _query = 'Koulu';
+  String _query = 'Hospital';
   List<String> _countries = <String>['fi'];
   TypeFilter _typeFilter = TypeFilter.address;
 
