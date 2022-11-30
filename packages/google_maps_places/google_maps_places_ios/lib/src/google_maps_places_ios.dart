@@ -30,16 +30,16 @@ class GoogleMapsPlacesIOS extends GoogleMapsPlacesPlatform {
     final List<AutocompletePredictionIOS?>? response =
         await _api.findAutocompletePredictionsIOS(
             query,
-            convertLatLngBounds(locationBias),
-            convertLatLngBounds(locationRestriction),
-            convertLatLng(origin),
+            convertsLatLngBounds(locationBias),
+            convertsLatLngBounds(locationRestriction),
+            convertsLatLng(origin),
             countries,
-            convertTypeFilter(typeFilter),
+            convertsTypeFilter(typeFilter),
             refreshToken);
     if (response == null) {
       throw ArgumentError(
           'API returned empty response. Check log for details.');
     }
-    return convertReponse(response);
+    return convertsReponse(response);
   }
 }

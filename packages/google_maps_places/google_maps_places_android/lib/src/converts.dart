@@ -5,7 +5,7 @@
 part of google_maps_places_android;
 
 /// Converts [LatLng] to [LatLngAndroid].
-LatLngAndroid? convertLatLng(LatLng? latLng) {
+LatLngAndroid? convertsLatLng(LatLng? latLng) {
   if (latLng == null) {
     return null;
   }
@@ -13,45 +13,45 @@ LatLngAndroid? convertLatLng(LatLng? latLng) {
 }
 
 /// Converts [LatLngBounds] to [LatLngBoundsAndroid].
-LatLngBoundsAndroid? convertLatLngBounds(LatLngBounds? bounds) {
+LatLngBoundsAndroid? convertsLatLngBounds(LatLngBounds? bounds) {
   if (bounds == null) {
     return null;
   }
   return LatLngBoundsAndroid(
-      northeast: convertLatLng(bounds.northeast),
-      southwest: convertLatLng(bounds.southwest));
+      northeast: convertsLatLng(bounds.northeast),
+      southwest: convertsLatLng(bounds.southwest));
 }
 
 /// Converts list of [TypeFilter] to list of [int].
-List<int>? convertTypeFilter(List<TypeFilter>? filters) => filters
+List<int>? convertsTypeFilter(List<TypeFilter>? filters) => filters
     ?.map<int>((TypeFilter filter) => TypeFilterAndroid.values
         .firstWhere((TypeFilterAndroid element) => element.name == filter.name)
         .index)
     .toList();
 
 /// Converts list of [int] to list of [PlaceType].
-List<PlaceType> convertPlaceTypes(List<int?> placeTypes) => placeTypes
+List<PlaceType> convertsPlaceTypes(List<int?> placeTypes) => placeTypes
     .map<PlaceType>((int? placeType) => PlaceType.values.firstWhere(
         (PlaceType element) =>
             element.name == PlaceTypeAndroid.values[placeType!].name))
     .toList();
 
 /// Converts [AutocompletePredictionAndroid] to [AutocompletePrediction].
-AutocompletePrediction convertPrediction(
+AutocompletePrediction convertsPrediction(
     AutocompletePredictionAndroid prediction) {
   return AutocompletePrediction(
       distanceMeters: prediction.distanceMeters,
       fullText: prediction.fullText,
       placeId: prediction.placeId,
-      placeTypes: convertPlaceTypes(prediction.placeTypes),
+      placeTypes: convertsPlaceTypes(prediction.placeTypes),
       primaryText: prediction.primaryText,
       secondaryText: prediction.secondaryText);
 }
 
 /// Converts list of [AutocompletePredictionAndroid] to list of [AutocompletePrediction].
-List<AutocompletePrediction> convertReponse(
+List<AutocompletePrediction> convertsReponse(
     List<AutocompletePredictionAndroid?> results) {
   return results
-      .map((AutocompletePredictionAndroid? e) => convertPrediction(e!))
+      .map((AutocompletePredictionAndroid? e) => convertsPrediction(e!))
       .toList();
 }

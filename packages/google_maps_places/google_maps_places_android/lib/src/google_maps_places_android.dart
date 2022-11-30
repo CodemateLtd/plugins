@@ -30,12 +30,12 @@ class GoogleMapsPlacesAndroid extends GoogleMapsPlacesPlatform {
     final List<AutocompletePredictionAndroid?> response =
         await _api.findAutocompletePredictionsAndroid(
             query,
-            convertLatLngBounds(locationBias),
-            convertLatLngBounds(locationRestriction),
-            convertLatLng(origin),
+            convertsLatLngBounds(locationBias),
+            convertsLatLngBounds(locationRestriction),
+            convertsLatLng(origin),
             countries,
-            convertTypeFilter(typeFilter),
+            convertsTypeFilter(typeFilter),
             refreshToken);
-    return convertReponse(response);
+    return convertsReponse(response);
   }
 }

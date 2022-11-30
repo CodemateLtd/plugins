@@ -46,69 +46,6 @@ void main() {
       expect(result.captured[0], 'koulu');
     });
   });
-
-  group('convert', () {
-    test('convertLatLng', () async {
-      const LatLng latLng = LatLng(65.0121, 25.4651);
-      final LatLngIOS? converted = convertLatLng(latLng);
-      expect(converted, isNotNull);
-      expect(converted?.latitude, equals(latLng.latitude));
-      expect(converted?.longitude, equals(latLng.longitude));
-
-      expect(convertLatLng(null), isNull);
-    });
-    test('convertLatLngBounds', () async {
-      final LatLngBounds locationBias = LatLngBounds(
-        southwest: const LatLng(60.4518, 22.2666),
-        northeast: const LatLng(70.0821, 27.8718),
-      );
-      final LatLngBoundsIOS? converted = convertLatLngBounds(locationBias);
-      expect(converted, isNotNull);
-      expect(converted?.northeast?.latitude,
-          equals(locationBias.northeast.latitude));
-      expect(converted?.northeast?.longitude,
-          equals(locationBias.northeast.longitude));
-      expect(converted?.southwest?.latitude,
-          equals(locationBias.southwest.latitude));
-      expect(converted?.southwest?.longitude,
-          equals(locationBias.southwest.longitude));
-
-      expect(convertLatLng(null), isNull);
-    });
-    test('convertTypeFilter', () async {
-      for (int i = 0; i < TypeFilter.values.length; i++) {
-        final List<int>? converted =
-            convertTypeFilter(<TypeFilter>[TypeFilter.values[i]]);
-        expect(converted, isNotNull);
-        expect(converted?.length, equals(1));
-        expect(TypeFilterIOS.values[converted![0]].name,
-            equals(TypeFilter.values[i].name));
-      }
-      expect(convertTypeFilter(null), isNull);
-    });
-    test('convertPlaceTypes', () async {
-      for (int i = 0; i < PlaceTypeIOS.values.length; i++) {
-        final List<PlaceType> converted = convertPlaceTypes(<int?>[i]);
-        expect(converted.length, equals(1));
-        expect(converted[0].name, equals(PlaceTypeIOS.values[i].name));
-      }
-    });
-    test('convertPrediction', () async {
-      final AutocompletePrediction converted =
-          convertPrediction(mockPrediction);
-      expect(converted.distanceMeters, mockPrediction.distanceMeters);
-      expect(converted.fullText, mockPrediction.fullText);
-      expect(converted.placeId, mockPrediction.placeId);
-      expect(converted.placeTypes.length, mockPrediction.placeTypes.length);
-      expect(converted.primaryText, mockPrediction.primaryText);
-      expect(converted.secondaryText, mockPrediction.secondaryText);
-    });
-    test('convertReponse', () async {
-      final List<AutocompletePrediction> converted =
-          convertReponse(<AutocompletePredictionIOS>[mockPrediction]);
-      expect(converted.length, equals(1));
-    });
-  });
 }
 
 final AutocompletePredictionIOS mockPrediction = AutocompletePredictionIOS(
