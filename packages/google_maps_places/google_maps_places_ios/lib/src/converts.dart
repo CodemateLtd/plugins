@@ -45,7 +45,8 @@ List<PlaceType> convertsPlaceTypes(List<int?> placeTypes) => placeTypes
     .toList();
 
 /// Converts [AutocompletePredictionIOS] to [AutocompletePrediction].
-AutocompletePrediction convertsPrediction(AutocompletePredictionIOS prediction) {
+AutocompletePrediction convertsPrediction(
+    AutocompletePredictionIOS prediction) {
   return AutocompletePrediction(
       distanceMeters: prediction.distanceMeters,
       fullText: prediction.fullText,
