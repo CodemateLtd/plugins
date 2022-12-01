@@ -256,8 +256,7 @@ class _MyAutoCompleteBodyState extends State<AutoCompleteBody> {
 
   Widget _buildErrorWidget() {
     final String errorText = _error == null ? '' : _error.toString();
-    return Text(errorText,
-        style: const TextStyle(color: Colors.red));
+    return Text(errorText, style: const TextStyle(color: Colors.red));
   }
 
   List<Widget> _buildResultWidgets() {
