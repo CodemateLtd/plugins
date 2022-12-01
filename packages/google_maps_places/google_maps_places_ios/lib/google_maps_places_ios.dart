@@ -8,4 +8,4 @@ import 'package:google_maps_places_platform_interface/google_maps_places_platfor
 import 'src/messages.g.dart';
 
 part 'src/google_maps_places_ios.dart';
-part 'src/converts.dart';
+part 'src/convert.dart';

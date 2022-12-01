@@ -35,14 +35,14 @@ public class SwiftGoogleMapsPlacesIosPlugin: NSObject, FlutterPlugin, GoogleMaps
         }
         
         let filter = GMSAutocompleteFilter()
-        filter.type = Converts.convertsTypeFiltersToSingle(typeFilter);
+        filter.type = Converts.convertTypeFiltersToSingle(typeFilter);
         filter.countries = countries as? [String]
-        filter.origin = Converts.convertsLatLng(origin)
+        filter.origin = Converts.convertLatLng(origin)
         
         if (locationBias != nil) {
-            filter.locationBias = Converts.convertsLocationBias(locationBias)
+            filter.locationBias = Converts.convertLocationBias(locationBias)
         } else if (locationRestriction != nil) {
-            filter.locationRestriction = Converts.convertsLocationRestrction(locationRestriction)
+            filter.locationRestriction = Converts.convertLocationRestrction(locationRestriction)
         }
         findAutocompletePredictions(query: query, filter: filter, refreshToken: refreshToken == true, callback: { (results, error) in
             if let error = error {
@@ -56,7 +56,7 @@ public class SwiftGoogleMapsPlacesIosPlugin: NSObject, FlutterPlugin, GoogleMaps
                  ))*/
                 completion(nil)
             } else {
-                completion(Converts.convertsResults(results))
+                completion(Converts.convertResults(results))
             }
         })
     }

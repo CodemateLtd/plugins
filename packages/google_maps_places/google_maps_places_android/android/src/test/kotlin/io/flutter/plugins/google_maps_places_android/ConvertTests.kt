@@ -10,41 +10,41 @@ import junit.framework.TestCase.*
 
 import org.junit.Test
 
-class ConvertsTests {
+class ConvertTests {
 
     @Test
     fun testConvertsLatLng() {
         val data = LatLngAndroid(65.0121, 25.4651)
-        val converted = Converts.convertsLatLng(data)
+        val converted = Convert.convertLatLng(data)
         assertNotNull(converted)
         assertEquals(converted?.latitude, data.latitude)
         assertEquals(converted?.longitude, data.longitude)
-        assertNull(Converts.convertsLatLng(null))
-        assertNull(Converts.convertsLatLng(LatLngAndroid(65.0121, null)))
-        assertNull(Converts.convertsLatLng(LatLngAndroid(null, 25.4651)))
-        assertNull(Converts.convertsLatLng(LatLngAndroid(null, null)))
+        assertNull(Convert.convertLatLng(null))
+        assertNull(Convert.convertLatLng(LatLngAndroid(65.0121, null)))
+        assertNull(Convert.convertLatLng(LatLngAndroid(null, 25.4651)))
+        assertNull(Convert.convertLatLng(LatLngAndroid(null, null)))
     }
 
     @Test
     fun testConvertsLatLngBounds() {
-        assertNotNull(Converts.convertsLatLngBounds(LatLngBoundsAndroid(
+        assertNotNull(Convert.convertLatLngBounds(LatLngBoundsAndroid(
             LatLngAndroid(60.4518, 22.2666),
             LatLngAndroid(70.0821, 27.8718)
         )))
-        assertNull(Converts.convertsLatLngBounds(null))
-        assertNull(Converts.convertsLatLngBounds(LatLngBoundsAndroid(
+        assertNull(Convert.convertLatLngBounds(null))
+        assertNull(Convert.convertLatLngBounds(LatLngBoundsAndroid(
             null,
             LatLngAndroid(70.0821, 27.8718)
         )))
-        assertNull(Converts.convertsLatLngBounds(LatLngBoundsAndroid(
+        assertNull(Convert.convertLatLngBounds(LatLngBoundsAndroid(
             LatLngAndroid(60.4518, 22.2666),
             null
         )))
-        assertNull(Converts.convertsLatLngBounds(LatLngBoundsAndroid(
+        assertNull(Convert.convertLatLngBounds(LatLngBoundsAndroid(
             LatLngAndroid(null, 22.2666),
             LatLngAndroid(70.0821, 27.8718)
         )))
-        assertNull(Converts.convertsLatLngBounds(LatLngBoundsAndroid(
+        assertNull(Convert.convertLatLngBounds(LatLngBoundsAndroid(
             null,
             null
         )))
@@ -53,13 +53,13 @@ class ConvertsTests {
     @Test
     fun testConvertsCountries() {
         val countries = mutableListOf<String?>()
-        assertNull(Converts.convertsCountries(null))
-        assertNotNull(Converts.convertsCountries(countries))
+        assertNull(Convert.convertCountries(null))
+        assertNotNull(Convert.convertCountries(countries))
         countries.add(0, null)
-        assertNotNull(Converts.convertsCountries(countries))
+        assertNotNull(Convert.convertCountries(countries))
         countries.removeAt(0)
         countries.addAll(listOf("fi", "us"))
-        val converted = Converts.convertsCountries(countries)
+        val converted = Convert.convertCountries(countries)
         assertNotNull(converted)
         assertEquals(converted?.size, countries.size)
     }
@@ -67,13 +67,13 @@ class ConvertsTests {
     @Test
     fun testConvertsTypeFilters() {
         val typeFilters = mutableListOf<Long?>()
-        assertNull(Converts.convertsTypeFilters(null))
-        assertNotNull(Converts.convertsTypeFilters(typeFilters))
+        assertNull(Convert.convertTypeFilters(null))
+        assertNotNull(Convert.convertTypeFilters(typeFilters))
         typeFilters.add(0, null)
-        assertNotNull(Converts.convertsTypeFilters(typeFilters))
+        assertNotNull(Convert.convertTypeFilters(typeFilters))
         typeFilters.removeAt(0)
         typeFilters.addAll(listOf(1, 2))
-        val converted = Converts.convertsTypeFilters(typeFilters)
+        val converted = Convert.convertTypeFilters(typeFilters)
         assertNotNull(converted)
         assertEquals(converted?.size, typeFilters.size)
     }
@@ -81,35 +81,35 @@ class ConvertsTests {
     @Test
     fun testConvertsTypeFiltersToSingle() {
         val typeFilters = mutableListOf<Long?>()
-        assertNull(Converts.convertsTypeFiltersToSingle(null))
-        assertNull(Converts.convertsTypeFiltersToSingle(typeFilters))
+        assertNull(Convert.convertTypeFiltersToSingle(null))
+        assertNull(Convert.convertTypeFiltersToSingle(typeFilters))
         typeFilters.add(0, null)
-        assertNull(Converts.convertsTypeFiltersToSingle(typeFilters))
+        assertNull(Convert.convertTypeFiltersToSingle(typeFilters))
         typeFilters.removeAt(0)
         typeFilters.addAll(listOf(1, 2))
-        val converted = Converts.convertsTypeFiltersToSingle(typeFilters)
+        val converted = Convert.convertTypeFiltersToSingle(typeFilters)
         assertNotNull(converted)
         assertEquals(converted.toString(), TypeFilterAndroid.ofRaw(1).toString())
     }
 
     @Test
     fun testConvertsTypeFilter() {
-        assertEquals(Converts.convertsTypeFilter(TypeFilterAndroid.ADDRESS.raw).toString(),
+        assertEquals(Convert.convertTypeFilter(TypeFilterAndroid.ADDRESS.raw).toString(),
             TypeFilter.ADDRESS.toString())
-        assertEquals(Converts.convertsTypeFilter(TypeFilterAndroid.CITIES.raw).toString(),
+        assertEquals(Convert.convertTypeFilter(TypeFilterAndroid.CITIES.raw).toString(),
             TypeFilter.CITIES.toString())
-        assertEquals(Converts.convertsTypeFilter(TypeFilterAndroid.ESTABLISHMENT.raw).toString(),
+        assertEquals(Convert.convertTypeFilter(TypeFilterAndroid.ESTABLISHMENT.raw).toString(),
             TypeFilter.ESTABLISHMENT.toString())
-        assertEquals(Converts.convertsTypeFilter(TypeFilterAndroid.GEOCODE.raw).toString(),
+        assertEquals(Convert.convertTypeFilter(TypeFilterAndroid.GEOCODE.raw).toString(),
             TypeFilter.GEOCODE.toString())
-        assertEquals(Converts.convertsTypeFilter(TypeFilterAndroid.REGIONS.raw).toString(),
+        assertEquals(Convert.convertTypeFilter(TypeFilterAndroid.REGIONS.raw).toString(),
             TypeFilter.REGIONS.toString())
     }
 
     @Test
     fun testConvertsPlaceTypes() {
         val types = listOf(Place.Type.ACCOUNTING, Place.Type.GEOCODE)
-        val converted = Converts.convertsPlaceTypes(types)
+        val converted = Convert.convertPlaceTypes(types)
         assertNotNull(converted)
         assertEquals(types.size, converted.size)
         assertEquals(types[0].toString(), PlaceTypeAndroid.ofRaw(converted[0].toInt()).toString())
@@ -117,7 +117,7 @@ class ConvertsTests {
 
     @Test
     fun testConvertsPlaceType() {
-        assertEquals(Converts.convertsPlaceType(Place.Type.GEOCODE).toString(),
+        assertEquals(Convert.convertPlaceType(Place.Type.GEOCODE).toString(),
             Place.Type.GEOCODE.toString())
     }
 }

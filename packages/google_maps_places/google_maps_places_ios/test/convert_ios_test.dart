@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_maps_places_android/google_maps_places_android.dart';
-import 'package:google_maps_places_android/src/messages.g.dart';
+import 'package:google_maps_places_ios/google_maps_places_ios.dart';
+import 'package:google_maps_places_ios/src/messages.g.dart';
 import 'package:google_maps_places_platform_interface/google_maps_places_platform_interface.dart';
 
 import 'mocks.dart';
@@ -14,16 +14,15 @@ void main() {
 
   group('converts', () {
     test('convertsLatLng', () async {
-      final LatLngAndroid? converted = convertsLatLng(mockOrigin);
+      final LatLngIOS? converted = convertLatLng(mockOrigin);
       expect(converted, isNotNull);
       expect(converted?.latitude, equals(mockOrigin.latitude));
       expect(converted?.longitude, equals(mockOrigin.longitude));
 
-      expect(convertsLatLng(null), isNull);
+      expect(convertLatLng(null), isNull);
     });
     test('convertsLatLngBounds', () async {
-      final LatLngBoundsAndroid? converted =
-          convertsLatLngBounds(mockLocationBias);
+      final LatLngBoundsIOS? converted = convertLatLngBounds(mockLocationBias);
       expect(converted, isNotNull);
       expect(converted?.northeast?.latitude,
           equals(mockLocationBias.northeast.latitude));
@@ -34,29 +33,29 @@ void main() {
       expect(converted?.southwest?.longitude,
           equals(mockLocationBias.southwest.longitude));
 
-      expect(convertsLatLng(null), isNull);
+      expect(convertLatLng(null), isNull);
     });
     test('convertsTypeFilter', () async {
       for (int i = 0; i < TypeFilter.values.length; i++) {
         final List<int>? converted =
-            convertsTypeFilter(<TypeFilter>[TypeFilter.values[i]]);
+            convertTypeFilter(<TypeFilter>[TypeFilter.values[i]]);
         expect(converted, isNotNull);
         expect(converted?.length, equals(1));
-        expect(TypeFilterAndroid.values[converted![0]].name,
+        expect(TypeFilterIOS.values[converted![0]].name,
             equals(TypeFilter.values[i].name));
       }
-      expect(convertsTypeFilter(null), isNull);
+      expect(convertTypeFilter(null), isNull);
     });
     test('convertsPlaceTypes', () async {
-      for (int i = 0; i < PlaceTypeAndroid.values.length; i++) {
-        final List<PlaceType> converted = convertsPlaceTypes(<int?>[i]);
+      for (int i = 0; i < PlaceTypeIOS.values.length; i++) {
+        final List<PlaceType> converted = convertPlaceTypes(<int?>[i]);
         expect(converted.length, equals(1));
-        expect(converted[0].name, equals(PlaceTypeAndroid.values[i].name));
+        expect(converted[0].name, equals(PlaceTypeIOS.values[i].name));
       }
     });
     test('convertsPrediction', () async {
       final AutocompletePrediction converted =
-          convertsPrediction(mockPrediction);
+          convertPrediction(mockPrediction);
       expect(converted.distanceMeters, mockPrediction.distanceMeters);
       expect(converted.fullText, mockPrediction.fullText);
       expect(converted.placeId, mockPrediction.placeId);
@@ -66,7 +65,7 @@ void main() {
     });
     test('convertsReponse', () async {
       final List<AutocompletePrediction> converted =
-          convertsReponse(<AutocompletePredictionAndroid>[mockPrediction]);
+          convertReponse(<AutocompletePredictionIOS>[mockPrediction]);
       expect(converted.length, equals(1));
     });
   });
