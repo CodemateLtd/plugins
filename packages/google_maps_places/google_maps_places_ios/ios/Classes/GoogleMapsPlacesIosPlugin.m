@@ -13,7 +13,7 @@
 #endif
 
 @implementation GoogleMapsPlacesIosPlugin
-+ (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
++ (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar> *)registrar {
   [SwiftGoogleMapsPlacesIosPlugin registerWithRegistrar:registrar];
 }
 @end
