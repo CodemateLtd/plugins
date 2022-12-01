@@ -51,7 +51,7 @@ void main() {
             locationBias: mockLocationBias,
             origin: mockOrigin,
             countries: mockCountries,
-            typeFilter: <TypeFilter>[TypeFilter.address]);
+            typeFilter: mockTypeFilters);
 
         expectMethodCall(
           log,
@@ -77,7 +77,7 @@ void main() {
             locationRestriction: mockLocationRestriction,
             origin: mockOrigin,
             countries: mockCountries,
-            typeFilter: <TypeFilter>[TypeFilter.address],
+            typeFilter: mockTypeFilters,
             refreshToken: true);
 
         expectMethodCall(
