@@ -14,6 +14,11 @@ final LatLngBounds mockLocationBias = LatLngBounds(
   northeast: const LatLng(70.0821, 27.8718),
 );
 
+final LatLngBounds mockLocationRestriction = LatLngBounds(
+  southwest: const LatLng(63.4518, 23.2666),
+  northeast: const LatLng(67.0821, 26.8718),
+);
+
 const List<String> mockCountries = <String>['fi'];
 
 const List<TypeFilter> mockTypeFilters = <TypeFilter>[TypeFilter.address];

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:google_maps_places_android/src/messages.g.dart';
 import 'package:google_maps_places_platform_interface/google_maps_places_platform_interface.dart';
 
 const String mockQuery = 'Koulu';
@@ -23,11 +22,11 @@ const List<String> mockCountries = <String>['fi'];
 
 const List<TypeFilter> mockTypeFilters = <TypeFilter>[TypeFilter.address];
 
-final AutocompletePredictionAndroid mockPrediction = AutocompletePredictionAndroid(
+const AutocompletePrediction mockPrediction = AutocompletePrediction(
     distanceMeters: 200,
     fullText: 'Koulukatu, Tampere, Finland, placeId',
     placeId:
         'EhtLb3VsdWthdHUsIFRhbXBlcmUsIEZpbmxhbmQiLiosChQKEgmNKrw3sNiORhGUm8jmSvlI4RIUChIJVVwAnVEkj0YRhhoEA3s-vUQ',
-    placeTypes: <int?>[110, 54],
+    placeTypes: <PlaceType>[PlaceType.route, PlaceType.geocode],
     primaryText: 'Koulukatu',
     secondaryText: 'Tampere, Finland');

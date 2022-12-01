@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/foundation.dart' show immutable, objectRuntimeType;
+import 'package:flutter/foundation.dart'
+    show immutable, visibleForTesting, objectRuntimeType;
 
 import 'place_type.dart';
 
@@ -68,6 +69,7 @@ class AutocompletePrediction {
   }
 
   /// Converts list [int] to list of [PlaceType].
+  @visibleForTesting
   static List<PlaceType> convertPlaceTypes(List<int?> placeTypes) => placeTypes
       .map<PlaceType>((int? placeType) => PlaceType.values.firstWhere(
           (PlaceType element) =>

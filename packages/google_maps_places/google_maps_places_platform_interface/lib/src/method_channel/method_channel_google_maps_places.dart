@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/services.dart';
 import '../../google_maps_places_platform_interface.dart';
 
@@ -16,6 +17,10 @@ const MethodChannel _channel =
 /// clients that were relying on internal details of the method channel
 /// in the pre-federated plugin.
 class GoogleMapsPlacesMethodChannel extends GoogleMapsPlacesPlatform {
+  /// The MethodChannel that is being used by this implementation of the plugin.
+  @visibleForTesting
+  MethodChannel get channel => _channel;
+
   @override
   Future<List<AutocompletePrediction>> findAutocompletePredictions({
     required String query,
@@ -23,19 +28,20 @@ class GoogleMapsPlacesMethodChannel extends GoogleMapsPlacesPlatform {
     LatLngBounds? locationRestriction,
     LatLng? origin,
     List<String?>? countries,
-    List<TypeFilter?>? typeFilter,
+    List<TypeFilter>? typeFilter,
     bool? refreshToken,
   }) async {
-    if (query.isEmpty) {
-      throw ArgumentError('Argument query can not be empty');
-    }
+    // This assert can be removed when multiple typefilters are working properly.
+    assert(typeFilter == null || typeFilter.length <= 1);
+    // Only either locationBias or locationRestriction is allowed.
+    assert(locationBias == null || locationRestriction == null);
     final List<Map<Object?, Object?>>? result =
         await _channel.invokeListMethod<Map<Object?, Object?>>(
       'findAutocompletePredictions',
       <String, Object?>{
         'query': query,
         'countries': countries,
-        'typeFilter': typeFilter,
+        'typeFilter': typeFilterToJson(typeFilter),
         'origin': origin?.toJson(),
         'locationBias': locationBias?.toJson(),
         'locationRestriction': locationRestriction?.toJson(),

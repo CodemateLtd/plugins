@@ -33,3 +33,10 @@ enum TypeFilter {
   /// ADMINISTRATIVE_AREA_LEVEL_2
   regions,
 }
+
+/// Covnverts list of type filter values to something serializable in JSON
+List<int>? typeFilterToJson(List<TypeFilter>? filters) => filters
+    ?.map<int>((TypeFilter filter) => TypeFilter.values
+        .firstWhere((TypeFilter element) => element.name == filter.name)
+        .index)
+    .toList();

@@ -102,7 +102,7 @@ void main() {
     test('passes the optional parameters with location restriction', () async {
       await plugin.findAutocompletePredictions(
           query: mockQuery,
-          locationRestriction: mockLocationBias,
+          locationRestriction: mockLocationRestriction,
           origin: mockOrigin,
           countries: mockCountries,
           typeFilter: mockTypeFilters,
@@ -118,13 +118,13 @@ void main() {
       expect(locationRestriction.northeast, isNotNull);
       expect(locationRestriction.southwest, isNotNull);
       expect(locationRestriction.northeast!.latitude,
-          mockLocationBias.northeast.latitude);
+          mockLocationRestriction.northeast.latitude);
       expect(locationRestriction.northeast!.longitude,
-          mockLocationBias.northeast.longitude);
+          mockLocationRestriction.northeast.longitude);
       expect(locationRestriction.southwest!.latitude,
-          mockLocationBias.southwest.latitude);
+          mockLocationRestriction.southwest.latitude);
       expect(locationRestriction.southwest!.longitude,
-          mockLocationBias.southwest.longitude);
+          mockLocationRestriction.southwest.longitude);
       final LatLngAndroid origin = result.captured[3] as LatLngAndroid;
       expect(origin, isNotNull);
       expect(origin.latitude, mockOrigin.latitude);
@@ -150,7 +150,7 @@ void main() {
           plugin.findAutocompletePredictions(
               query: mockQuery,
               locationBias: mockLocationBias,
-              locationRestriction: mockLocationBias),
+              locationRestriction: mockLocationRestriction),
           throwsAssertionError);
     });
 

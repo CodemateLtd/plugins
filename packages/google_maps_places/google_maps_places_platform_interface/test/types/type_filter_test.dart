@@ -5,13 +5,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_places_platform_interface/google_maps_places_platform_interface.dart';
 
+import '../mocks/mocks.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-
-  group('$GoogleMapsPlacesPlatform', () {
-    test('$GoogleMapsPlacesMethodChannel() is the default instance', () {
-      expect(GoogleMapsPlacesPlatform.instance,
-          isInstanceOf<GoogleMapsPlacesMethodChannel>());
+  group('TypeFilter', () {
+    test('typeFilterToJson', () async {
+      expect(typeFilterToJson(mockTypeFilters), <int>[0]);
+      expect(typeFilterToJson(null), isNull);
     });
   });
 }
