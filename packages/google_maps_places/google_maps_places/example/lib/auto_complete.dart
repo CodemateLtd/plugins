@@ -27,7 +27,7 @@ class AutoCompleteBody extends StatefulWidget {
 
 class _MyAutoCompleteBodyState extends State<AutoCompleteBody> {
   String _query = '';
-  List<String> _countries = <String>['fi'];
+  final List<String> _countries = <String>['fi'];
   TypeFilter _typeFilter = TypeFilter.address;
 
   final LatLng _origin = const LatLng(65.0121, 25.4651);
@@ -36,6 +36,17 @@ class _MyAutoCompleteBodyState extends State<AutoCompleteBody> {
     southwest: const LatLng(60.4518, 22.2666),
     northeast: const LatLng(70.0821, 27.8718),
   );
+  final LatLngBounds _locationRestriction = LatLngBounds(
+    southwest: const LatLng(64.4518, 24.2666),
+    northeast: const LatLng(66.0821, 26.8718),
+  );
+
+  bool _withCountries = false;
+  bool _withTypeFilter = false;
+  bool _withOrigin = false;
+  bool _withLocationBias = false;
+  bool _withLocationRestriction = false;
+  bool _withTokenRefresh = false;
 
   bool _findingPlaces = false;
   dynamic _error;
@@ -56,39 +67,6 @@ class _MyAutoCompleteBodyState extends State<AutoCompleteBody> {
     );
   }
 
-  void _onPlaceTypeFilterChanged(TypeFilter? value) {
-    if (value != null) {
-      setState(() {
-        _typeFilter = value;
-      });
-    }
-  }
-
-  String? _countriesValidator(String? input) {
-    if (input == null || input.isEmpty) {
-      return null;
-    }
-    final Iterable<String?> result = input
-        .split(',')
-        .map((String countryPart) => countryPart.trim())
-        .map((String countryPart) {
-      if (countryPart.length != 2) {
-        return "Use two-letter country codes splitted by ','";
-      }
-      return null;
-    }).where((String? item) => item != null);
-    return result != null && result.isNotEmpty ? result.first : null;
-  }
-
-  void _onCountriesTextChanged(String countries) {
-    _countries = (countries == '')
-        ? <String>[]
-        : countries
-            .split(',')
-            .map((String item) => item.trim())
-            .toList(growable: false);
-  }
-
   void _findAction() {
     if (_findingPlaces || _query.isEmpty) {
       return;
@@ -106,10 +84,13 @@ class _MyAutoCompleteBodyState extends State<AutoCompleteBody> {
       final List<AutocompletePrediction> result =
           await GoogleMapsPlaces.findAutocompletePredictions(
               query: _query,
-              countries: _countries,
-              typeFilter: <TypeFilter>[_typeFilter],
-              origin: _origin,
-              locationBias: _locationBias);
+              countries: _withCountries ? _countries : null,
+              typeFilter: _withTypeFilter ? <TypeFilter>[_typeFilter] : null,
+              origin: _withOrigin ? _origin : null,
+              locationBias: _withLocationBias ? _locationBias : null,
+              locationRestriction:
+                  _withLocationRestriction ? _locationRestriction : null,
+              refreshToken: _withTokenRefresh ? _withTokenRefresh : null);
 
       setState(() {
         _results = result;
@@ -121,6 +102,118 @@ class _MyAutoCompleteBodyState extends State<AutoCompleteBody> {
         _findingPlaces = false;
       });
     }
+  }
+
+  List<Widget> _buildQueryWidgets() {
+    return <Widget>[
+      const Text('Required fields:',
+          style: TextStyle(fontWeight: FontWeight.bold)),
+      TextFormField(
+        onChanged: (String text) {
+          _query = text;
+        },
+        initialValue: _query,
+        decoration: const InputDecoration(label: Text('Query')),
+      ),
+      Padding(
+        padding: const EdgeInsets.only(top: 20.0, bottom: 8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: const <Widget>[
+            Text('Optional fields:',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('Enabled', style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+      CheckboxListTile(
+        title: Row(
+          children: <Widget>[
+            const Text('TypeFilter:  '),
+            DropdownButton<TypeFilter>(
+              items: TypeFilter.values
+                  .map((TypeFilter item) => DropdownMenuItem<TypeFilter>(
+                      value: item, child: Text(item.name)))
+                  .toList(growable: false),
+              value: _typeFilter,
+              onChanged: (TypeFilter? value) {
+                if (value != null) {
+                  setState(() {
+                    _typeFilter = value;
+                  });
+                }
+              },
+            ),
+          ],
+        ),
+        checkColor: Colors.white,
+        value: _withTypeFilter,
+        onChanged: (bool? value) {
+          setState(() {
+            _withTypeFilter = value!;
+          });
+        },
+      ),
+      CheckboxListTile(
+        title: Text('Countries:  ${_countries.join(',')}'),
+        checkColor: Colors.white,
+        value: _withCountries,
+        onChanged: (bool? value) {
+          setState(() {
+            _withCountries = value!;
+          });
+        },
+      ),
+      CheckboxListTile(
+        title: Text('Origin:  (${_origin.latitude}, ${_origin.longitude})'),
+        checkColor: Colors.white,
+        value: _withOrigin,
+        onChanged: (bool? value) {
+          setState(() {
+            _withOrigin = value!;
+          });
+        },
+      ),
+      CheckboxListTile(
+        title: Text(
+            'Location bias:  (${_locationBias.northeast.latitude}, ${_locationBias.northeast.longitude}), (${_locationBias.southwest.latitude}, ${_locationBias.southwest.longitude})'),
+        checkColor: Colors.white,
+        value: _withLocationBias,
+        onChanged: (bool? value) {
+          setState(() {
+            _withLocationBias = value!;
+            _withLocationRestriction = false;
+          });
+        },
+      ),
+      CheckboxListTile(
+        title: Text(
+            'Location restriction:  (${_locationRestriction.northeast.latitude}, ${_locationRestriction.northeast.longitude}), (${_locationRestriction.southwest.latitude}, ${_locationRestriction.southwest.longitude})'),
+        checkColor: Colors.white,
+        value: _withLocationRestriction,
+        onChanged: (bool? value) {
+          setState(() {
+            _withLocationRestriction = value!;
+            _withLocationBias = false;
+          });
+        },
+      ),
+      CheckboxListTile(
+        title: Text('Refresh token:  ${_withTokenRefresh ? 'Yes' : 'No'}'),
+        checkColor: Colors.white,
+        value: _withTokenRefresh,
+        onChanged: (bool? value) {
+          setState(() {
+            _withTokenRefresh = value!;
+          });
+        },
+      ),
+      ElevatedButton(
+        onPressed: _findAction,
+        child: const Text('Find'),
+      ),
+      Container(padding: const EdgeInsets.only(top: 20))
+    ];
   }
 
   Widget _buildPredictionRow(String title, String value) {
@@ -162,39 +255,12 @@ class _MyAutoCompleteBodyState extends State<AutoCompleteBody> {
         style: theme.textTheme.caption?.copyWith(color: theme.errorColor));
   }
 
-  List<Widget> _buildQueryWidgets() {
-    return <Widget>[
-      TextFormField(
-        onChanged: (String text) {
-          _query = text;
-        },
-        decoration: const InputDecoration(label: Text('Query')),
-      ),
-      TextFormField(
-        onChanged: _onCountriesTextChanged,
-        decoration: const InputDecoration(label: Text('Countries')),
-        validator: _countriesValidator,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        initialValue: _countries.join(','),
-      ),
-      DropdownButton<TypeFilter>(
-        items: TypeFilter.values
-            .map((TypeFilter item) => DropdownMenuItem<TypeFilter>(
-                value: item, child: Text(item.name)))
-            .toList(growable: false),
-        value: _typeFilter,
-        onChanged: _onPlaceTypeFilterChanged,
-      ),
-      ElevatedButton(
-        onPressed: _findAction,
-        child: const Text('Find'),
-      ),
-      Container(padding: const EdgeInsets.only(top: 20))
-    ];
-  }
-
   List<Widget> _buildResultWidgets() {
     return <Widget>[
+      const Padding(
+        padding: EdgeInsets.only(top: 4.0, bottom: 16.0),
+        child: Text('Results:', style: TextStyle(fontWeight: FontWeight.bold)),
+      ),
       if (_error != null)
         _buildErrorWidget()
       else if (!_findingPlaces)
