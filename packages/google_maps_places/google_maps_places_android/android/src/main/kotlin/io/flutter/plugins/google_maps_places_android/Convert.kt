@@ -15,6 +15,8 @@ import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRe
 object Convert {
 
   /// Converts [LatLngAndroid] to [LatLng].
+  ///
+  /// Returns [null] if [latLng] is [null].
   fun convertLatLng(latLng: LatLngAndroid?): LatLng? {
     if (latLng?.latitude == null || latLng.longitude == null) {
       return null
@@ -23,6 +25,8 @@ object Convert {
   }
 
   /// Converts [LatLngBoundsAndroid] to [RectangularBounds].
+  ///
+  /// Returns [null] if [latLngBounds] is [null].
   fun convertLatLngBounds(latLngBounds: LatLngBoundsAndroid?): RectangularBounds? {
     if (latLngBounds?.northeast == null || latLngBounds.southwest == null) {
       return null
@@ -35,8 +39,9 @@ object Convert {
     return RectangularBounds.newInstance(southwest, northeast)
   }
 
-
-  /// Converts list of [String?] to list of [String].
+  /// Converts list of [String] to list of [String].
+  ///
+  /// Returns [null] if [countries] is [null].
   fun convertCountries(countries: List<String?>?): List<String>? {
     if (countries == null) {
       return null
@@ -45,6 +50,8 @@ object Convert {
   }
 
   /// Converts list of [TypeFilterAndroid] to list of [String].
+  ///
+  /// Returns [null] if [filters] is [null].
   internal fun convertTypeFilters(filters: List<Long?>?): List<String?>? {
     if (filters == null) {
       return null
@@ -55,6 +62,8 @@ object Convert {
   }
 
   /// Converts list of [TypeFilterAndroid] to [TypeFilter].
+  ///
+  /// Returns [null] if [filters] is [null].
   fun convertTypeFiltersToSingle(filters: List<Long?>?): TypeFilter? {
     if (filters == null || filters.isEmpty()) {
       return null
@@ -70,6 +79,8 @@ object Convert {
   }
 
   /// Converts [TypeFilterAndroid] to [TypeFilter].
+  ///
+  /// Throws [IllegalArgumentException] on invalid [filter].
   internal fun convertTypeFilter(filter: Int): TypeFilter {
     return when (TypeFilterAndroid.ofRaw(filter)) {
       TypeFilterAndroid.ADDRESS -> TypeFilter.ADDRESS
@@ -82,7 +93,7 @@ object Convert {
   }
 
   /// Converts [FindAutocompletePredictionsResponse] to list of [AutocompletePredictionAndroid].
-  fun convertResponse(result: FindAutocompletePredictionsResponse): List<AutocompletePredictionAndroid?> {
+  fun convertResponse(result: FindAutocompletePredictionsResponse): List<AutocompletePredictionAndroid> {
     return result.autocompletePredictions.map { item -> convertPrediction(item) }
   }
 
@@ -104,6 +115,8 @@ object Convert {
   }
 
   /// Converts [Place.Type] to [Long] value of [PlaceTypeAndroid].
+  ///
+  /// Throws [IllegalArgumentException] on invalid [type].
   internal fun convertPlaceType(type: Place.Type): PlaceTypeAndroid {
     return when (type) {
       Place.Type.ACCOUNTING -> PlaceTypeAndroid.ACCOUNTING

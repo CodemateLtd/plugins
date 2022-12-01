@@ -1,4 +1,3 @@
-
 # 0.0.1
 
-* TODO: Describe initial release.
+- Initial release of Google Maps Places plugin.

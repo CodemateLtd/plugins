@@ -5,6 +5,8 @@
 part of google_maps_places_android;
 
 /// Converts [LatLng] to [LatLngAndroid].
+///
+/// Returns [null] if [latLng] is [null].
 LatLngAndroid? convertLatLng(LatLng? latLng) {
   if (latLng == null) {
     return null;
@@ -13,6 +15,8 @@ LatLngAndroid? convertLatLng(LatLng? latLng) {
 }
 
 /// Converts [LatLngBounds] to [LatLngBoundsAndroid].
+///
+/// Returns [null] if [bounds] is [null].
 LatLngBoundsAndroid? convertLatLngBounds(LatLngBounds? bounds) {
   if (bounds == null) {
     return null;
@@ -23,6 +27,8 @@ LatLngBoundsAndroid? convertLatLngBounds(LatLngBounds? bounds) {
 }
 
 /// Converts list of [TypeFilter] to list of [int].
+///
+/// Returns [null] if [filters] is [null].
 List<int>? convertTypeFilter(List<TypeFilter>? filters) => filters
     ?.map<int>((TypeFilter filter) => TypeFilterAndroid.values
         .firstWhere((TypeFilterAndroid element) => element.name == filter.name)

@@ -178,8 +178,11 @@ class _MyAutoCompleteBodyState extends State<AutoCompleteBody> {
         },
       ),
       CheckboxListTile(
-        title: Text(
-            'Location bias:  (${_locationBias.northeast.latitude}, ${_locationBias.northeast.longitude}), (${_locationBias.southwest.latitude}, ${_locationBias.southwest.longitude})'),
+        title: Text('Location bias: '
+            '(${_locationBias.northeast.latitude}, '
+            '${_locationBias.northeast.longitude}), '
+            '(${_locationBias.southwest.latitude}, '
+            '${_locationBias.southwest.longitude})'),
         checkColor: Colors.white,
         value: _withLocationBias,
         onChanged: (bool? value) {
@@ -190,8 +193,11 @@ class _MyAutoCompleteBodyState extends State<AutoCompleteBody> {
         },
       ),
       CheckboxListTile(
-        title: Text(
-            'Location restriction:  (${_locationRestriction.northeast.latitude}, ${_locationRestriction.northeast.longitude}), (${_locationRestriction.southwest.latitude}, ${_locationRestriction.southwest.longitude})'),
+        title: Text('Location restriction:  '
+            '(${_locationRestriction.northeast.latitude}, '
+            '${_locationRestriction.northeast.longitude}), '
+            '(${_locationRestriction.southwest.latitude}, '
+            '${_locationRestriction.southwest.longitude})'),
         checkColor: Colors.white,
         value: _withLocationRestriction,
         onChanged: (bool? value) {

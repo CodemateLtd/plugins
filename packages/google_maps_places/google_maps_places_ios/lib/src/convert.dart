@@ -5,6 +5,8 @@
 part of google_maps_places_ios;
 
 /// Converts [LatLng] to [LatLngIOS].
+///
+/// Returns [null] if [latLng] is [null].
 LatLngIOS? convertLatLng(LatLng? latLng) {
   if (latLng == null) {
     return null;
@@ -13,6 +15,8 @@ LatLngIOS? convertLatLng(LatLng? latLng) {
 }
 
 /// Converts [LatLngBounds] to [LatLngBoundsIOS].
+///
+/// Returns [null] if [bounds] is [null].
 LatLngBoundsIOS? convertLatLngBounds(LatLngBounds? bounds) {
   if (bounds == null) {
     return null;
@@ -31,6 +35,8 @@ List<AutocompletePrediction> convertReponse(
 }
 
 /// Converts list of [TypeFilter] to list of [int].
+///
+/// Returns [null] if [filters] is [null].
 List<int>? convertTypeFilter(List<TypeFilter>? filters) => filters
     ?.map<int>((TypeFilter filter) => TypeFilterIOS.values
         .firstWhere((TypeFilterIOS element) => element.name == filter.name)
