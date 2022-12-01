@@ -7,34 +7,31 @@ import 'package:google_maps_places_ios/google_maps_places_ios.dart';
 import 'package:google_maps_places_ios/src/messages.g.dart';
 import 'package:google_maps_places_platform_interface/google_maps_places_platform_interface.dart';
 
+import 'mocks.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('converts', () {
     test('convertsLatLng', () async {
-      const LatLng latLng = LatLng(65.0121, 25.4651);
-      final LatLngIOS? converted = convertsLatLng(latLng);
+      final LatLngIOS? converted = convertsLatLng(mockOrigin);
       expect(converted, isNotNull);
-      expect(converted?.latitude, equals(latLng.latitude));
-      expect(converted?.longitude, equals(latLng.longitude));
+      expect(converted?.latitude, equals(mockOrigin.latitude));
+      expect(converted?.longitude, equals(mockOrigin.longitude));
 
       expect(convertsLatLng(null), isNull);
     });
     test('convertsLatLngBounds', () async {
-      final LatLngBounds locationBias = LatLngBounds(
-        southwest: const LatLng(60.4518, 22.2666),
-        northeast: const LatLng(70.0821, 27.8718),
-      );
-      final LatLngBoundsIOS? converted = convertsLatLngBounds(locationBias);
+      final LatLngBoundsIOS? converted = convertsLatLngBounds(mockLocationBias);
       expect(converted, isNotNull);
       expect(converted?.northeast?.latitude,
-          equals(locationBias.northeast.latitude));
+          equals(mockLocationBias.northeast.latitude));
       expect(converted?.northeast?.longitude,
-          equals(locationBias.northeast.longitude));
+          equals(mockLocationBias.northeast.longitude));
       expect(converted?.southwest?.latitude,
-          equals(locationBias.southwest.latitude));
+          equals(mockLocationBias.southwest.latitude));
       expect(converted?.southwest?.longitude,
-          equals(locationBias.southwest.longitude));
+          equals(mockLocationBias.southwest.longitude));
 
       expect(convertsLatLng(null), isNull);
     });
@@ -73,12 +70,3 @@ void main() {
     });
   });
 }
-
-final AutocompletePredictionIOS mockPrediction = AutocompletePredictionIOS(
-    distanceMeters: 200,
-    fullText: 'Koulukatu, Tampere, Finland, placeId',
-    placeId:
-        'EhtLb3VsdWthdHUsIFRhbXBlcmUsIEZpbmxhbmQiLiosChQKEgmNKrw3sNiORhGUm8jmSvlI4RIUChIJVVwAnVEkj0YRhhoEA3s-vUQ',
-    placeTypes: <int?>[110, 54],
-    primaryText: 'Koulukatu',
-    secondaryText: 'Tampere, Finland');
