@@ -8,6 +8,14 @@ environment:
   sdk: ">=2.18.4 <3.0.0"
   flutter: ">=2.5.0"
 
+flutter:
+  plugin:
+    implements: google_maps_places
+    platforms:
+      ios:
+        pluginClass: GoogleMapsPlacesIosPlugin
+        dartPluginClass: GoogleMapsPlacesIOS
+
 dependencies:
   flutter:
     sdk: flutter
@@ -22,10 +30,3 @@ dev_dependencies:
   mockito: ^5.1.0
   pigeon: ^4.2.5
   plugin_platform_interface: ^2.0.2
-
-flutter:
-  plugin:
-    platforms:
-      ios:
-        pluginClass: GoogleMapsPlacesIosPlugin
-        dartPluginClass: GoogleMapsPlacesIOS
