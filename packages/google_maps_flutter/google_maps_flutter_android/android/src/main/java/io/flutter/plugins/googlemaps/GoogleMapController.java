@@ -100,9 +100,9 @@ final class GoogleMapController
         new MethodChannel(binaryMessenger, "plugins.flutter.dev/google_maps_android_" + id);
     methodChannel.setMethodCallHandler(this);
     this.lifecycleProvider = lifecycleProvider;
-    this.markersController = new MarkersController(methodChannel);
+    this.markersController = new MarkersController(methodChannel, context);
     this.polygonsController = new PolygonsController(methodChannel, density);
-    this.polylinesController = new PolylinesController(methodChannel, density);
+    this.polylinesController = new PolylinesController(methodChannel, context, density);
     this.circlesController = new CirclesController(methodChannel, density);
     this.tileOverlaysController = new TileOverlaysController(methodChannel);
   }

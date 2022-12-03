@@ -141,4 +141,8 @@
   }
   return nil;
 }
+
++ (CGSize)sizeFromArray:(NSArray *)array {
+  return CGSizeMake([array[0] integerValue], [array[1] integerValue]);
+}
 @end

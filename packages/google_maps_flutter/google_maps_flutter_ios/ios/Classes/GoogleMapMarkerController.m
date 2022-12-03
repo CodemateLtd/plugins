@@ -160,13 +160,6 @@
                                                        saturation:1.0
                                                        brightness:0.7
                                                             alpha:1.0]];
-  } else if ([iconData.firstObject isEqualToString:@"fromAsset"]) {
-    if (iconData.count == 2) {
-      image = [UIImage imageNamed:[registrar lookupKeyForAsset:iconData[1]]];
-    } else {
-      image = [UIImage imageNamed:[registrar lookupKeyForAsset:iconData[1]
-                                                   fromPackage:iconData[2]]];
-    }
   } else if ([iconData.firstObject isEqualToString:@"fromAssetImage"]) {
     if (iconData.count == 3) {
       image = [UIImage imageNamed:[registrar lookupKeyForAsset:iconData[1]]];
@@ -201,6 +194,62 @@
                                                      userInfo:nil];
       @throw exception;
     }
+  } else if ([iconData.firstObject isEqualToString:@"asset"]) {
+    if (iconData.count == 3 || iconData.count == 4) {
+      CGFloat screenScale = [[UIScreen mainScreen] scale];
+      CGFloat imageScale = [iconData[2] doubleValue];
+      image = [UIImage imageNamed:[registrar lookupKeyForAsset:iconData[1]]];
+      if (iconData.count == 3) {
+        // Update proper scale information for image object.
+        image = [self scaleImage:image scale:screenScale / imageScale];
+      } else if (iconData.count == 4) {
+        // Update proper scale information for image object.
+        image = [self scaleImage:image scale:screenScale];
+        // Create resized image.
+        CGSize size = [FLTGoogleMapJSONConversions sizeFromArray:iconData[3]];
+        image = [self scaleImage:image size:size];
+      }
+    } else {
+      NSString *error =
+          [NSString stringWithFormat:@"'asset' should have exactly 3 or 4 arguments. Got: %lu",
+                                     (unsigned long)iconData.count];
+      NSException *exception = [NSException exceptionWithName:@"InvalidBitmapDescriptor"
+                                                       reason:error
+                                                     userInfo:nil];
+      @throw exception;
+    }
+  } else if ([iconData[0] isEqualToString:@"bytes"]) {
+    if (iconData.count == 3 || iconData.count == 4) {
+      @try {
+        FlutterStandardTypedData *byteData = iconData[1];
+        CGFloat imageScale = [iconData[2] doubleValue];
+        CGFloat screenScale = [[UIScreen mainScreen] scale];
+        if (iconData.count == 3) {
+          // Scale parameter given, use it as scale factor
+          image = [UIImage imageWithData:[byteData data] scale:screenScale / imageScale];
+        } else if (iconData.count == 4) {
+          // Size parameter is given, scale image to exact size.
+          image = [UIImage imageWithData:[byteData data] scale:screenScale];
+
+          // Create resized image.
+          CGSize size = [FLTGoogleMapJSONConversions sizeFromArray:iconData[3]];
+          image = [self scaleImage:image size:size];
+        }
+      } @catch (NSException *exception) {
+        @throw [NSException exceptionWithName:@"InvalidByteDescriptor"
+                                       reason:@"Unable to interpret bytes as a valid image."
+                                     userInfo:nil];
+      }
+    } else {
+      NSString *error =
+          [NSString stringWithFormat:@"bytes should have exactly 3 or 5 arguments, the "
+                                     @"bytes, scale and size. Got: %lu",
+                                     (unsigned long)iconData.count];
+      NSException *exception = [NSException exceptionWithName:@"InvalidByteDescriptor"
+                                                       reason:error
+                                                     userInfo:nil];
+      @throw exception;
+    }
   }
 
   return image;
@@ -215,6 +264,28 @@
     return [UIImage imageWithCGImage:[image CGImage]
                                scale:(image.scale * scale)
                          orientation:(image.imageOrientation)];
+  }
+  return image;
+}
+
+- (UIImage *)scaleImage:(UIImage *)image scale:(CGFloat)scale {
+  if (fabs(scale - 1) > 1e-3) {
+    return [UIImage imageWithCGImage:[image CGImage]
+                               scale:(image.scale * scale)
+                         orientation:(image.imageOrientation)];
+  }
+  return image;
+}
+
+- (UIImage *)scaleImage:(UIImage *)image size:(CGSize)size {
+  if (fabs(image.size.width * image.scale - size.width) > 0 ||
+      fabs(image.size.height * image.scale - size.height) > 0) {
+    UIGraphicsBeginImageContextWithOptions(size, NO, 1.0);
+    [image drawInRect:CGRectMake(0, 0, size.width, size.height)];
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    // Return image with proper scaling
+    return [self scaleImage:newImage scale:image.scale];
   }
   return image;
 }

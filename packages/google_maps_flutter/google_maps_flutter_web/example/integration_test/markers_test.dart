@@ -148,7 +148,7 @@ void main() {
       final Set<Marker> markers = <Marker>{
         Marker(
           markerId: const MarkerId('1'),
-          icon: BitmapDescriptor.fromBytes(bytes),
+          icon: BitmapDescriptor.createFromBytes(bytes),
         ),
       };
 
@@ -175,7 +175,8 @@ void main() {
       final Set<Marker> markers = <Marker>{
         Marker(
           markerId: const MarkerId('1'),
-          icon: BitmapDescriptor.fromBytes(bytes, size: const Size(20, 30)),
+          icon:
+              BitmapDescriptor.createFromBytes(bytes, size: const Size(20, 30)),
         ),
       };
 

@@ -1,5 +1,7 @@
-## NEXT
+## 2.2.0
 
+* Update platform\_plugin\_interface version requirement.
+* Adds support for BitmapDescriptors created with `BitmapDescriptor.createFromAsset` or `BitmapDescriptor.createFromBytes`.
 * Updates code for new analysis options.
 
 ## 2.1.12
