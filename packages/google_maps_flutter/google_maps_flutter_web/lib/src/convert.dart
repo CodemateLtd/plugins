@@ -234,11 +234,9 @@ gmaps.Size? _gmSizeFromIconConfig(List<Object?> iconConfig, int sizeIndex) {
   if (iconConfig.length >= sizeIndex + 1) {
     final List<Object?>? rawIconSize = iconConfig[sizeIndex] as List<Object?>?;
     if (rawIconSize != null) {
-      final double devicePixelRatio =
-          WidgetsBinding.instance.window.devicePixelRatio;
       size = gmaps.Size(
-        (rawIconSize[0]! as double) / devicePixelRatio,
-        (rawIconSize[1]! as double) / devicePixelRatio,
+        rawIconSize[0]! as double,
+        rawIconSize[1]! as double,
       );
     }
   }
@@ -301,8 +299,8 @@ Future<gmaps.Icon?> _gmIconFromBitmapDescriptor(
           final ui.FrameInfo frameInfo = await codec.getNextFrame();
 
           final gmaps.Size size = gmaps.Size(
-            frameInfo.image.width * scale / devicePixelRatio,
-            frameInfo.image.height * scale / devicePixelRatio,
+            frameInfo.image.width / scale,
+            frameInfo.image.height / scale,
           );
           icon.size = size;
           icon.scaledSize = size;
@@ -334,8 +332,8 @@ Future<gmaps.Icon?> _gmIconFromBitmapDescriptor(
           final ui.FrameInfo frameInfo = await codec.getNextFrame();
 
           final gmaps.Size size = gmaps.Size(
-            frameInfo.image.width * scale / devicePixelRatio,
-            frameInfo.image.height * scale / devicePixelRatio,
+            frameInfo.image.width / scale,
+            frameInfo.image.height / scale,
           );
           icon.size = size;
           icon.scaledSize = size;
