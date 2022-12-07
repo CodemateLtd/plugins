@@ -206,6 +206,8 @@ class BitmapDescriptor {
   /// This method takes into consideration various asset resolutions
   /// and scales the images to the right resolution depending on the dpi.
   /// Set `mipmaps` to false to load the exact dpi version of the image, `mipmap` is true by default.
+  /// If `mipmaps` is set to false, optional `imagePixelRatio` can be given to
+  /// override `devicePixelRatio` value from `ImageConfiguration`.
   static Future<BitmapDescriptor> createFromAsset(
     ImageConfiguration configuration,
     String assetName, {
@@ -260,6 +262,8 @@ class BitmapDescriptor {
   /// The optional [size] parameter represents the *logical size* of the
   /// bitmap, regardless of the actual resolution of the encoded PNG.
   /// This helps the platform to render High-DPI images at the correct size.
+  /// [ImagePixelRatio] value can be use to scale the image to
+  /// proper size across platforms.
   static BitmapDescriptor createFromBytes(
     Uint8List byteData, {
     BitmapScaling bitmapScaling = BitmapScaling.auto,
