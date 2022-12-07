@@ -4,7 +4,6 @@
 
 package io.flutter.plugins.googlemaps;
 
-import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -37,7 +36,8 @@ import java.util.Map;
 /** Conversions between JSON-like values and GoogleMaps data types. */
 class Convert {
 
-  private static BitmapDescriptor toBitmapDescriptor(Object o, Context context) {
+  private static BitmapDescriptor toBitmapDescriptor(
+      Object o, AssetManager assetManager, float density) {
     final List<?> data = toList(o);
     switch (toString(data.get(0))) {
       case "defaultMarker":
@@ -71,9 +71,9 @@ class Convert {
       case "fromBytes":
         return getBitmapFromBytesLegacy(data);
       case "asset":
-        return getBitmapFromAsset(data, context);
+        return getBitmapFromAsset(data, assetManager, density);
       case "bytes":
-        return getBitmapFromBytes(data);
+        return getBitmapFromBytes(data, density);
       default:
         throw new IllegalArgumentException("Cannot interpret " + o + " as BitmapDescriptor");
     }
@@ -97,18 +97,22 @@ class Convert {
     }
   }
 
-  private static BitmapDescriptor getBitmapFromBytes(List<?> data) {
+  private static BitmapDescriptor getBitmapFromBytes(List<?> data, float density) {
     if (data.size() == 3 || data.size() == 4) {
       try {
         Bitmap bitmap = toBitmap(data.get(1));
         if (data.size() == 3) {
           // Scales image using given scale ratio
-          return BitmapDescriptorFactory.fromBitmap(toScaledBitmap(bitmap, toFloat(data.get(2))));
+          final float scale = density / toFloat(data.get(2));
+          return BitmapDescriptorFactory.fromBitmap(
+              toScaledBitmap(bitmap,scale));
         } else if (data.size() == 4) {
           // Scales image using physical size parameter
           final List<?> size = toList(data.get(3));
+          final int width = toInt((double) size.get(0) * density);
+          final int height = toInt((double) size.get(1) * density);
           return BitmapDescriptorFactory.fromBitmap(
-              toScaledBitmap(bitmap, toInt(size.get(0)), toInt(size.get(1))));
+              toScaledBitmap(bitmap, toInt(width), toInt(height)));
         }
         return BitmapDescriptorFactory.fromBitmap(bitmap);
       } catch (Exception e) {
@@ -121,19 +125,18 @@ class Convert {
     }
   }
 
-  private static BitmapDescriptor getBitmapFromAsset(List<?> data, Context context) {
+  private static BitmapDescriptor getBitmapFromAsset(
+      List<?> data, AssetManager assetManager, float density) {
     if (data.size() != 3 && data.size() != 4) {
       throw new IllegalArgumentException(
           "'asset' Expected exactly 3 or 4 arguments, got: " + data.size());
     }
 
-    String asset =
-        FlutterInjector.instance().flutterLoader().getLookupKeyForAsset(toString(data.get(1)));
+    String asset = FlutterInjector.instance().flutterLoader().getLookupKeyForAsset(toString(data.get(1)));
 
-    float scale = toFloat(data.get(2));
+    float scale = density / toFloat(data.get(2));
     // Scale image if size is given or scale is other than 1.0
     if (data.size() == 4 || Math.abs(scale - 1) > 0.001) {
-      AssetManager assetManager = context.getAssets();
       try {
         InputStream inputStream = assetManager.open(asset);
         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
@@ -141,8 +144,13 @@ class Convert {
         if (data.size() == 4) {
           // Scales asset image to exact size.
           final List<?> size = toList(data.get(3));
+          final int width = toInt((double) size.get(0) * density);
+          final int height = toInt((double) size.get(1) * density);
           return BitmapDescriptorFactory.fromBitmap(
-              toScaledBitmap(bitmap, toInt(size.get(0)), toInt(size.get(1))));
+              toScaledBitmap(
+                  bitmap,
+                  width,
+                  height));
         } else {
           // Scales asset image to using given scale.
           return BitmapDescriptorFactory.fromBitmap(toScaledBitmap(bitmap, scale));
@@ -462,7 +470,8 @@ class Convert {
   }
 
   /** Returns the dartMarkerId of the interpreted marker. */
-  static String interpretMarkerOptions(Object o, MarkerOptionsSink sink, Context context) {
+  static String interpretMarkerOptions(
+      Object o, MarkerOptionsSink sink, AssetManager assetManager, float density) {
     final Map<?, ?> data = toMap(o);
     final Object alpha = data.get("alpha");
     if (alpha != null) {
@@ -487,7 +496,7 @@ class Convert {
     }
     final Object icon = data.get("icon");
     if (icon != null) {
-      sink.setIcon(toBitmapDescriptor(icon, context));
+      sink.setIcon(toBitmapDescriptor(icon, assetManager, density));
     }
 
     final Object infoWindow = data.get("infoWindow");
@@ -579,7 +588,8 @@ class Convert {
     }
   }
 
-  static String interpretPolylineOptions(Object o, PolylineOptionsSink sink, Context context) {
+  static String interpretPolylineOptions(
+      Object o, PolylineOptionsSink sink, AssetManager assetManager, float density) {
     final Map<?, ?> data = toMap(o);
     final Object consumeTapEvents = data.get("consumeTapEvents");
     if (consumeTapEvents != null) {
@@ -591,7 +601,7 @@ class Convert {
     }
     final Object endCap = data.get("endCap");
     if (endCap != null) {
-      sink.setEndCap(toCap(endCap, context));
+      sink.setEndCap(toCap(endCap, assetManager, density));
     }
     final Object geodesic = data.get("geodesic");
     if (geodesic != null) {
@@ -603,7 +613,7 @@ class Convert {
     }
     final Object startCap = data.get("startCap");
     if (startCap != null) {
-      sink.setStartCap(toCap(startCap, context));
+      sink.setStartCap(toCap(startCap, assetManager, density));
     }
     final Object visible = data.get("visible");
     if (visible != null) {
@@ -725,7 +735,7 @@ class Convert {
     return pattern;
   }
 
-  private static Cap toCap(Object o, Context context) {
+  private static Cap toCap(Object o, AssetManager assetManager, float density) {
     final List<?> data = toList(o);
     switch (toString(data.get(0))) {
       case "buttCap":
@@ -736,9 +746,10 @@ class Convert {
         return new SquareCap();
       case "customCap":
         if (data.size() == 2) {
-          return new CustomCap(toBitmapDescriptor(data.get(1), context));
+          return new CustomCap(toBitmapDescriptor(data.get(1), assetManager, density));
         } else {
-          return new CustomCap(toBitmapDescriptor(data.get(1), context), toFloat(data.get(2)));
+          return new CustomCap(
+              toBitmapDescriptor(data.get(1), assetManager, density), toFloat(data.get(2)));
         }
       default:
         throw new IllegalArgumentException("Cannot interpret " + o + " as Cap");

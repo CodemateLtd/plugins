@@ -210,6 +210,7 @@ class MarkerIconsBodyState extends State<MarkerIconsBody> {
     BitmapDescriptor.createFromAsset(
             imageConfiguration, 'assets/red_square.png',
             mipmaps: _mipMapsEnabled,
+            imagePixelRatio: _mipMapsEnabled ? null : 1.0,
             bitmapScaling:
                 _scalingEnabled ? BitmapScaling.auto : BitmapScaling.noScaling)
         .then(_updateAssetBitmap);
@@ -233,11 +234,12 @@ class MarkerIconsBodyState extends State<MarkerIconsBody> {
 
     // As image canvas is already scaled with device pixel ratio,
     // scaling can be disabled by setting 1.0 as scale value.
-    final double? scale = _scalingEnabled && !_customSizeEnabled ? 1.0 : null;
+    final double? imagePixelRatio =
+        _scalingEnabled && !_customSizeEnabled ? devicePixelRatio : null;
 
     final BitmapDescriptor bitmap = BitmapDescriptor.createFromBytes(
-        bytes!.buffer.asUint8List(),
-        scale: scale,
+        bytes.buffer.asUint8List(),
+        imagePixelRatio: imagePixelRatio,
         size: size,
         bitmapScaling:
             _scalingEnabled ? BitmapScaling.auto : BitmapScaling.noScaling);

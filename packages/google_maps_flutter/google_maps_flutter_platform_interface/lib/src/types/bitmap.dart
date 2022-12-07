@@ -212,6 +212,7 @@ class BitmapDescriptor {
     AssetBundle? bundle,
     String? package,
     bool mipmaps = true,
+    double? imagePixelRatio,
     BitmapScaling bitmapScaling = BitmapScaling.auto,
   }) async {
     assert(
@@ -220,18 +221,19 @@ class BitmapDescriptor {
 
     final double devicePixelRatio =
         WidgetsBinding.instance.window.devicePixelRatio;
-    final double? imagePixelRatio = configuration.devicePixelRatio;
+    final double? pixelRatio =
+        imagePixelRatio ?? configuration.devicePixelRatio;
     final Size? size = configuration.size;
 
-    if (!mipmaps && (imagePixelRatio != null || size != null)) {
+    if (!mipmaps && (pixelRatio != null || size != null)) {
       return BitmapDescriptor._(<Object>[
         _asset,
         assetName,
-        imagePixelRatio ?? _getScaleFactor(bitmapScaling),
+        pixelRatio ?? devicePixelRatio,
         if (size != null)
           <Object>[
-            size.width * devicePixelRatio,
-            size.height * devicePixelRatio,
+            size.width,
+            size.height,
           ],
       ]);
     }
@@ -244,11 +246,11 @@ class BitmapDescriptor {
     return BitmapDescriptor._(<Object>[
       _asset,
       assetBundleImageKey.name,
-      _getScaleFactor(bitmapScaling, imageScale: assetBundleImageKey.scale),
+      assetBundleImageKey.scale,
       if (size != null)
         <Object>[
-          size.width * devicePixelRatio,
-          size.height * devicePixelRatio,
+          size.width,
+          size.height,
         ],
     ]);
   }
@@ -261,28 +263,26 @@ class BitmapDescriptor {
   static BitmapDescriptor createFromBytes(
     Uint8List byteData, {
     BitmapScaling bitmapScaling = BitmapScaling.auto,
-    double? scale,
+    double? imagePixelRatio,
     Size? size,
   }) {
     assert(byteData.isNotEmpty,
         'Cannot create BitmapDescriptor with empty byteData');
-    assert(bitmapScaling != BitmapScaling.noScaling || scale == null,
+    assert(bitmapScaling != BitmapScaling.noScaling || imagePixelRatio == null,
         'If bitmapScaling is set to BitmapScaling.noScaling, scale parameter cannot be used.');
     assert(bitmapScaling != BitmapScaling.noScaling || size == null,
         'If bitmapScaling is set to BitmapScaling.noScaling, size parameter cannot be used.');
-    assert(scale == null || size == null,
+    assert(imagePixelRatio == null || size == null,
         'If size parameter is used, scale parameter cannot be used.');
 
-    final double devicePixelRatio =
-        WidgetsBinding.instance.window.devicePixelRatio;
     return BitmapDescriptor._(<Object>[
       _bytes,
       byteData,
-      scale ?? _getScaleFactor(bitmapScaling),
+      imagePixelRatio ?? 1.0,
       if (size != null)
         <Object>[
-          size.width * devicePixelRatio,
-          size.height * devicePixelRatio,
+          size.width,
+          size.height,
         ],
     ]);
   }

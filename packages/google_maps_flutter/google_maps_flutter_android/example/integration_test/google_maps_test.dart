@@ -981,6 +981,7 @@ void main() {
     final BitmapDescriptor scaled = await BitmapDescriptor.createFromAsset(
       imageConfiguration,
       'red_square.png',
+      imagePixelRatio: 1.0,
       mipmaps: false,
     );
     expect((mip.toJson() as List<dynamic>)[2], devicePixelRatio);
