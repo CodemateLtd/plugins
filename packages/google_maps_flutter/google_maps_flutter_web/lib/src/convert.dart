@@ -234,9 +234,11 @@ gmaps.Size? _gmSizeFromIconConfig(List<Object?> iconConfig, int sizeIndex) {
   if (iconConfig.length >= sizeIndex + 1) {
     final List<Object?>? rawIconSize = iconConfig[sizeIndex] as List<Object?>?;
     if (rawIconSize != null) {
+      final double devicePixelRatio =
+          WidgetsBinding.instance.window.devicePixelRatio;
       size = gmaps.Size(
-        rawIconSize[0] as num?,
-        rawIconSize[1] as num?,
+        (rawIconSize[0]! as double) / devicePixelRatio,
+        (rawIconSize[1]! as double) / devicePixelRatio,
       );
     }
   }
@@ -244,7 +246,8 @@ gmaps.Size? _gmSizeFromIconConfig(List<Object?> iconConfig, int sizeIndex) {
 }
 
 // Converts a [BitmapDescriptor] into a [gmaps.Icon] that can be used in Markers.
-gmaps.Icon? _gmIconFromBitmapDescriptor(BitmapDescriptor bitmapDescriptor) {
+Future<gmaps.Icon?> _gmIconFromBitmapDescriptor(
+    BitmapDescriptor bitmapDescriptor) async {
   final List<Object?> iconConfig = bitmapDescriptor.toJson() as List<Object?>;
 
   gmaps.Icon? icon;
@@ -276,6 +279,74 @@ gmaps.Icon? _gmIconFromBitmapDescriptor(BitmapDescriptor bitmapDescriptor) {
           ..size = size
           ..scaledSize = size;
       }
+    } else if (iconConfig[0] == 'asset') {
+      assert(iconConfig.length >= 2);
+      // iconConfig[2] contains the DPIs of the screen, but that information is
+      // already encoded in the iconConfig[1]
+
+      final String assetUrl =
+          ui.webOnlyAssetManager.getAssetUrl(iconConfig[1]! as String);
+      icon = gmaps.Icon()..url = assetUrl;
+
+      if (iconConfig.length == 3) {
+        final double scale = iconConfig[2]! as double;
+        final double devicePixelRatio =
+            WidgetsBinding.instance.window.devicePixelRatio;
+        if (((scale / devicePixelRatio) - 1).abs() > 0.001) {
+          // Google Maps Web SDK does not support the scaling of the marker with anything other than
+          // the size parameter, therefore the width and height of the image must be read from the image.
+          // To avoid this, it is best to provide the image size instead of scale when using the web platform.
+          final ui.Codec codec =
+              await ui.webOnlyInstantiateImageCodecFromUrl(Uri.parse(assetUrl));
+          final ui.FrameInfo frameInfo = await codec.getNextFrame();
+
+          final gmaps.Size size = gmaps.Size(
+            frameInfo.image.width * scale / devicePixelRatio,
+            frameInfo.image.height * scale / devicePixelRatio,
+          );
+          icon.size = size;
+          icon.scaledSize = size;
+        }
+      } else if (iconConfig.length == 4) {
+        final gmaps.Size? size = _gmSizeFromIconConfig(iconConfig, 3);
+        if (size != null) {
+          icon.size = size;
+          icon.scaledSize = size;
+        }
+      }
+    } else if (iconConfig[0] == 'bytes') {
+      // Grab the bytes, and put them into a blob
+      final List<int> bytes = iconConfig[1]! as List<int>;
+      // Create a Blob from bytes, but let the browser figure out the encoding
+      final Blob blob = Blob(<dynamic>[bytes]);
+      icon = gmaps.Icon()..url = Url.createObjectUrlFromBlob(blob);
+
+      if (iconConfig.length == 3) {
+        final double scale = iconConfig[2]! as double;
+        final double devicePixelRatio =
+            WidgetsBinding.instance.window.devicePixelRatio;
+        if (((scale / devicePixelRatio) - 1).abs() > 0.001) {
+          // Google Maps Web SDK does not support the scaling of the marker with anything other than
+          // the size parameter, therefore the width and height of the image must be read from the image.
+          // To avoid this, it is best to provide the image size instead of scale when using the web platform.
+          final ui.Codec codec =
+              await ui.instantiateImageCodec(bytes as Uint8List);
+          final ui.FrameInfo frameInfo = await codec.getNextFrame();
+
+          final gmaps.Size size = gmaps.Size(
+            frameInfo.image.width * scale / devicePixelRatio,
+            frameInfo.image.height * scale / devicePixelRatio,
+          );
+          icon.size = size;
+          icon.scaledSize = size;
+        }
+      } else if (iconConfig.length == 4) {
+        final gmaps.Size? size = _gmSizeFromIconConfig(iconConfig, 3);
+        if (size != null) {
+          icon.size = size;
+          icon.scaledSize = size;
+        }
+      }
     }
   }
 
@@ -285,10 +356,10 @@ gmaps.Icon? _gmIconFromBitmapDescriptor(BitmapDescriptor bitmapDescriptor) {
 // Computes the options for a new [gmaps.Marker] from an incoming set of options
 // [marker], and the existing marker registered with the map: [currentMarker].
 // Preserves the position from the [currentMarker], if set.
-gmaps.MarkerOptions _markerOptionsFromMarker(
+Future<gmaps.MarkerOptions> _markerOptionsFromMarker(
   Marker marker,
   gmaps.Marker? currentMarker,
-) {
+) async {
   return gmaps.MarkerOptions()
     ..position = currentMarker?.position ??
         gmaps.LatLng(
@@ -300,7 +371,7 @@ gmaps.MarkerOptions _markerOptionsFromMarker(
     ..visible = marker.visible
     ..opacity = marker.alpha
     ..draggable = marker.draggable
-    ..icon = _gmIconFromBitmapDescriptor(marker.icon);
+    ..icon = await _gmIconFromBitmapDescriptor(marker.icon);
   // TODO(ditman): Compute anchor properly, otherwise infowindows attach to the wrong spot.
   // Flat and Rotation are not supported directly on the web.
 }

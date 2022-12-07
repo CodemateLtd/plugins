@@ -1,5 +1,7 @@
-## NEXT
+## 0.5.0
 
+* Update platform\_plugin\_interface version requirement.* 
+* Adds support for BitmapDescriptors created with `BitmapDescriptor.createFromAsset` or `BitmapDescriptor.createFromBytes`.
 * Updates code for `no_leading_underscores_for_local_identifiers` lint.
 
 ## 0.4.0+3

@@ -955,7 +955,6 @@ void main() {
     iwVisibleStatus = await controller.isMarkerInfoWindowShown(marker.markerId);
     expect(iwVisibleStatus, false);
   });
-
   testWidgets('fromAssetImage', (WidgetTester tester) async {
     const double pixelRatio = 2;
     const ImageConfiguration imageConfiguration =
@@ -966,6 +965,26 @@ void main() {
         imageConfiguration, 'red_square.png',
         mipmaps: false);
     expect((mip.toJson() as List<dynamic>)[2], 1);
+    expect((scaled.toJson() as List<dynamic>)[2], 2);
+  });
+
+  testWidgets('createFromAsset', (WidgetTester tester) async {
+    final double devicePixelRatio =
+        WidgetsBinding.instance.window.devicePixelRatio;
+    const double pixelRatio = 2;
+    const ImageConfiguration imageConfiguration =
+        ImageConfiguration(devicePixelRatio: pixelRatio);
+    final BitmapDescriptor mip = await BitmapDescriptor.createFromAsset(
+      imageConfiguration,
+      'red_square.png',
+    );
+    final BitmapDescriptor scaled = await BitmapDescriptor.createFromAsset(
+      imageConfiguration,
+      'red_square.png',
+      imagePixelRatio: 1.0,
+      mipmaps: false,
+    );
+    expect((mip.toJson() as List<dynamic>)[2], devicePixelRatio);
     expect((scaled.toJson() as List<dynamic>)[2], 2);
   });
 

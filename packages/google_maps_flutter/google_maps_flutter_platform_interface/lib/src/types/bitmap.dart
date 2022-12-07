@@ -4,12 +4,26 @@
 
 import 'dart:async' show Future;
 import 'dart:typed_data' show Uint8List;
-import 'dart:ui' show Size;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter/material.dart'
-    show ImageConfiguration, AssetImage, AssetBundleImageKey;
-import 'package:flutter/services.dart' show AssetBundle;
+import 'package:flutter/widgets.dart'
+    show
+        AssetBundle,
+        AssetBundleImageKey,
+        AssetImage,
+        ImageConfiguration,
+        Size,
+        WidgetsBinding;
+
+/// Type of bitmap scaling options to use on BitmapDescriptor creation.
+enum BitmapScaling {
+  /// Automatically scale image with devices pixel ratio to keep marker sizes
+  auto,
+
+  /// Render marker to the map as without scaling, this can be used if the image
+  /// is already pre-scaled, or to increase performance with large marker amounts.
+  noScaling,
+}
 
 /// Defines a bitmap image. For a marker, this class can be used to set the
 /// image of the marker icon. For a ground overlay, it can be used to set the
@@ -63,8 +77,14 @@ class BitmapDescriptor {
   }
 
   static const String _defaultMarker = 'defaultMarker';
+  static const String _asset = 'asset';
+  static const String _bytes = 'bytes';
+
+  @Deprecated('No longer supported')
   static const String _fromAsset = 'fromAsset';
+  @Deprecated('No longer supported')
   static const String _fromAssetImage = 'fromAssetImage';
+  @Deprecated('No longer supported')
   static const String _fromBytes = 'fromBytes';
 
   static const Set<String> _validTypes = <String>{
@@ -72,6 +92,8 @@ class BitmapDescriptor {
     _fromAsset,
     _fromAssetImage,
     _fromBytes,
+    _asset,
+    _bytes
   };
 
   /// Convenience hue value representing red.
@@ -123,6 +145,7 @@ class BitmapDescriptor {
   /// This method takes into consideration various asset resolutions
   /// and scales the images to the right resolution depending on the dpi.
   /// Set `mipmaps` to false to load the exact dpi version of the image, `mipmap` is true by default.
+  @Deprecated('No longer supported')
   static Future<BitmapDescriptor> fromAssetImage(
     ImageConfiguration configuration,
     String assetName, {
@@ -161,6 +184,7 @@ class BitmapDescriptor {
   /// bitmap, regardless of the actual resolution of the encoded PNG.
   /// This helps the browser to render High-DPI images at the correct size.
   /// `size` is not required (and ignored, if passed) in other platforms.
+  @Deprecated('No longer supported')
   static BitmapDescriptor fromBytes(Uint8List byteData, {Size? size}) {
     assert(byteData.isNotEmpty,
         'Cannot create BitmapDescriptor with empty byteData');
@@ -173,6 +197,107 @@ class BitmapDescriptor {
           size.height,
         ]
     ]);
+  }
+
+  /// Creates a [BitmapDescriptor] from an asset image.
+  ///
+  /// Asset images in flutter are stored per:
+  /// https://flutter.dev/docs/development/ui/assets-and-images#declaring-resolution-aware-image-assets
+  /// This method takes into consideration various asset resolutions
+  /// and scales the images to the right resolution depending on the dpi.
+  /// Set `mipmaps` to false to load the exact dpi version of the image, `mipmap` is true by default.
+  static Future<BitmapDescriptor> createFromAsset(
+    ImageConfiguration configuration,
+    String assetName, {
+    AssetBundle? bundle,
+    String? package,
+    bool mipmaps = true,
+    double? imagePixelRatio,
+    BitmapScaling bitmapScaling = BitmapScaling.auto,
+  }) async {
+    assert(
+        bitmapScaling != BitmapScaling.noScaling || configuration.size == null,
+        'If bitmapScaling is set to BitmapScaling.noScaling, ImageConfiguration.size value must be null.');
+
+    final double devicePixelRatio =
+        WidgetsBinding.instance.window.devicePixelRatio;
+    final double? pixelRatio =
+        imagePixelRatio ?? configuration.devicePixelRatio;
+    final Size? size = configuration.size;
+
+    if (!mipmaps && (pixelRatio != null || size != null)) {
+      return BitmapDescriptor._(<Object>[
+        _asset,
+        assetName,
+        pixelRatio ?? devicePixelRatio,
+        if (size != null)
+          <Object>[
+            size.width,
+            size.height,
+          ],
+      ]);
+    }
+
+    final AssetImage assetImage =
+        AssetImage(assetName, package: package, bundle: bundle);
+    final AssetBundleImageKey assetBundleImageKey =
+        await assetImage.obtainKey(configuration);
+
+    return BitmapDescriptor._(<Object>[
+      _asset,
+      assetBundleImageKey.name,
+      assetBundleImageKey.scale,
+      if (size != null)
+        <Object>[
+          size.width,
+          size.height,
+        ],
+    ]);
+  }
+
+  /// Creates a BitmapDescriptor using an array of bytes that must be encoded
+  /// as PNG.
+  /// The optional [size] parameter represents the *logical size* of the
+  /// bitmap, regardless of the actual resolution of the encoded PNG.
+  /// This helps the platform to render High-DPI images at the correct size.
+  static BitmapDescriptor createFromBytes(
+    Uint8List byteData, {
+    BitmapScaling bitmapScaling = BitmapScaling.auto,
+    double? imagePixelRatio,
+    Size? size,
+  }) {
+    assert(byteData.isNotEmpty,
+        'Cannot create BitmapDescriptor with empty byteData');
+    assert(bitmapScaling != BitmapScaling.noScaling || imagePixelRatio == null,
+        'If bitmapScaling is set to BitmapScaling.noScaling, scale parameter cannot be used.');
+    assert(bitmapScaling != BitmapScaling.noScaling || size == null,
+        'If bitmapScaling is set to BitmapScaling.noScaling, size parameter cannot be used.');
+    assert(imagePixelRatio == null || size == null,
+        'If size parameter is used, scale parameter cannot be used.');
+
+    return BitmapDescriptor._(<Object>[
+      _bytes,
+      byteData,
+      imagePixelRatio ?? 1.0,
+      if (size != null)
+        <Object>[
+          size.width,
+          size.height,
+        ],
+    ]);
+  }
+
+  /// Returns scale factor depending on the [bitmapScaling] value and original imageScale.
+  static double _getScaleFactor(BitmapScaling bitmapScaling,
+      {double imageScale = 1.0}) {
+    assert(imageScale == null || imageScale > 0.0,
+        "imageScale can't be zero or negative value");
+    switch (bitmapScaling) {
+      case BitmapScaling.auto:
+        return WidgetsBinding.instance.window.devicePixelRatio / imageScale;
+      case BitmapScaling.noScaling:
+        return 1.0;
+    }
   }
 
   final Object _json;
