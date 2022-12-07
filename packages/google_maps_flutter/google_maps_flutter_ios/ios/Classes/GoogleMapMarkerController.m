@@ -201,12 +201,12 @@
       image = [UIImage imageNamed:[registrar lookupKeyForAsset:iconData[1]]];
       if (iconData.count == 3) {
         // Update proper scale information for image object.
-        image = [self scaleImage:image scale:screenScale / imageScale];
+        image = [self scaleImage:image scale:imageScale];
       } else if (iconData.count == 4) {
         // Update proper scale information for image object.
         image = [self scaleImage:image scale:screenScale];
         // Create resized image.
-        CGSize size = [FLTGoogleMapJSONConversions sizeFromArray:iconData[3]];
+        CGSize size = [FLTGoogleMapJSONConversions sizeFromArray:iconData[3] scale:screenScale];
         image = [self scaleImage:image size:size];
       }
     } else {
@@ -226,13 +226,13 @@
         CGFloat screenScale = [[UIScreen mainScreen] scale];
         if (iconData.count == 3) {
           // Scale parameter given, use it as scale factor
-          image = [UIImage imageWithData:[byteData data] scale:screenScale / imageScale];
+          image = [UIImage imageWithData:[byteData data] scale:imageScale];
         } else if (iconData.count == 4) {
           // Size parameter is given, scale image to exact size.
+          // Update proper scale information for image object.
           image = [UIImage imageWithData:[byteData data] scale:screenScale];
-
           // Create resized image.
-          CGSize size = [FLTGoogleMapJSONConversions sizeFromArray:iconData[3]];
+          CGSize size = [FLTGoogleMapJSONConversions sizeFromArray:iconData[3] scale:screenScale];
           image = [self scaleImage:image size:size];
         }
       } @catch (NSException *exception) {
@@ -255,6 +255,8 @@
   return image;
 }
 
+// Used by deprecated fromBytes functionality.
+// Can be removed when deprecated image bitmap types are removed from platform interface.
 - (UIImage *)scaleImage:(UIImage *)image by:(id)scaleParam {
   double scale = 1.0;
   if ([scaleParam isKindOfClass:[NSNumber class]]) {
@@ -269,23 +271,29 @@
 }
 
 - (UIImage *)scaleImage:(UIImage *)image scale:(CGFloat)scale {
-  if (fabs(scale - 1) > 1e-3) {
+  if (fabs(scale - image.scale) > 1e-3) {
     return [UIImage imageWithCGImage:[image CGImage]
-                               scale:(image.scale * scale)
-                         orientation:(image.imageOrientation)];
+                               scale:(scale)orientation:(image.imageOrientation)];
   }
   return image;
 }
 
 - (UIImage *)scaleImage:(UIImage *)image size:(CGSize)size {
-  if (fabs(image.size.width * image.scale - size.width) > 0 ||
-      fabs(image.size.height * image.scale - size.height) > 0) {
-    UIGraphicsBeginImageContextWithOptions(size, NO, 1.0);
-    [image drawInRect:CGRectMake(0, 0, size.width, size.height)];
-    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    // Return image with proper scaling
-    return [self scaleImage:newImage scale:image.scale];
+  if (fabs(((int)image.size.width * image.scale) - size.width) > 0 ||
+      fabs(((int)image.size.height * image.scale) - size.height) > 0) {
+    if (fabs(image.size.width / image.size.height - size.width / size.height) < 1e-2) {
+      // Scaled image has close to same aspect ratio, updating image scale instead of resizing
+      // image.
+      return [self scaleImage:image
+                        scale:(image.scale * (size.width / (image.size.width * image.scale)))];
+    } else {
+      UIGraphicsBeginImageContextWithOptions(size, NO, 1.0);
+      [image drawInRect:CGRectMake(0, 0, size.width, size.height)];
+      UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+      UIGraphicsEndImageContext();
+      // Return image with proper scaling
+      return [self scaleImage:newImage scale:image.scale];
+    }
   }
   return image;
 }

@@ -224,9 +224,11 @@ class MarkerIconsBodyState extends State<MarkerIconsBody> {
 
     final Size markerSize = getCurrentMarkerSize();
 
+    final double? imagePixelRatio = _scalingEnabled ? devicePixelRatio : null;
+
     // Create canvasSize with physical marker size
-    final Size canvasSize = Size(markerSize.width * devicePixelRatio,
-        markerSize.height * devicePixelRatio);
+    final Size canvasSize = Size(markerSize.width * (imagePixelRatio ?? 1.0),
+        markerSize.height * (imagePixelRatio ?? 1.0));
 
     final ByteData bytes = await createCustomMarkerIconImage(size: canvasSize);
 
@@ -234,14 +236,9 @@ class MarkerIconsBodyState extends State<MarkerIconsBody> {
     final Size? size =
         _scalingEnabled && _customSizeEnabled ? getCurrentMarkerSize() : null;
 
-    // As image canvas is already scaled with device pixel ratio,
-    // scaling can be disabled by setting 1.0 as scale value.
-    final double? imagePixelRatio =
-        _scalingEnabled && !_customSizeEnabled ? devicePixelRatio : null;
-
     final BitmapDescriptor bitmap = BitmapDescriptor.createFromBytes(
         bytes.buffer.asUint8List(),
-        imagePixelRatio: imagePixelRatio,
+        imagePixelRatio: _customSizeEnabled ? null : imagePixelRatio,
         size: size,
         bitmapScaling:
             _scalingEnabled ? BitmapScaling.auto : BitmapScaling.noScaling);

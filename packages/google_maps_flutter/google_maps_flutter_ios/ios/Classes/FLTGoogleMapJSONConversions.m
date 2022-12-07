@@ -142,7 +142,6 @@
   return nil;
 }
 
-+ (CGSize)sizeFromArray:(NSArray *)array {
-  return CGSizeMake([array[0] integerValue], [array[1] integerValue]);
-}
++ (CGSize)sizeFromArray:(NSArray *)array scale:(CGFloat)scale;
+{ return CGSizeMake((int)([array[0] floatValue] * scale), (int)([array[1] floatValue] * scale)); }
 @end
