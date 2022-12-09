@@ -1226,9 +1226,12 @@ void googleMapsTests() {
     final ExampleGoogleMapController controller =
         await controllerCompleter.future;
 
+    final GoogleMapsInspectorPlatform inspector =
+        GoogleMapsInspectorPlatform.instance!;
+
     for (final ClusterManager cm in clusterManagers) {
-      final List<Cluster> clusters =
-          await controller.getClusters(clusterManagerId: cm.clusterManagerId);
+      final List<Cluster> clusters = await inspector.getClusters(
+          mapId: controller.mapId, clusterManagerId: cm.clusterManagerId);
       final int markersAmountForClusterManager = clusters
           .map<int>((Cluster cluster) => cluster.count)
           .reduce((int value, int element) => value + element);
@@ -1250,8 +1253,8 @@ void googleMapsTests() {
     ));
 
     for (final ClusterManager cm in clusterManagers) {
-      final List<Cluster> clusters =
-          await controller.getClusters(clusterManagerId: cm.clusterManagerId);
+      final List<Cluster> clusters = await inspector.getClusters(
+          mapId: controller.mapId, clusterManagerId: cm.clusterManagerId);
       expect(clusters.length, 0);
     }
   });

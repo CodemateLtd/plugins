@@ -293,13 +293,6 @@ class GoogleMapController {
     return GoogleMapsFlutterPlatform.instance.takeSnapshot(mapId: mapId);
   }
 
-  /// Returns current clusters from [ClusterManager].
-  Future<List<Cluster>> getClusters(
-      {required ClusterManagerId clusterManagerId}) {
-    return GoogleMapsFlutterPlatform.instance
-        .getClusters(mapId: mapId, clusterManagerId: clusterManagerId);
-  }
-
   /// Disposes of the platform resources
   void dispose() {
     GoogleMapsFlutterPlatform.instance.dispose(mapId: mapId);

@@ -297,19 +297,6 @@ class MockGoogleMapController extends _i1.Mock
         returnValueForMissingStub: false,
       ) as bool);
   @override
-  _i2.Future<List<_i3.Cluster>> getClusters(
-          {required _i3.ClusterManagerId? clusterManagerId}) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #getClusters,
-          [],
-          {#clusterManagerId: clusterManagerId},
-        ),
-        returnValue: _i2.Future<List<_i3.Cluster>>.value(<_i3.Cluster>[]),
-        returnValueForMissingStub:
-            _i2.Future<List<_i3.Cluster>>.value(<_i3.Cluster>[]),
-      ) as _i2.Future<List<_i3.Cluster>>);
-  @override
   void dispose() => super.noSuchMethod(
         Invocation.method(
           #dispose,

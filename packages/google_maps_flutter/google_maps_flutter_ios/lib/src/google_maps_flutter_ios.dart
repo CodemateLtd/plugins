@@ -498,25 +498,6 @@ class GoogleMapsFlutterIOS extends GoogleMapsFlutterPlatform {
     return _channel(mapId).invokeMethod<Uint8List>('map#takeSnapshot');
   }
 
-  @override
-  Future<List<Cluster>> getClusters({
-    required int mapId,
-    required ClusterManagerId clusterManagerId,
-  }) async {
-    final List<dynamic> data = (await _channel(mapId)
-        .invokeMethod<List<dynamic>>('clusterManager#getClusters',
-            <String, String>{'clusterManagerId': clusterManagerId.value}))!;
-    return data.map<Cluster>((dynamic clusterData) {
-      final Map<String, dynamic> clusterDataMap =
-          Map<String, dynamic>.from(clusterData as Map<dynamic, dynamic>);
-      return parseCluster(
-          clusterDataMap['clusterManagerId']! as String,
-          clusterDataMap['position']! as Object,
-          clusterDataMap['bounds']! as Map<dynamic, dynamic>,
-          clusterDataMap['markerIds']! as List<dynamic>);
-    }).toList();
-  }
-
   Widget _buildView(
     int creationId,
     PlatformViewCreatedCallback onPlatformViewCreated, {
@@ -632,9 +613,12 @@ class GoogleMapsFlutterIOS extends GoogleMapsFlutterPlatform {
   }
 
   /// Parses cluster data from dynamic json objects and returns [Cluster] object.
-  /// Used by `cluster#onTap` method call handler and [getClusters] response parser.
-  Cluster parseCluster(String clusterManagerIdString, Object positionObject,
-      Map<dynamic, dynamic> boundsMap, List<dynamic> markerIdsList) {
+  /// Used by `cluster#onTap` method call handler and inspectors [getClusters] response parser.
+  static Cluster parseCluster(
+      String clusterManagerIdString,
+      Object positionObject,
+      Map<dynamic, dynamic> boundsMap,
+      List<dynamic> markerIdsList) {
     final ClusterManagerId clusterManagerId =
         ClusterManagerId(clusterManagerIdString);
     final LatLng position = LatLng.fromJson(positionObject)!;

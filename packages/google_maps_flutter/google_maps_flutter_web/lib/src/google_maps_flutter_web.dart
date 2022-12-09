@@ -293,12 +293,6 @@ class GoogleMapsPlugin extends GoogleMapsFlutterPlatform {
     return _events(mapId).whereType<ClusterTapEvent>();
   }
 
-  @override
-  Future<List<Cluster>> getClusters(
-      {required int mapId, required ClusterManagerId clusterManagerId}) {
-    return _map(mapId).getClusters(clusterManagerId: clusterManagerId);
-  }
-
   /// Disposes of the current map. It can't be used afterwards!
   @override
   void dispose({required int mapId}) {

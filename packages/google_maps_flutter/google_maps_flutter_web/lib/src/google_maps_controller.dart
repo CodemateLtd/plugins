@@ -441,13 +441,6 @@ class GoogleMapController {
     return _markersController?.isInfoWindowShown(markerId) ?? false;
   }
 
-  /// Returns list of clusters controlled by cluster manager with given [ClusterManagerId].
-  Future<List<Cluster>> getClusters(
-      {required ClusterManagerId clusterManagerId}) async {
-    return _clusterManagersController?.getClusters(clusterManagerId) ??
-        <Cluster>[];
-  }
-
   // Cleanup
 
   /// Disposes of this controller and its resources.

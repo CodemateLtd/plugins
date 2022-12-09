@@ -159,12 +159,6 @@ abstract class GoogleMapsFlutterPlatform extends PlatformInterface {
         'updateClusterManagers() has not been implemented.');
   }
 
-  /// Returns current clusters from [ClusterManager].
-  Future<List<Cluster>> getClusters(
-      {required int mapId, required ClusterManagerId clusterManagerId}) {
-    throw UnimplementedError('getClusters() has not been implemented.');
-  }
-
   /// Clears the tile cache so that all tiles will be requested again from the
   /// [TileProvider].
   ///
