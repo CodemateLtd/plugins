@@ -16,6 +16,7 @@ import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platf
 import 'package:stream_transform/stream_transform.dart';
 
 import 'google_map_inspector_android.dart';
+import 'utils/cluster_manager.dart';
 
 // TODO(stuartmorgan): Remove the dependency on platform interface toJson
 // methods. Channel serialization details should all be package-internal.
@@ -385,9 +386,10 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
     required int mapId,
   }) {
     assert(clusterManagerUpdates != null);
+
     return _channel(mapId).invokeMethod<void>(
       'clusterManagers#update',
-      clusterManagerUpdates.toJson(),
+      serializeClusterManagerUpdates(clusterManagerUpdates),
     );
   }
 
@@ -587,7 +589,8 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
       'polylinesToAdd': serializePolylineSet(mapObjects.polylines),
       'circlesToAdd': serializeCircleSet(mapObjects.circles),
       'tileOverlaysToAdd': serializeTileOverlaySet(mapObjects.tileOverlays),
-      'clusterManagersToAdd': serializeClusterSet(mapObjects.clusterManagers),
+      'clusterManagersToAdd':
+          serializeClusterManagerSet(mapObjects.clusterManagers),
     };
 
     const String viewType = 'plugins.flutter.dev/google_maps_android';

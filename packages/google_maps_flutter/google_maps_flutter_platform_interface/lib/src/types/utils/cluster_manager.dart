@@ -11,8 +11,3 @@ Map<ClusterManagerId, ClusterManager> keyByClusterManagerId(
   return keyByMapsObjectId<ClusterManager>(clusterManagers)
       .cast<ClusterManagerId, ClusterManager>();
 }
-
-/// Converts a Set of Cluster Managers into something serializable in JSON.
-Object serializeClusterSet(Set<ClusterManager> clusterManagers) {
-  return serializeMapsObjectSet(clusterManagers);
-}
