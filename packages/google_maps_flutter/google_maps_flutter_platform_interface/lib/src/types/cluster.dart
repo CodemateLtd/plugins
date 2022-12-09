@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart'
     show immutable, listEquals, objectRuntimeType;
 import 'types.dart';
 
-/// A cluster containing multiple markers
+/// A cluster containing multiple markers.
 @immutable
 class Cluster {
   /// Creates a cluster with its location [LatLng], bounds [LatLngBounds],
@@ -17,7 +17,7 @@ class Cluster {
         assert(bounds != null),
         assert(markerIds.length > 0);
 
-  /// ID of the [ClusterManager] of the cluster
+  /// ID of the [ClusterManager] of the cluster.
   final ClusterManagerId clusterManagerId;
 
   /// Cluster marker location.
@@ -46,5 +46,5 @@ class Cluster {
   }
 
   @override
-  int get hashCode => Object.hash(position, bounds, markerIds);
+  int get hashCode => Object.hash(clusterManagerId, position, bounds, markerIds);
 }

@@ -30,7 +30,7 @@ class ClusterManager implements MapsObject<ClusterManager> {
   @override
   ClusterManagerId get mapsId => clusterManagerId;
 
-  /// Callbacks to receive tap events for cluster markers placed on this map.
+  /// Callback to receive tap events for cluster markers placed on this map.
   final ArgumentCallback<Cluster>? onClusterTap;
 
   /// Creates a new [ClusterManager] object whose values are the same as this instance,
