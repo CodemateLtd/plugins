@@ -12,7 +12,6 @@ export 'circle_updates.dart';
 export 'cluster.dart';
 export 'cluster_manager.dart';
 export 'cluster_manager_updates.dart';
-export 'info_window.dart';
 export 'joint_type.dart';
 export 'location.dart';
 export 'map_configuration.dart';
