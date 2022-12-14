@@ -3,6 +3,8 @@
 * Update platform\_plugin\_interface version requirement.
 * Adds support for BitmapDescriptors created with `BitmapDescriptor.createFromAsset` or `BitmapDescriptor.createFromBytes`.
 * Updates code for new analysis options.
+* Re-enable XCUITests: testUserInterface.
+* Remove unnecessary `RunnerUITests` target from Podfile of the example app.
 
 ## 2.1.12
 

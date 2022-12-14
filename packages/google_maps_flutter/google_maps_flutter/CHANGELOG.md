@@ -4,6 +4,10 @@
 * Adds better support for marker size and scaling behaviour with `BitmapDescriptor.createFromAsset` and `BitmapDescriptor.createFromBytes`.
 * Deprecates `BitmapDescriptor.fromAssetImage` in favor of `BitmapDescriptor.createFromAsset`
 * Deprecates `BitmapDescriptor.fromBytes` in favor of `BitmapDescriptor.createFromBytes`
+
+## 2.2.2
+
+* Modified `README.md` to fix minor syntax issues and added Code Excerpt to `README.md`.
 * Updates code for new analysis options.
 * Updates code for `no_leading_underscores_for_local_identifiers` lint.
 
