@@ -104,8 +104,7 @@ class Convert {
         if (data.size() == 3) {
           // Scales image using given scale ratio
           final float scale = density / toFloat(data.get(2));
-          return BitmapDescriptorFactory.fromBitmap(
-              toScaledBitmap(bitmap,scale));
+          return BitmapDescriptorFactory.fromBitmap(toScaledBitmap(bitmap, scale));
         } else if (data.size() == 4) {
           // Scales image using physical size parameter
           final List<?> size = toList(data.get(3));
@@ -132,7 +131,8 @@ class Convert {
           "'asset' Expected exactly 3 or 4 arguments, got: " + data.size());
     }
 
-    String asset = FlutterInjector.instance().flutterLoader().getLookupKeyForAsset(toString(data.get(1)));
+    String asset =
+        FlutterInjector.instance().flutterLoader().getLookupKeyForAsset(toString(data.get(1)));
 
     float scale = density / toFloat(data.get(2));
     // Scale image if size is given or scale is other than 1.0
@@ -146,11 +146,7 @@ class Convert {
           final List<?> size = toList(data.get(3));
           final int width = toInt((double) size.get(0) * density);
           final int height = toInt((double) size.get(1) * density);
-          return BitmapDescriptorFactory.fromBitmap(
-              toScaledBitmap(
-                  bitmap,
-                  width,
-                  height));
+          return BitmapDescriptorFactory.fromBitmap(toScaledBitmap(bitmap, width, height));
         } else {
           // Scales asset image to using given scale.
           return BitmapDescriptorFactory.fromBitmap(toScaledBitmap(bitmap, scale));

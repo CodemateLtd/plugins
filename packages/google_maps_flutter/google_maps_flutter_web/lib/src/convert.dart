@@ -237,8 +237,8 @@ gmaps.Size? _gmSizeFromIconConfig(List<Object?> iconConfig, int sizeIndex) {
       final double devicePixelRatio =
           WidgetsBinding.instance.window.devicePixelRatio;
       size = gmaps.Size(
-        (rawIconSize[0]! as double) / devicePixelRatio,
-        (rawIconSize[1]! as double) / devicePixelRatio,
+        rawIconSize[0]! as double,
+        rawIconSize[1]! as double,
       );
     }
   }
@@ -290,23 +290,19 @@ Future<gmaps.Icon?> _gmIconFromBitmapDescriptor(
 
       if (iconConfig.length == 3) {
         final double scale = iconConfig[2]! as double;
-        final double devicePixelRatio =
-            WidgetsBinding.instance.window.devicePixelRatio;
-        if (((scale / devicePixelRatio) - 1).abs() > 0.001) {
-          // Google Maps Web SDK does not support the scaling of the marker with anything other than
-          // the size parameter, therefore the width and height of the image must be read from the image.
-          // To avoid this, it is best to provide the image size instead of scale when using the web platform.
-          final ui.Codec codec =
-              await ui.webOnlyInstantiateImageCodecFromUrl(Uri.parse(assetUrl));
-          final ui.FrameInfo frameInfo = await codec.getNextFrame();
+        // Google Maps Web SDK does not support the scaling of the marker with anything other than
+        // the size parameter, therefore the width and height of the image must be read from the image.
+        // To avoid this, it is best to provide the image size instead of scale when using the web platform.
+        final ui.Codec codec =
+            await ui.webOnlyInstantiateImageCodecFromUrl(Uri.parse(assetUrl));
+        final ui.FrameInfo frameInfo = await codec.getNextFrame();
 
-          final gmaps.Size size = gmaps.Size(
-            frameInfo.image.width * scale / devicePixelRatio,
-            frameInfo.image.height * scale / devicePixelRatio,
-          );
-          icon.size = size;
-          icon.scaledSize = size;
-        }
+        final gmaps.Size size = gmaps.Size(
+          frameInfo.image.width / scale,
+          frameInfo.image.height / scale,
+        );
+        icon.size = size;
+        icon.scaledSize = size;
       } else if (iconConfig.length == 4) {
         final gmaps.Size? size = _gmSizeFromIconConfig(iconConfig, 3);
         if (size != null) {
@@ -323,23 +319,19 @@ Future<gmaps.Icon?> _gmIconFromBitmapDescriptor(
 
       if (iconConfig.length == 3) {
         final double scale = iconConfig[2]! as double;
-        final double devicePixelRatio =
-            WidgetsBinding.instance.window.devicePixelRatio;
-        if (((scale / devicePixelRatio) - 1).abs() > 0.001) {
-          // Google Maps Web SDK does not support the scaling of the marker with anything other than
-          // the size parameter, therefore the width and height of the image must be read from the image.
-          // To avoid this, it is best to provide the image size instead of scale when using the web platform.
-          final ui.Codec codec =
-              await ui.instantiateImageCodec(bytes as Uint8List);
-          final ui.FrameInfo frameInfo = await codec.getNextFrame();
+        // Google Maps Web SDK does not support the scaling of the marker with anything other than
+        // the size parameter, therefore the width and height of the image must be read from the image.
+        // To avoid this, it is best to provide the image size instead of scale when using the web platform.
+        final ui.Codec codec =
+            await ui.instantiateImageCodec(bytes as Uint8List);
+        final ui.FrameInfo frameInfo = await codec.getNextFrame();
 
-          final gmaps.Size size = gmaps.Size(
-            frameInfo.image.width * scale / devicePixelRatio,
-            frameInfo.image.height * scale / devicePixelRatio,
-          );
-          icon.size = size;
-          icon.scaledSize = size;
-        }
+        final gmaps.Size size = gmaps.Size(
+          frameInfo.image.width / scale,
+          frameInfo.image.height / scale,
+        );
+        icon.size = size;
+        icon.scaledSize = size;
       } else if (iconConfig.length == 4) {
         final gmaps.Size? size = _gmSizeFromIconConfig(iconConfig, 3);
         if (size != null) {

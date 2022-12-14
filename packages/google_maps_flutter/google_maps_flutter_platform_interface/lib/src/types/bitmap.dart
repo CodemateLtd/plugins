@@ -223,15 +223,15 @@ class BitmapDescriptor {
 
     final double devicePixelRatio =
         WidgetsBinding.instance.window.devicePixelRatio;
-    final double? pixelRatio =
+    final double? targetImagePixelRatio =
         imagePixelRatio ?? configuration.devicePixelRatio;
     final Size? size = configuration.size;
 
-    if (!mipmaps && (pixelRatio != null || size != null)) {
+    if (!mipmaps && (targetImagePixelRatio != null || size != null)) {
       return BitmapDescriptor._(<Object>[
         _asset,
         assetName,
-        pixelRatio ?? devicePixelRatio,
+        targetImagePixelRatio ?? devicePixelRatio,
         if (size != null)
           <Object>[
             size.width,
@@ -289,19 +289,6 @@ class BitmapDescriptor {
           size.height,
         ],
     ]);
-  }
-
-  /// Returns scale factor depending on the [bitmapScaling] value and original imageScale.
-  static double _getScaleFactor(BitmapScaling bitmapScaling,
-      {double imageScale = 1.0}) {
-    assert(imageScale == null || imageScale > 0.0,
-        "imageScale can't be zero or negative value");
-    switch (bitmapScaling) {
-      case BitmapScaling.auto:
-        return WidgetsBinding.instance.window.devicePixelRatio / imageScale;
-      case BitmapScaling.noScaling:
-        return 1.0;
-    }
   }
 
   final Object _json;

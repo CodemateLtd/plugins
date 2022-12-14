@@ -45,7 +45,7 @@ class MarkerIconsBodyState extends State<MarkerIconsBody> {
   GoogleMapController? controller;
   BitmapDescriptor? _markerIconAsset;
   BitmapDescriptor? _markerIconBytes;
-  final int _markersAmountPerType = 10;
+  final int _markersAmountPerType = 15;
 
   @override
   Widget build(BuildContext context) {
