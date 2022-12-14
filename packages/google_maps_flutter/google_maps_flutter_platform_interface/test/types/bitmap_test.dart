@@ -19,13 +19,14 @@ void main() {
       final BitmapDescriptor descriptor =
           BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan);
 
-      expect(
-          identical(descriptor.toJson(),
-              <Object>['defaultMarker', BitmapDescriptor.hueCyan]),
-          isTrue); // Same JSON
+      final Object expected = <Object>[
+        'defaultMarker',
+        BitmapDescriptor.hueCyan
+      ];
+      expect(descriptor.toJson(), equals(expected)); // Same JSON
     });
 
-    group('fromAssetImage constructor', () {
+    group('createFromAsset constructor', () {
       test('without mipmaps', () async {
         final double devicePixelRatio =
             WidgetsBinding.instance.window.devicePixelRatio;
@@ -34,13 +35,8 @@ void main() {
                 ImageConfiguration.empty, 'path_to_asset_image',
                 mipmaps: false);
         expect(descriptor, isA<BitmapDescriptor>());
-        expect(
-            descriptor.toJson(),
-            equals(<Object>[
-              'fromAssetImage',
-              'path_to_asset_image',
-              devicePixelRatio
-            ]));
+        expect(descriptor.toJson(),
+            equals(<Object>['asset', 'path_to_asset_image', 1.0]));
       });
       test('with mipmaps', () async {
         final double devicePixelRatio =
@@ -51,13 +47,8 @@ void main() {
                 // ignore: avoid_redundant_argument_values
                 mipmaps: true);
         expect(descriptor, isA<BitmapDescriptor>());
-        expect(
-            descriptor.toJson(),
-            equals(<Object>[
-              'fromAssetImage',
-              'path_to_asset_image',
-              devicePixelRatio
-            ]));
+        expect(descriptor.toJson(),
+            equals(<Object>['asset', 'path_to_asset_image', 1.0]));
       });
       test('with size and without mipmaps', () async {
         final double devicePixelRatio =
@@ -74,13 +65,10 @@ void main() {
         expect(
             descriptor.toJson(),
             equals(<Object>[
-              'fromAssetImage',
+              'asset',
               'path_to_asset_image',
               devicePixelRatio,
-              <double>[
-                size.width * devicePixelRatio,
-                size.height * devicePixelRatio
-              ]
+              <double>[size.width, size.height]
             ]));
       });
 
@@ -100,18 +88,15 @@ void main() {
         expect(
             descriptor.toJson(),
             equals(<Object>[
-              'fromAssetImage',
+              'asset',
               'path_to_asset_image',
-              devicePixelRatio,
-              <double>[
-                size.width * devicePixelRatio,
-                size.height * devicePixelRatio
-              ]
+              1.0,
+              <double>[size.width, size.height]
             ]));
       });
     });
 
-    group('fromBytes constructor', () {
+    group('createFromBytes constructor', () {
       test('with empty byte array, throws assertion error', () {
         expect(() {
           BitmapDescriptor.createFromBytes(Uint8List.fromList(<int>[]));
@@ -128,10 +113,11 @@ void main() {
             equals(<Object>[
               'bytes',
               <int>[1, 2, 3],
+              1.0
             ]));
       });
 
-      test('with size, not on the web, size is ignored', () {
+      test('with size', () {
         final BitmapDescriptor descriptor = BitmapDescriptor.createFromBytes(
           Uint8List.fromList(<int>[1, 2, 3]),
           size: const Size(40, 20),
@@ -142,23 +128,10 @@ void main() {
             equals(<Object>[
               'bytes',
               <int>[1, 2, 3],
-            ]));
-      }, skip: kIsWeb);
-
-      test('with size, on the web, size is preserved', () {
-        final BitmapDescriptor descriptor = BitmapDescriptor.createFromBytes(
-          Uint8List.fromList(<int>[1, 2, 3]),
-          size: const Size(40, 20),
-        );
-
-        expect(
-            descriptor.toJson(),
-            equals(<Object>[
-              'bytes',
-              <int>[1, 2, 3],
+              1.0,
               <int>[40, 20],
             ]));
-      }, skip: !kIsWeb);
+      });
     });
   });
 }

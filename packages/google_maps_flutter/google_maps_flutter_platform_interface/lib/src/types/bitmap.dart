@@ -276,8 +276,6 @@ class BitmapDescriptor {
         'If bitmapScaling is set to BitmapScaling.noScaling, scale parameter cannot be used.');
     assert(bitmapScaling != BitmapScaling.noScaling || size == null,
         'If bitmapScaling is set to BitmapScaling.noScaling, size parameter cannot be used.');
-    assert(imagePixelRatio == null || size == null,
-        'If size parameter is used, scale parameter cannot be used.');
 
     return BitmapDescriptor._(<Object>[
       _bytes,
