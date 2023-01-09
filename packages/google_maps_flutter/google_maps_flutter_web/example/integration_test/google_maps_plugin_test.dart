@@ -20,13 +20,13 @@ import 'google_maps_plugin_test.mocks.dart';
   MockSpec<GoogleMapController>(onMissingStub: OnMissingStub.returnDefault),
 ])
 
-/// Test GoogleMapsPlugin
+/// Test GoogleMapsFlutterWeb
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  group('GoogleMapsPlugin', () {
+  group('GoogleMapsFlutterWeb', () {
     late MockGoogleMapController controller;
-    late GoogleMapsPlugin plugin;
+    late GoogleMapsFlutterWeb plugin;
     late Completer<int> reportedMapIdCompleter;
     int numberOnPlatformViewCreatedCalls = 0;
 
@@ -37,7 +37,7 @@ void main() {
 
     setUp(() {
       controller = MockGoogleMapController();
-      plugin = GoogleMapsPlugin();
+      plugin = GoogleMapsFlutterWeb();
       reportedMapIdCompleter = Completer<int>();
     });
 

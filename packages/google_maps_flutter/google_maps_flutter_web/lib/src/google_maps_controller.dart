@@ -36,6 +36,7 @@ class GoogleMapController {
     // use it to create the [gmaps.GMap] in the `init()` method of this class.
     _div = DivElement()
       ..id = _getViewType(mapId)
+      ..style.backgroundColor = '#ffaa00'
       ..style.width = '100%'
       ..style.height = '100%';
 
@@ -43,6 +44,7 @@ class GoogleMapController {
       _getViewType(mapId),
       (int viewId) => _div,
     );
+    debugPrint('GoogleMapController constructor, end');
   }
 
   // The internal ID of the map. Used to broadcast events, DOM IDs and everything where a unique ID is needed.
@@ -84,6 +86,7 @@ class GoogleMapController {
 
   // The underlying GMap instance. This is the interface with the JS SDK.
   gmaps.GMap? _googleMap;
+  gmaps.MapOptions? _currentOptions;
 
   // The StreamController used by this controller and the geometry ones.
   final StreamController<MapEvent<Object?>> _streamController;
@@ -125,10 +128,11 @@ class GoogleMapController {
   DebugCreateMapFunction? _overrideCreateMap;
 
   gmaps.GMap _createMap(HtmlElement div, gmaps.MapOptions options) {
+    _currentOptions = options;
     if (_overrideCreateMap != null) {
-      return _overrideCreateMap!(div, options);
+      return _overrideCreateMap!(div, _currentOptions!);
     }
-    return gmaps.GMap(div, options);
+    return gmaps.GMap(div, _currentOptions);
   }
 
   /// A flag that returns true if the controller has been initialized or not.
@@ -148,7 +152,7 @@ class GoogleMapController {
   /// own configuration and are rendered on top of a GMap instance later. This
   /// happens in the second half of this method.
   ///
-  /// This method is eagerly called from the [GoogleMapsPlugin.buildView] method
+  /// This method is eagerly called from the [GoogleMapsFlutterWeb.buildView] method
   /// so the internal [GoogleMapsController] of a Web Map initializes as soon as
   /// possible. Check [_attachMapEvents] to see how this controller notifies the
   /// plugin of it being fully ready (through the `onTilesloaded.first` event).
@@ -162,7 +166,13 @@ class GoogleMapController {
     options = _applyInitialPosition(_initialCameraPosition, options);
 
     // Create the map...
+
+    debugPrint('HERE 1');
+
     final gmaps.GMap map = _createMap(_div, options);
+
+    debugPrint('HERE 2');
+
     _googleMap = map;
 
     _attachMapEvents(map);
@@ -291,7 +301,8 @@ class GoogleMapController {
   // Sets new [gmaps.MapOptions] on the wrapped map.
   // ignore: use_setters_to_change_properties
   void _setOptions(gmaps.MapOptions options) {
-    _googleMap?.options = options;
+    _currentOptions = options;
+    _googleMap?.options = _currentOptions;
   }
 
   // Attaches/detaches a Traffic Layer on the passed `map` if `attach` is true/false.
@@ -355,6 +366,13 @@ class GoogleMapController {
 
     return _googleMap!.zoom!.toDouble();
   }
+
+  bool gestureHandlingEnabled() => _currentOptions?.gestureHandling == 'auto';
+
+  bool zoomEnabled() => _currentOptions?.zoomControl ?? false;
+
+  MinMaxZoomPreference getMinMaxZoomLevels() => MinMaxZoomPreference(
+      _currentOptions?.minZoom as double?, _currentOptions?.maxZoom as double?);
 
   // Geometry manipulation
 

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="example">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>example</title>
+  <link rel="manifest" href="manifest.json">
+
+  <script>
+    // The value below is injected by flutter build, do not touch.
+    var serviceWorkerVersion = null;
+  </script>
+  <!-- This script adds the flutter initialization JS code -->
+  <script src="flutter.js" defer></script>
+</head>
+<body>
+  <script>
+    window.mapsLoadedWohoo = function() {
+      console.log("JS - MAPS ARE NOW LOADED");
+    }
+    window.addEventListener('load', function(ev) {
+      // Download main.dart.js
+      new Promise(resolve => {
+        const script = document.createElement("script");
+        script.setAttribute("async", "");
+        script.onload = resolve;
+        script.setAttribute("src", "https://maps.googleapis.com/maps/api/js?key=AIzaSyA_ujFeGd53vTYHB2K5TzlTZsRi3l_yVuQ&libraries=geometry&callback=mapsLoadedWohoo");
+        document.head.appendChild(script);
+      }).then(function() {
+      console.log("JS HERE 1");
+        return _flutter.loader.loadEntrypoint({
+          serviceWorker: {
+            serviceWorkerVersion: serviceWorkerVersion,
+          }
+        })
+      }).then(function(engineInitializer) {
+      console.log("JS HERE 2");
+        return engineInitializer.initializeEngine();
+      }).then(function(appRunner) {
+      console.log("JS HERE 3");
+        return appRunner.runApp();
+      console.log("JS HERE 4");
+      });
+    });
+  </script>
+</body>
+</html>

@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
-/// An Android of implementation of [GoogleMapsInspectorPlatform].
+/// An Android implementation of [GoogleMapsInspectorPlatform].
 @visibleForTesting
 class GoogleMapsInspectorAndroid extends GoogleMapsInspectorPlatform {
   /// Creates a method-channel-based inspector instance that gets the channel

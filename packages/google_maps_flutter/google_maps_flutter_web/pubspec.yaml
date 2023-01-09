@@ -13,7 +13,7 @@ flutter:
     implements: google_maps_flutter
     platforms:
       web:
-        pluginClass: GoogleMapsPlugin
+        pluginClass: GoogleMapsFlutterWeb
         fileName: google_maps_flutter_web.dart
 
 dependencies:
@@ -33,3 +33,9 @@ dev_dependencies:
 # The example deliberately includes limited-use secrets.
 false_secrets:
   - /example/web/index.html
+
+
+# FOR TESTING ONLY. DO NOT MERGE.
+dependency_overrides:
+  google_maps_flutter_platform_interface:
+    path: ../../google_maps_flutter/google_maps_flutter_platform_interface

@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -78,7 +77,7 @@ void main() {
 
     compassEnabled = await inspector.isCompassEnabled(mapId: mapId);
     expect(compassEnabled, true);
-  });
+  }, skip: kIsWeb);
 
   testWidgets('testMapToolbarToggle', (WidgetTester tester) async {
     final Key key = GlobalKey();
@@ -114,10 +113,11 @@ void main() {
     ));
 
     mapToolbarEnabled = await inspector.isMapToolbarEnabled(mapId: mapId);
-    expect(mapToolbarEnabled, Platform.isAndroid);
-  });
+    expect(mapToolbarEnabled, defaultTargetPlatform == TargetPlatform.android);
+  }, skip: kIsWeb);
 
   testWidgets('updateMinMaxZoomLevels', (WidgetTester tester) async {
+    debugPrint("TESTING 1");
     // The behaviors of setting min max zoom level on iOS and Android are different.
     // On iOS, when we get the min or max zoom level after setting the preference, the
     // min and max will be exactly the same as the value we set; on Android however,
@@ -135,6 +135,7 @@ void main() {
     const MinMaxZoomPreference initialZoomLevel = MinMaxZoomPreference(4, 8);
     const MinMaxZoomPreference finalZoomLevel = MinMaxZoomPreference(6, 10);
 
+    debugPrint("TESTING 2");
     await tester.pumpWidget(Directionality(
       textDirection: TextDirection.ltr,
       child: GoogleMap(
@@ -147,15 +148,17 @@ void main() {
       ),
     ));
 
+    debugPrint("TESTING 3");
     final GoogleMapController controller = await controllerCompleter.future;
     final GoogleMapsInspectorPlatform inspector =
         GoogleMapsInspectorPlatform.instance!;
 
-    if (Platform.isIOS) {
+    debugPrint("TESTING 4");
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
       final MinMaxZoomPreference zoomLevel =
           await inspector.getMinMaxZoomLevels(mapId: controller.mapId);
       expect(zoomLevel, equals(initialZoomLevel));
-    } else if (Platform.isAndroid) {
+    } else if (defaultTargetPlatform == TargetPlatform.android) {
       await controller.moveCamera(CameraUpdate.zoomTo(15));
       await tester.pumpAndSettle();
       double? zoomLevel = await controller.getZoomLevel();
@@ -166,6 +169,7 @@ void main() {
       zoomLevel = await controller.getZoomLevel();
       expect(zoomLevel, equals(initialZoomLevel.minZoom));
     }
+    debugPrint("TESTING 5");
 
     await tester.pumpWidget(Directionality(
       textDirection: TextDirection.ltr,
@@ -179,7 +183,8 @@ void main() {
       ),
     ));
 
-    if (Platform.isIOS) {
+    debugPrint("TESTING 6");
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
       final MinMaxZoomPreference zoomLevel =
           await inspector.getMinMaxZoomLevels(mapId: controller.mapId);
       expect(zoomLevel, equals(finalZoomLevel));
@@ -254,10 +259,10 @@ void main() {
         GoogleMapsInspectorPlatform.instance!;
     bool zoomControlsEnabled =
         await inspector.areZoomControlsEnabled(mapId: mapId);
-    expect(zoomControlsEnabled, !Platform.isIOS);
+    expect(zoomControlsEnabled, defaultTargetPlatform != TargetPlatform.iOS);
 
     /// Zoom Controls functionality is not available on iOS at the moment.
-    if (Platform.isAndroid) {
+    if (defaultTargetPlatform == TargetPlatform.android) {
       await tester.pumpWidget(Directionality(
         textDirection: TextDirection.ltr,
         child: GoogleMap(
@@ -311,7 +316,7 @@ void main() {
 
     liteModeEnabled = await inspector.isLiteModeEnabled(mapId: mapId);
     expect(liteModeEnabled, true);
-  }, skip: !Platform.isAndroid);
+  }, skip: defaultTargetPlatform != TargetPlatform.android);
 
   testWidgets('testRotateGesturesEnabled', (WidgetTester tester) async {
     final Key key = GlobalKey();
@@ -460,7 +465,7 @@ void main() {
     final ScreenCoordinate coordinate =
         await mapController.getScreenCoordinate(_kInitialCameraPosition.target);
     final Rect rect = tester.getRect(find.byKey(key));
-    if (Platform.isIOS) {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
       // On iOS, the coordinate value from the GoogleMapSdk doesn't include the devicePixelRatio`.
       // So we don't need to do the conversion like we did below for other platforms.
       expect(coordinate.x, (rect.center.dx - rect.topLeft.dx).round());
@@ -644,7 +649,7 @@ void main() {
     myLocationButtonEnabled =
         await inspector.isMyLocationButtonEnabled(mapId: mapId);
     expect(myLocationButtonEnabled, false);
-  }, skip: Platform.isAndroid);
+  }, skip: defaultTargetPlatform == TargetPlatform.android);
 
   testWidgets('testMyLocationButton initial value false',
       (WidgetTester tester) async {
@@ -669,7 +674,7 @@ void main() {
     final bool myLocationButtonEnabled =
         await inspector.isMyLocationButtonEnabled(mapId: mapId);
     expect(myLocationButtonEnabled, false);
-  }, skip: Platform.isAndroid);
+  }, skip: defaultTargetPlatform == TargetPlatform.android);
 
   testWidgets('testMyLocationButton initial value true',
       (WidgetTester tester) async {
@@ -693,7 +698,7 @@ void main() {
     final bool myLocationButtonEnabled =
         await inspector.isMyLocationButtonEnabled(mapId: mapId);
     expect(myLocationButtonEnabled, true);
-  }, skip: Platform.isAndroid);
+  }, skip: defaultTargetPlatform == TargetPlatform.android);
 
   testWidgets('testSetMapStyle valid Json String', (WidgetTester tester) async {
     final Key key = GlobalKey();
@@ -977,7 +982,7 @@ void main() {
   },
       // TODO(cyanglaz): un-skip the test when we can test this on CI with API key enabled.
       // https://github.com/flutter/flutter/issues/57057
-      skip: Platform.isAndroid);
+      skip: defaultTargetPlatform == TargetPlatform.android);
 
   testWidgets(
     'set tileOverlay correctly',
