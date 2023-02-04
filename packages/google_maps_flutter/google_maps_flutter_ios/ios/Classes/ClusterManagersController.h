@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param methodChannel A Flutter method channel used to send events.
  * @param mapView A map view that will be used to display clustered markers.
  */
-- (instancetype)init:(FlutterMethodChannel *)methodChannel mapView:(GMSMapView *)mapView;
+- (instancetype)initWithMethodChannel:(FlutterMethodChannel *)methodChannel mapView:(GMSMapView *)mapView;
 
 /**
  * Creates ClusterManagers and initializes them.

@@ -108,7 +108,7 @@
     _mapView.delegate = weakSelf;
     _mapView.paddingAdjustmentBehavior = kGMSMapViewPaddingAdjustmentBehaviorNever;
     _registrar = registrar;
-    _clusterManagersController = [[FLTClusterManagersController alloc] init:_channel
+    _clusterManagersController = [[FLTClusterManagersController alloc] initWithMethodChannel:_channel
                                                                     mapView:_mapView];
     _markersController =
         [[FLTMarkersController alloc] initWithClusterManagersController:_clusterManagersController

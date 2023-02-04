@@ -14,7 +14,7 @@
 @end
 
 @implementation FLTClusterManagersController
-- (instancetype)init:(FlutterMethodChannel *)methodChannel mapView:(GMSMapView *)mapView {
+- (instancetype)initWithMethodChannel:(FlutterMethodChannel *)methodChannel mapView:(GMSMapView *)mapView {
   self = [super init];
   if (self) {
     _methodChannel = methodChannel;
