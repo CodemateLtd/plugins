@@ -106,7 +106,7 @@
   [self.methodChannel
       invokeMethod:@"cluster#onTap"
          arguments:clusterDict];
-  return NO;
+  return YES;
 }
 
 - (NSString *)getClusterManagerIdFrom:(GMUStaticCluster *)cluster {

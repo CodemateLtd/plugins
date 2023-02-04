@@ -70,8 +70,10 @@ NS_ASSUME_NONNULL_BEGIN
  * Called when cluster marker is tapped on the map.
  *
  * @param cluster GMUStaticCluster object.
+ * @return YES if cluster with markers is found, which prevents the map from performing its default selection
+ * behavior, and NO if markers are not found and the map should continue with its default selection behavior.
  */
-- (bool)didTapCluster:(GMUStaticCluster *)cluster;
+- (BOOL)didTapCluster:(GMUStaticCluster *)cluster;
 
 // Calls cluster method of all ClusterManagers.
 - (void)clusterAll;
