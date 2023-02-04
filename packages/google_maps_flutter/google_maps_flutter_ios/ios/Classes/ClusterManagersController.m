@@ -25,8 +25,8 @@
 }
 
 - (void)addClusterManagers:(NSArray *)clusterManagersToAdd {
-  for (NSDictionary *clusterManager in clusterManagersToAdd) {
-    NSString *identifier = clusterManager[@"clusterManagerId"];
+  for (NSDictionary *clusterDict in clusterManagersToAdd) {
+    NSString *identifier = clusterDict[@"clusterManagerId"];
     id<GMUClusterAlgorithm> algorithm = [[GMUNonHierarchicalDistanceBasedAlgorithm alloc] init];
     id<GMUClusterIconGenerator> iconGenerator = [[GMUDefaultClusterIconGenerator alloc] init];
     id<GMUClusterRenderer> renderer =
@@ -74,7 +74,14 @@
 
 - (void)getClustersWithIdentifier:(NSString *)identifier result:(FlutterResult)result {
   GMUClusterManager *clusterManager = [self.clusterManagerIdToManagers objectForKey:identifier];
-  if (clusterManager) {
+    
+    if (!clusterManager) {
+        result([FlutterError errorWithCode:@"Invalid clusterManagerId"
+                                   message:@"getClusters called with invalid clusterManagerId"
+                                   details:nil]);
+        return;
+    }
+    
     NSMutableArray *response = [[NSMutableArray alloc] init];
 
     NSUInteger integralZoom = (NSUInteger)floorf(_mapView.camera.zoom + 0.5f);
@@ -112,11 +119,6 @@
       }];
     }
     result(response);
-  } else {
-    result([FlutterError errorWithCode:@"Invalid clusterManagerId"
-                               message:@"getClusters called with invalid clusterManagerId"
-                               details:nil]);
-  }
 }
 
 - (bool)didTapCluster:(GMUStaticCluster *)cluster {
