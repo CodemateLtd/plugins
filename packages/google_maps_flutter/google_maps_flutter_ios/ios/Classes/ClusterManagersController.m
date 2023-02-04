@@ -87,73 +87,67 @@
     NSUInteger integralZoom = (NSUInteger)floorf(_mapView.camera.zoom + 0.5f);
     NSArray<id<GMUCluster>> *clusters = [clusterManager.algorithm clustersAtZoom:integralZoom];
     for (id<GMUCluster> cluster in clusters) {
-      if ([cluster.items count] == 0) {
-        continue;
+
+      NSDictionary *clusterDict = [self getClusterDict:cluster];
+      if (clusterDict == nil) {
+            continue;
       }
-
-      GMSMarker *firstMarker = (GMSMarker *)cluster.items[0];
-      NSArray *firstMarkerUserData = firstMarker.userData;
-      if ([firstMarkerUserData count] != 2) {
-        continue;
-      }
-
-      NSString *clusterManagerId = firstMarker.userData[1];
-      if (clusterManagerId == (id)[NSNull null]) {
-        continue;
-      }
-
-      NSMutableArray *markerIds = [[NSMutableArray alloc] init];
-      GMSCoordinateBounds *bounds = [[GMSCoordinateBounds alloc] init];
-
-      for (GMSMarker *marker in cluster.items) {
-        NSString *markerId = marker.userData[0];
-        [markerIds addObject:markerId];
-        bounds = [bounds includingCoordinate:marker.position];
-      }
-
-      [response addObject:@{
-        @"clusterManagerId" : clusterManagerId,
-        @"position" : [FLTGoogleMapJSONConversions arrayFromLocation:cluster.position],
-        @"bounds" : [FLTGoogleMapJSONConversions dictionaryFromCoordinateBounds:bounds],
-        @"markerIds" : markerIds
-      }];
+      [response addObject:clusterDict];
     }
     result(response);
 }
 
-- (bool)didTapCluster:(GMUStaticCluster *)cluster {
-  if ([cluster.items count] == 0) {
+- (BOOL)didTapCluster:(GMUStaticCluster *)cluster {
+  NSDictionary *clusterDict = [self getClusterDict:cluster];
+  if (clusterDict == nil) {
     return NO;
-  }
-
-  GMSMarker *firstMarker = (GMSMarker *)cluster.items[0];
-  NSArray *firstMarkerUserData = firstMarker.userData;
-  if ([firstMarkerUserData count] != 2) {
-    return NO;
-  }
-
-  NSString *clusterManagerId = firstMarker.userData[1];
-  if (clusterManagerId == (id)[NSNull null]) {
-    return NO;
-  }
-
-  NSMutableArray *markerIds = [[NSMutableArray alloc] init];
-  GMSCoordinateBounds *bounds = [[GMSCoordinateBounds alloc] init];
-
-  for (GMSMarker *marker in cluster.items) {
-    NSString *markerId = marker.userData[0];
-    [markerIds addObject:markerId];
-    bounds = [bounds includingCoordinate:marker.position];
   }
 
   [self.methodChannel
       invokeMethod:@"cluster#onTap"
-         arguments:@{
-           @"clusterManagerId" : clusterManagerId,
-           @"position" : [FLTGoogleMapJSONConversions arrayFromLocation:cluster.position],
-           @"bounds" : [FLTGoogleMapJSONConversions dictionaryFromCoordinateBounds:bounds],
-           @"markerIds" : markerIds
-         }];
+         arguments:clusterDict];
   return NO;
 }
+
+- (NSString *)getClusterManagerIdFrom:(GMUStaticCluster *)cluster {
+    if ([cluster.items count] == 0) {
+      return nil;
+    }
+
+    GMSMarker *firstMarker = (GMSMarker *)cluster.items[0];
+    NSArray *firstMarkerUserData = firstMarker.userData;
+    if ([firstMarkerUserData count] != 2) {
+      return nil;
+    }
+
+    NSString *clusterManagerId = firstMarker.userData[1];
+    if (clusterManagerId == (id)[NSNull null]) {
+      return nil;
+    }
+    return clusterManagerId;
+}
+
+- (NSDictionary *)getClusterDict:(GMUStaticCluster *)cluster {
+    NSString *clusterManagerId = [self getClusterManagerIdFrom:cluster];
+    if (clusterManagerId == nil) {
+      return nil;
+    }
+
+    NSMutableArray *markerIds = [[NSMutableArray alloc] init];
+    GMSCoordinateBounds *bounds = [[GMSCoordinateBounds alloc] init];
+
+    for (GMSMarker *marker in cluster.items) {
+      NSString *markerId = marker.userData[0];
+      [markerIds addObject:markerId];
+      bounds = [bounds includingCoordinate:marker.position];
+    }
+    
+    return @{
+        @"clusterManagerId" : clusterManagerId,
+        @"position" : [FLTGoogleMapJSONConversions arrayFromLocation:cluster.position],
+        @"bounds" : [FLTGoogleMapJSONConversions dictionaryFromCoordinateBounds:bounds],
+        @"markerIds" : markerIds
+      };
+}
+
 @end
