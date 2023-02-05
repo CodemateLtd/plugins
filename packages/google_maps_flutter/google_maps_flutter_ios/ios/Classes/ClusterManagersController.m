@@ -72,6 +72,7 @@
     
     NSMutableArray *response = [[NSMutableArray alloc] init];
 
+    // Ref: https://github.com/googlemaps/google-maps-ios-utils/blob/main/src/Clustering/GMUClusterManager.m#L94.
     NSUInteger integralZoom = (NSUInteger)floorf(_mapView.camera.zoom + 0.5f);
     NSArray<id<GMUCluster>> *clusters = [clusterManager.algorithm clustersAtZoom:integralZoom];
     for (id<GMUCluster> cluster in clusters) {
