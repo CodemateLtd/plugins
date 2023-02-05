@@ -97,16 +97,13 @@
     result(response);
 }
 
-- (BOOL)didTapCluster:(GMUStaticCluster *)cluster {
+- (void)handleTapCluster:(GMUStaticCluster *)cluster {
   NSDictionary *clusterDict = [self getClusterDict:cluster];
-  if (clusterDict == nil) {
-    return NO;
+  if (clusterDict != nil) {
+      [self.methodChannel
+          invokeMethod:@"cluster#onTap"
+             arguments:clusterDict];
   }
-
-  [self.methodChannel
-      invokeMethod:@"cluster#onTap"
-         arguments:clusterDict];
-  return YES;
 }
 
 - (NSString *)getClusterManagerIdFrom:(GMUStaticCluster *)cluster {

@@ -550,7 +550,9 @@
 - (BOOL)mapView:(GMSMapView *)mapView didTapMarker:(GMSMarker *)marker {
   if ([marker.userData conformsToProtocol:@protocol(GMUCluster)]) {
     GMUStaticCluster *cluster = marker.userData;
-    return [self.clusterManagersController didTapCluster:cluster];
+    [self.clusterManagersController handleTapCluster:cluster];
+    // When NO is returned the map will focus on the cluster
+    return NO;
   }
   NSString *markerId = marker.userData[0];
   return [self.markersController didTapMarkerWithIdentifier:markerId];
