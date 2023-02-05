@@ -50,20 +50,8 @@
   }
 }
 
-- (void)addItem:(GMSMarker *)marker clusterManagerId:(NSString *)clusterManagerId {
-  GMUClusterManager *clusterManager =
-      [self.clusterManagerIdToManagers objectForKey:clusterManagerId];
-  if (marker && clusterManager != (id)[NSNull null]) {
-    [clusterManager addItem:(id<GMUClusterItem>)marker];
-  }
-}
-
-- (void)removeItem:(GMSMarker *)marker clusterManagerId:(NSArray *)clusterManagerId {
-  GMUClusterManager *clusterManager =
-      [self.clusterManagerIdToManagers objectForKey:clusterManagerId];
-  if (marker && clusterManager != (id)[NSNull null]) {
-    [clusterManager removeItem:(id<GMUClusterItem>)marker];
-  }
+- (GMUClusterManager *)getClusterManagerWithIdentifier:(NSString *)identifier {
+    return [self.clusterManagerIdToManagers objectForKey:identifier];
 }
 
 - (void)clusterAll {

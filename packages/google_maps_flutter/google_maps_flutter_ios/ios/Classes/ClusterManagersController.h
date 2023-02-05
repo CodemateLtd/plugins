@@ -42,21 +42,14 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)removeClusterManagers:(NSArray *)identifiers;
 
-/**
- * Adds marker to specific ClusterManager.
- *
- * @param marker GMSMArker object to be added to the ClusterManager.
- * @param clusterManagerId identifier of the ClusterManager.
- */
-- (void)addItem:(GMSMarker *)marker clusterManagerId:(NSString *)clusterManagerId;
 
 /**
- * Removes marker from specific ClusterManager.
+ * Get ClusterManager for the given id.
  *
- * @param marker GMSMArker object to be removed from the ClusterManager.
- * @param clusterManagerId identifier of the ClusterManager.
+ * @param identifier identifier of the ClusterManager.
+ * @return GMUClusterManager if found otherwise NSNull.
  */
-- (void)removeItem:(GMSMarker *)marker clusterManagerId:(NSString *)clusterManagerId;
+- (GMUClusterManager *)getClusterManagerWithIdentifier:(NSString *)identifier;
 
 /**
  * Converts all clusters from the specific ClusterManager to result object response.
