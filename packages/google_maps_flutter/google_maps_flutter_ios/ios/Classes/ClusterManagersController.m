@@ -4,6 +4,7 @@
 
 #import "ClusterManagersController.h"
 #import "FLTGoogleMapJSONConversions.h"
+#import "GMSMarker+Userdata.h"
 
 @interface FLTClusterManagersController ()
 
@@ -101,16 +102,7 @@
     }
 
     GMSMarker *firstMarker = (GMSMarker *)cluster.items[0];
-    NSArray *firstMarkerUserData = firstMarker.userData;
-    if ([firstMarkerUserData count] != 2) {
-      return nil;
-    }
-
-    NSString *clusterManagerId = firstMarker.userData[1];
-    if (clusterManagerId == (id)[NSNull null]) {
-      return nil;
-    }
-    return clusterManagerId;
+    return [firstMarker getClusterManagerId];
 }
 
 - (NSDictionary *)getClusterDict:(GMUStaticCluster *)cluster {
@@ -123,8 +115,7 @@
     GMSCoordinateBounds *bounds = [[GMSCoordinateBounds alloc] init];
 
     for (GMSMarker *marker in cluster.items) {
-      NSString *markerId = marker.userData[0];
-      [markerIds addObject:markerId];
+      [markerIds addObject:[marker getMarkerId]];
       bounds = [bounds includingCoordinate:marker.position];
     }
     

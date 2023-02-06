@@ -4,6 +4,7 @@
 
 #import "GoogleMapMarkerController.h"
 #import "FLTGoogleMapJSONConversions.h"
+#import "GMSMarker+Userdata.h"
 
 @interface FLTGoogleMapMarkerController ()
 
@@ -104,9 +105,9 @@
 
 - (void)updateMarkerUserData {
   if (self.clusterManagerId) {
-    self.marker.userData = @[ self.markerId, self.clusterManagerId ];
+    [self.marker setMarkerID:self.markerId andClusterManagerId:self.clusterManagerId];
   } else {
-    self.marker.userData = @[ self.markerId ];
+    [self.marker setMarkerId:self.markerId];
   }
 }
 

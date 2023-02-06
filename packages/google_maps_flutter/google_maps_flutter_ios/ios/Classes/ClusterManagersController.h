@@ -66,7 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)handleTapCluster:(GMUStaticCluster *)cluster;
 
-// Calls cluster method of all ClusterManagers.
+/// Calls cluster method of all ClusterManagers.
 - (void)clusterAll;
 @end
 

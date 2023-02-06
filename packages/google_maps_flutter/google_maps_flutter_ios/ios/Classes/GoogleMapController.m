@@ -6,6 +6,7 @@
 #import <Google-Maps-iOS-Utils/GMUStaticCluster.h>
 #import "FLTGoogleMapJSONConversions.h"
 #import "FLTGoogleMapTileOverlayController.h"
+#import "GMSMarker+Userdata.h"
 
 #pragma mark - Conversion of JSON-like values sent via platform channels. Forward declarations.
 
@@ -554,28 +555,23 @@
     // When NO is returned the map will focus on the cluster
     return NO;
   }
-  NSString *markerId = marker.userData[0];
-  return [self.markersController didTapMarkerWithIdentifier:markerId];
+  return [self.markersController didTapMarkerWithIdentifier:[marker getMarkerId]];
 }
 
 - (void)mapView:(GMSMapView *)mapView didEndDraggingMarker:(GMSMarker *)marker {
-  NSString *markerId = marker.userData[0];
-  [self.markersController didEndDraggingMarkerWithIdentifier:markerId location:marker.position];
+  [self.markersController didEndDraggingMarkerWithIdentifier:[marker getMarkerId] location:marker.position];
 }
 
 - (void)mapView:(GMSMapView *)mapView didStartDraggingMarker:(GMSMarker *)marker {
-  NSString *markerId = marker.userData[0];
-  [self.markersController didStartDraggingMarkerWithIdentifier:markerId location:marker.position];
+  [self.markersController didStartDraggingMarkerWithIdentifier:[marker getMarkerId] location:marker.position];
 }
 
 - (void)mapView:(GMSMapView *)mapView didDragMarker:(GMSMarker *)marker {
-  NSString *markerId = marker.userData[0];
-  [self.markersController didDragMarkerWithIdentifier:markerId location:marker.position];
+  [self.markersController didDragMarkerWithIdentifier:[marker getMarkerId] location:marker.position];
 }
 
 - (void)mapView:(GMSMapView *)mapView didTapInfoWindowOfMarker:(GMSMarker *)marker {
-  NSString *markerId = marker.userData[0];
-  [self.markersController didTapInfoWindowOfMarkerWithIdentifier:markerId];
+  [self.markersController didTapInfoWindowOfMarkerWithIdentifier:[marker getMarkerId]];
 }
 - (void)mapView:(GMSMapView *)mapView didTapOverlay:(GMSOverlay *)overlay {
   NSString *overlayId = overlay.userData[0];
