@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+@import GoogleMapsUtils;
 #import "GoogleMapController.h"
-#import <Google-Maps-iOS-Utils/GMUStaticCluster.h>
 #import "FLTGoogleMapJSONConversions.h"
 #import "FLTGoogleMapTileOverlayController.h"
 #import "GMSMarker+Userdata.h"
